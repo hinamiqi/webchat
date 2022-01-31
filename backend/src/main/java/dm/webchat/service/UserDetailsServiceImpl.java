@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import dm.webchat.constants.UserRoles;
 import dm.webchat.models.User;
 
 @Service
@@ -20,8 +21,8 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         this.mockUsers.add(
             User.builder()
             .username("admin")
-            .password("123456")
-            .roles(Arrays.asList("ADMIN"))
+            .password("$2a$10$VcdzH8Q.o4KEo6df.XesdOmXdXQwT5ugNQvu1Pl0390rmfOeA1bhS")
+            .roles(Arrays.asList(UserRoles.ADMIN))
             .build()
         );
     }

@@ -24,12 +24,9 @@ import dm.webchat.service.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
 
 @Configuration
-@EnableWebSecurity
 @RequiredArgsConstructor
-@EnableGlobalMethodSecurity(
-        // securedEnabled = true,
-        // jsr250Enabled = true,
-        prePostEnabled = true)
+@EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
@@ -71,7 +68,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         http.cors().and().csrf().disable()
         .exceptionHandling().authenticationEntryPoint(jwtAuthenticationEntryPoint).and()
         .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
-        .authorizeRequests().antMatchers("api/login").permitAll()
+        .authorizeRequests().antMatchers("/api/auth/**").permitAll()
+        .antMatchers("/api/main/**").permitAll()
         .anyRequest().authenticated();
 
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);

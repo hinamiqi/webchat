@@ -1,6 +1,9 @@
 package dm.webchat.jwt;
 
 import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.ZonedDateTime;
 import java.util.Date;
 
 import javax.swing.text.DateFormatter;
@@ -12,7 +15,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import dm.webchat.helper.DateHelper;
 import dm.webchat.service.UserDetailsImpl;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
@@ -27,8 +32,8 @@ public class JwtUtils {
     @Value("${app.jwtSecret}")
     private String jwtSecret;
 
-    @Value("${app.jwtExpirationMs}")
-    private String jwtExpirationMs;
+    @Value("${app.jwtExpirationMinutes}")
+    private Integer jwtExpirationMinutes;
 
     public String generateJwtToken(Authentication authentication) {
         UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
@@ -36,19 +41,22 @@ public class JwtUtils {
         return Jwts.builder()
             .setSubject(userPrincipal.getUsername())
             .setIssuedAt(new Date())
-            .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
+            .setExpiration(DateHelper.getDateWithDelta(jwtExpirationMinutes))
             .signWith(SignatureAlgorithm.HS512, jwtSecret)
             .compact();
     }
 
-    public String getUserNameFromJwtToken(String token) {
-        return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJwt(token).getBody().getSubject();
-    }
+    // public String getUserNameFromJwtToken(String token) {
+    //     return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJwt(token).getBody().getSubject();
+    // }
 
-    public boolean validateJwtToken(String authToken) {
+    public String getUserNameFromJwtToken(String authToken) {
         try {
-            Jwts.parser().setSigningKey(jwtSecret).parseClaimsJwt(authToken);
-            return true;
+            final Claims claims = getAllClaimsFromToken(authToken);
+            // Jwts.parser().setSigningKey(jwtSecret).parseClaimsJwt(authToken).getBody();
+            String username = claims.getSubject();
+            logger.info("Username from jwt: " + username);
+            return username;
         } catch (SignatureException e) {
             logger.error("Invalid jwt signature: {}", e.getMessage());
         } catch (MalformedJwtException e) {
@@ -61,6 +69,10 @@ public class JwtUtils {
             logger.error("JWT claims string is empty: {}", e.getMessage());
         }
 
-        return false;
+        return null;
+    }
+
+    private Claims getAllClaimsFromToken(String token) throws ExpiredJwtException, SignatureException {
+        return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody();
     }
 }
