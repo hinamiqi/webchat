@@ -1,0 +1,3 @@
+app:
+    jwtSecret: 123456
+    jwtExpirationMs: 60000

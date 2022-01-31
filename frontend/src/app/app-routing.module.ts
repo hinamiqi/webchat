@@ -8,7 +8,13 @@ const routes: Routes = [
     {
         path: '',
         component: CommonComponent,
-        canActivate: [AuthGuardService]
+        canActivate: [AuthGuardService],
+        children: [
+          {
+            path: 'info',
+            loadChildren: () => import('./pages/pages.module').then((m) => m.PagesModule),
+          }
+        ]
     },
     {
       path: 'login',
@@ -17,7 +23,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes)],
+  imports: [RouterModule.forRoot(routes, { useHash: true })],
   exports: [RouterModule]
 })
 export class AppRoutingModule { }

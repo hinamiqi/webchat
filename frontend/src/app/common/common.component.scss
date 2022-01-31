@@ -1,0 +1,18 @@
+.main-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 12px;
+  .item {
+    max-width: 800px;
+  }
+}
+
+.navbar {
+  padding: 8px;
+
+  a {
+    cursor: pointer;
+  }
+}
