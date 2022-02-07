@@ -1,5 +1,8 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { JwtHelperService } from '@auth0/angular-jwt';
+import { BehaviorSubject, ReplaySubject, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { User } from 'src/app/models/auth/user.model';
 
 import { LocalStorageService } from 'src/app/utils/services/local-storage.service';
 import { StorageTypes } from '../constants/storage-types.constant';
@@ -7,17 +10,56 @@ import { StorageTypes } from '../constants/storage-types.constant';
 @Injectable({
   providedIn: 'root'
 })
-export class AuthService {
-    private readonly jwtHelperService = new JwtHelperService();
+export class AuthService implements OnDestroy {
+  // isAuth = new ReplaySubject<boolean>(1);
+  get isAuth(): boolean {
+    return this.isTokenValid();
+  }
 
-  constructor(private readonly localStorageService: LocalStorageService) { }
+  private destroy$ = new Subject<void>();
 
-  isTokenValid(): boolean {
+  private readonly jwtHelperService = new JwtHelperService();
+
+  constructor(private readonly localStorageService: LocalStorageService) {
+    // this.user
+    //   .pipe(takeUntil(this.destroy$))
+    //   .subscribe((user) => {
+    //     this.setToken(user.token);
+    //   });
+  }
+
+  ngOnDestroy(): void {
+      this.destroy$.next();
+      this.destroy$.complete();
+  }
+
+
+  login(user: User): void {
+    this.setToken(user.token);
+    this.setUser(user);
+    // this.isAuth.next(true);
+  }
+
+  logout(): void {
+    this.localStorageService.removeItem(StorageTypes.TOKEN);
+    this.localStorageService.removeItem(StorageTypes.USERNAME);
+    this.localStorageService.removeItem(StorageTypes.PRIVILEGES_KEY);
+  }
+
+  getToken(): string {
+    return this.localStorageService.getItem(StorageTypes.TOKEN) as string;
+  }
+
+  private isTokenValid(): boolean {
     const token = this.getToken();
     return !!token && !this.jwtHelperService.isTokenExpired(token);
   }
 
-  private getToken(): string {
-    return this.localStorageService.getItem(StorageTypes.TOKEN) as string;
+  private setToken(token: string): void {
+    this.localStorageService.setItem(StorageTypes.TOKEN, token);
+  }
+
+  private setUser(user: User): void {
+    this.localStorageService.setItem(StorageTypes.USERNAME, user.username);
   }
 }

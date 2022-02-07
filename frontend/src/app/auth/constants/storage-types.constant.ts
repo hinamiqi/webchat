@@ -1,5 +1,5 @@
 export enum StorageTypes {
     TOKEN = 'token',
-    AUTH = 'auth',
+    USERNAME = 'username',
     PRIVILEGES_KEY = 'user_privileges',
   }

@@ -19,7 +19,7 @@ export class InfoPageComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.http.get(`http://localhost:8080/api/resource`)
+    this.http.get(`http://localhost:8080/api/main/resource`)
     .subscribe((data: IServerData) => {
       this.serverData = data;
       console.log(this.serverData);

@@ -4,6 +4,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.ZonedDateTime;
+import java.util.Base64;
 import java.util.Date;
 
 import javax.swing.text.DateFormatter;
@@ -38,6 +39,8 @@ public class JwtUtils {
     public String generateJwtToken(Authentication authentication) {
         UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
 
+        // String encodedString = Base64.getEncoder().encodeToString(jwtSecret.getBytes());
+
         return Jwts.builder()
             .setSubject(userPrincipal.getUsername())
             .setIssuedAt(new Date())
@@ -51,6 +54,7 @@ public class JwtUtils {
     // }
 
     public String getUserNameFromJwtToken(String authToken) {
+        if (authToken == null) return null;
         try {
             final Claims claims = getAllClaimsFromToken(authToken);
             // Jwts.parser().setSigningKey(jwtSecret).parseClaimsJwt(authToken).getBody();

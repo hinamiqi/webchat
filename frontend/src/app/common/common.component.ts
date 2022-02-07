@@ -4,8 +4,10 @@ import { Subject } from 'rxjs';
 import { takeUntil, filter } from 'rxjs/operators'
 
 import { StorageTypes } from '../auth/constants/storage-types.constant';
+import { AuthService } from '../auth/services/auth.service';
 import { LocalStorageService } from '../utils/services/local-storage.service';
 import { LOREM_IPSUM } from './lorem-ipsum.const';
+import { CommonService } from './services/common.service';
 
 @Component({
   selector: 'app-common',
@@ -22,8 +24,6 @@ export class CommonComponent implements OnInit {
   title = 'Main page';
 
   menuItems = [
-    { name: 'Алеся', route: '/alice' },
-    { name: 'Тихон', route: '/tycho' },
     { name: 'Info', route: '/info' },
   ];
 
@@ -31,17 +31,23 @@ export class CommonComponent implements OnInit {
 
   textPlaceholder = LOREM_IPSUM;
 
+  currentUserName: string;
+
+  get isAuth(): boolean {
+    return this.authService.isAuth && !!this.currentUserName;
+  }
+
   private destroy$ = new Subject<void>();
 
   constructor(
     private readonly localStorageService: LocalStorageService,
     private readonly route: ActivatedRoute,
-    private readonly router: Router
+    private readonly router: Router,
+    private readonly authService: AuthService,
+    private readonly commonService: CommonService
     ) { }
 
   ngOnInit(): void {
-    // console.log(this.router.url);
-    // console.log(this.route.component)
     this.router.events
       .pipe(
         filter((event) => event instanceof NavigationEnd),
@@ -52,15 +58,22 @@ export class CommonComponent implements OnInit {
 
       });
 
+
     this.afterPageLoad();
+
+    this.currentUserName = this.localStorageService.getItem(StorageTypes.USERNAME) as string;
+
+    this.commonService.getAllRequest()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((response) => {
+        console.log(response);
+      });
   }
 
-  setJwt(): void {
-    this.localStorageService.setDefaultToken();
-  }
 
-  removeJwt(): void {
-    this.localStorageService.removeItem(StorageTypes.TOKEN);
+  logout(): void {
+    this.authService.logout();
+    this.navigateTo("/login");
   }
 
   navigateTo(route: string): void {
@@ -69,7 +82,6 @@ export class CommonComponent implements OnInit {
 
   private afterPageLoad(): void {
     const url = this.router.routerState.snapshot.url;
-    // this.title = url === '/' ? 'Main page' : 'Another page';
     this.isMainPage = url === '/';
   }
 }

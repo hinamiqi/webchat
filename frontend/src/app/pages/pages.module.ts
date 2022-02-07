@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 
 import { InfoPageComponent } from './info-page/info-page.component';
-import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   imports: [RouterModule.forChild([
@@ -16,8 +15,7 @@ export class PagesRoutingModule {}
 @NgModule({
   imports: [
     CommonModule,
-    PagesRoutingModule,
-    HttpClientModule
+    PagesRoutingModule
   ],
   exports: [],
   declarations: [
