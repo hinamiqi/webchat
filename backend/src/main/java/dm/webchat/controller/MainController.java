@@ -8,19 +8,19 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import static dm.webchat.helper.ResponseHelper.buildSimpleDataResponse;
+
 @RestController
 @RequestMapping(path = "/api/main")
 public class MainController {
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('USER')")
     @GetMapping("/resource")
-    public Map<String,Object> home() {
-        Map<String,Object> model = new HashMap<String,Object>();
-        model.put("data", "Jello World!!");
-        return model;
+    public Map<String,String> home() {
+        return buildSimpleDataResponse("Jello World!");
     }
 
     @GetMapping("/all")
-    public String allAccess() {
-        return "Public content";
+    public Map<String,String> allAccess() {
+        return buildSimpleDataResponse("This is public content");
     }
 }
