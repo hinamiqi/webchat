@@ -1,1 +1,26 @@
-/* You can add global styles to this file, and also import other style files */
+html, body {
+    height: 100%;
+    font-family: 'Mono';
+  }
+  
+  body {
+    background: #3f3b3a;
+  }
+  
+
+body {
+    height: 100%;
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 12px;
+    // height: 100%;
+    > * {
+        max-width: 600px;
+        width: 100%;
+    }
+}
