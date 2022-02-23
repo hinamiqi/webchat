@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, NavigationEnd, Router, RouterEvent } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil, filter } from 'rxjs/operators'
 
@@ -15,11 +15,6 @@ import { CommonService } from './services/common.service';
   styleUrls: ['./common.component.scss']
 })
 export class CommonComponent implements OnInit {
-  // get title(): string {
-  //   return this.route.snapshot.url.length === 0
-  //     ?
-  //     : 'Another page';
-  // }
 
   title = 'Main page';
 
@@ -27,14 +22,16 @@ export class CommonComponent implements OnInit {
     { name: 'Info', route: '/info' },
   ];
 
-  isMainPage = false;
-
   textPlaceholder = LOREM_IPSUM;
 
   currentUserName: string;
 
   get isAuth(): boolean {
     return this.authService.isAuth && !!this.currentUserName;
+  }
+
+  get isMainPage(): boolean {
+    return this.router?.routerState.snapshot.url === "/";
   }
 
   private destroy$ = new Subject<void>();
@@ -54,12 +51,8 @@ export class CommonComponent implements OnInit {
         takeUntil(this.destroy$)
       )
       .subscribe((event) => {
-        this.afterPageLoad();
-
+        console.info("Navigation ended on common.component:", event);
       });
-
-
-    this.afterPageLoad();
 
     this.currentUserName = this.localStorageService.getItem(StorageTypes.USERNAME) as string;
 
@@ -80,9 +73,8 @@ export class CommonComponent implements OnInit {
     this.router.navigate([route], { relativeTo: this.route });
   }
 
-  private afterPageLoad(): void {
-    const url = this.router.routerState.snapshot.url;
-    this.isMainPage = url === '/';
+  isRouteSelected(route: string): boolean {
+    return this.router.routerState.snapshot.url === route;
   }
 }
 
