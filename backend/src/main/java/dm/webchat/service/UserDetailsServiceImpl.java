@@ -17,7 +17,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     private List<User> mockUsers;
 
     public UserDetailsServiceImpl() {
-        this.mockUsers = new ArrayList();
+        this.mockUsers = new ArrayList<User>();
         this.mockUsers.add(
             User.builder()
             .username("admin")
