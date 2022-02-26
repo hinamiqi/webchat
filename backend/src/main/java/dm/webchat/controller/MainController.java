@@ -1,6 +1,5 @@
 package dm.webchat.controller;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.security.access.prepost.PreAuthorize;

@@ -1,3 +1,14 @@
 app:
     jwtSecret: 123456
     jwtExpirationMinutes: 5
+spring:
+    datasource:
+        url: jdbc:postgresql://localhost:5432/postgres
+        username: postgres
+        password: 123
+    jpa:
+        properties:
+            hibernate:
+                # jdbc.lob.non_contextual_creation: true
+                dialect: org.hibernate.dialect.PostgreSQLDialect
+                ddl-auto: none
