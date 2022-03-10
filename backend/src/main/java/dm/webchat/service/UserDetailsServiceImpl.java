@@ -7,7 +7,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import dm.webchat.constants.UserRoles;
 import dm.webchat.models.User;
 import dm.webchat.repositories.UserRepository;
 
