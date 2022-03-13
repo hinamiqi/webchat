@@ -7,17 +7,21 @@ import { AppComponent } from './app.component';
 import { AuthModule } from './auth/auth.module';
 
 import { CommonComponent } from './common/common.component';
+import { ChatComponent } from './common/components/chat/chat.component';
+import { SharedModule } from './shared/shared.module';
 
 @NgModule({
   declarations: [
     AppComponent,
-    CommonComponent
+    CommonComponent,
+    ChatComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     HttpClientModule,
     AuthModule.forRoot(),
+    SharedModule
   ],
   bootstrap: [AppComponent]
 })

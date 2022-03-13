@@ -1,5 +1,5 @@
 <nav class="navbar navbar-expand-sm bg-light justify-content-between">
-  <a class="navbar-brand" (click)="navigateTo('/')" [ngClass]="{ 'menu-selected-item': isMainPage }">Home</a>
+  <a class="navbar-brand" (click)="navigateTo('/')" [ngClass]="{ 'menu-selected-item': isMainPage }">Chat</a>
   <ul class="navbar-nav nav-pills">
     <li class="nav-item" *ngFor="let i of menuItems" [ngClass]="{ 'menu-selected-item': isRouteSelected(i.route) }">
       <a class="nav-link" (click)="navigateTo(i.route)">{{ i.name }}</a>
@@ -10,12 +10,6 @@
   </ul>
 </nav>
 <div class="main-container">
-  <div class="item">
-    <h1 *ngIf="isMainPage">Main page</h1>
-    <p *ngIf="isMainPage">
-      {{ textPlaceholder }}
-    </p>
-  </div>
   <div class="item">
     <router-outlet></router-outlet>
   </div>

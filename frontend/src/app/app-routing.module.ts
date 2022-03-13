@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { AuthGuardService } from './auth/services/auth-guard.service';
 import { CommonComponent } from './common/common.component';
+import { ChatComponent } from './common/components/chat/chat.component';
 
 const routes: Routes = [
     {
@@ -10,6 +11,16 @@ const routes: Routes = [
         component: CommonComponent,
         canActivate: [AuthGuardService],
         children: [
+          {
+            path: '',
+            redirectTo: '/chat',
+            pathMatch: 'full'
+          },
+          {
+            path: 'chat',
+            component: ChatComponent,
+            canActivate: [AuthGuardService]
+          },
           {
             path: 'info',
             loadChildren: () => import('./pages/pages.module').then((m) => m.PagesModule),
