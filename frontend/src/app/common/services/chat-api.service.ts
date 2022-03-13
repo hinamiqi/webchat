@@ -1,19 +1,19 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
+import { IMessage } from 'src/app/models/message/message.interface';
 import { environment } from 'src/environments/environment';
 
 @Injectable({providedIn: 'root'})
-export class CommonService {
+export class ChatApiService {
   private readonly backendApi = environment.backendUrl;
 
   constructor(
     private readonly http: HttpClient
   ) {}
 
-  // TODO: we do not need this
-  getAllRequest(): Observable<string> {
-    return this.http.get<string>(`${this.backendApi}/main/all`);
+  pushNewMessage(message: IMessage): Observable<IMessage> {
+    return this.http.post<IMessage>(`${this.backendApi}/chat`, message);
   }
 }

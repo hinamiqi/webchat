@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil, filter } from 'rxjs/operators'
@@ -13,7 +13,7 @@ import { CommonService } from './services/common.service';
   templateUrl: './common.component.html',
   styleUrls: ['./common.component.scss']
 })
-export class CommonComponent implements OnInit {
+export class CommonComponent implements OnInit, OnDestroy {
 
   title = 'Main page';
 
@@ -62,6 +62,10 @@ export class CommonComponent implements OnInit {
       });
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
   logout(): void {
     this.authService.logout();

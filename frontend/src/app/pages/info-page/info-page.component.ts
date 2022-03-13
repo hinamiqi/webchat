@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subject } from 'rxjs';
 import { finalize, takeUntil } from 'rxjs/operators';
 
@@ -12,7 +12,7 @@ import { StaticPageApiService } from '../static-page-api.service';
   styleUrls: ['./info-page.component.scss']
 })
 
-export class InfoPageComponent implements OnInit {
+export class InfoPageComponent implements OnInit, OnDestroy {
   serverData: IServerData;
 
   isDataLoading = false;
@@ -36,5 +36,10 @@ export class InfoPageComponent implements OnInit {
       .subscribe((response) => {
         this.serverData = response;
       });
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

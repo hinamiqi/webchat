@@ -1,5 +1,5 @@
 export interface IMessage {
-  authorId: string;
+  authorName: string;
   text: string;
   date: Date;
 }
