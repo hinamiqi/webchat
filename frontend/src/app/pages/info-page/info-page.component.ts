@@ -1,9 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
+import { Subject } from 'rxjs';
+import { finalize, takeUntil } from 'rxjs/operators';
 
-interface IServerData {
-  data: string;
-}
+import { IServerData } from 'src/app/models/server-data.interface';
+import { StaticPageApiService } from '../static-page-api.service';
 
 @Component({
   selector: 'app-info-page',
@@ -12,17 +13,28 @@ interface IServerData {
 })
 
 export class InfoPageComponent implements OnInit {
-  serverData: { data: string };
+  serverData: IServerData;
+
+  isDataLoading = false;
+
+  private destroy$ = new Subject<void>();
 
   constructor(
-    private readonly http: HttpClient
+    private readonly http: HttpClient,
+    private readonly staticPageService: StaticPageApiService
   ) { }
 
   ngOnInit() {
-    this.http.get(`http://localhost:8080/api/main/resource`)
-    .subscribe((data: IServerData) => {
-      this.serverData = data;
-      console.log(this.serverData);
-    });
+    this.isDataLoading = true;
+    this.staticPageService.getStaticPageContent("info")
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => {
+          this.isDataLoading = false;
+        })
+      )
+      .subscribe((response) => {
+        this.serverData = response;
+      });
   }
 }

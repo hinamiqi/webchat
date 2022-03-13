@@ -6,7 +6,6 @@ import { takeUntil, filter } from 'rxjs/operators'
 import { StorageTypes } from '../auth/constants/storage-types.constant';
 import { AuthService } from '../auth/services/auth.service';
 import { LocalStorageService } from '../utils/services/local-storage.service';
-import { LOREM_IPSUM } from './lorem-ipsum.const';
 import { CommonService } from './services/common.service';
 
 @Component({
@@ -22,7 +21,7 @@ export class CommonComponent implements OnInit {
     { name: 'Info', route: '/info' },
   ];
 
-  textPlaceholder = LOREM_IPSUM;
+  textPlaceholder = "Main page";
 
   currentUserName: string;
 
