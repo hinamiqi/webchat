@@ -3,3 +3,7 @@ export interface IMessage {
   text: string;
   date: Date;
 }
+
+export interface IMessageView extends IMessage {
+  isCurrentUser: boolean;
+}

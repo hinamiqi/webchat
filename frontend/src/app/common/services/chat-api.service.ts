@@ -18,6 +18,6 @@ export class ChatApiService {
   }
 
   getLastMessages(): Observable<IMessage[]> {
-    return this.http.get<IMessage[]>(`${this.backendApi}/chat?page=0&size=2&sort=date,asc`);
+    return this.http.get<IMessage[]>(`${this.backendApi}/chat?page=0&size=20&sort=date,asc`);
   }
 }

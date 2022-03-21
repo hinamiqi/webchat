@@ -1,4 +1,4 @@
-.message-container {
+.messages-container {
   display: flex;
   flex-direction: column;
 
@@ -22,8 +22,8 @@
   width: fit-content;
   max-width: 100%;
 
-  background-color: rgb(194, 194, 194);
   border-radius: 8px;
+  border: 1px solid rgb(194, 194, 194);
 
   padding: 2px 5px;
   margin: 2px;
@@ -44,4 +44,16 @@
 
 textarea {
   max-height: 200px;
+}
+
+.isMine {
+  align-items: flex-end;
+  .message {
+    background-color: rgb(194, 194, 194);
+  }
+}
+
+.message-wrapper {
+  display: flex;
+  flex-direction: column;
 }

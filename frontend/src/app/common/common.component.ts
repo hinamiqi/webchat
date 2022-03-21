@@ -19,6 +19,7 @@ export class CommonComponent implements OnInit, OnDestroy {
 
   menuItems = [
     { name: 'Info', route: '/info' },
+    { name: 'User', route: '/info/profile' }
   ];
 
   textPlaceholder = "Main page";

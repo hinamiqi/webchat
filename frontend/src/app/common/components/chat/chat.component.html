@@ -1,7 +1,9 @@
-<div class="message-container">
-  <div *ngFor="let item of messages" class="message">
-    <p>{{ item.text }}</p>
-    <p class="sign">{{ item.authorName }}, {{ item.date | date: 'HH:mm' }}</p>
+<div class="messages-container">
+  <div *ngFor="let item of messages" class="message-wrapper" [ngClass]="{ isMine: item.isCurrentUser}">
+    <div class="message">
+      <p>{{ item.text }}</p>
+      <p class="sign">{{ item.authorName }}, {{ item.date | date: 'HH:mm' }}</p>
+    </div>
   </div>
 </div>
 <form class="row g-3" [formGroup]="form" (ngSubmit)="submit()">

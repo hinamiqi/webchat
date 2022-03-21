@@ -50,6 +50,10 @@ export class AuthService implements OnDestroy {
     return this.localStorageService.getItem(StorageTypes.TOKEN) as string;
   }
 
+  isCurrentUserLogin(login: string): boolean {
+    return this.localStorageService.getItem(StorageTypes.USERNAME) === login;
+  }
+
   private isTokenValid(): boolean {
     const token = this.getToken();
     return !!token && !this.jwtHelperService.isTokenExpired(token);
