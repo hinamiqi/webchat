@@ -1,6 +1,14 @@
 package dm.webchat.controller;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -26,5 +34,14 @@ public class ChatController {
             .date(savedMessage.getDate())
             .text(savedMessage.getText())
             .build();
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('USER')")
+    @GetMapping("")
+    public List<ChatMessageDto> getLastChatMessages(Pageable pageable) {
+        Page<ChatMessage> messages = chatService.getChatMessages(pageable);
+        return messages.stream()
+            .map(ChatMessageDto::new)
+            .collect(Collectors.toList());
     }
 }

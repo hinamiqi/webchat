@@ -17,33 +17,7 @@ import { ChatApiService } from '../../services/chat-api.service';
 export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
   form: FormGroup;
 
-  messages: IMessage[] = [
-    {
-      text: '123456',
-      authorName: 'User',
-      date: new Date()
-    },
-    {
-      text: '123456 asfdadsdadas da',
-      authorName: 'User',
-      date: new Date()
-    },
-    {
-      text: '1234561233333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333',
-      authorName: 'User',
-      date: new Date()
-    },
-    {
-      text: '1234561233333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333 asdd 12333333333333333333333333333333333',
-      authorName: 'User',
-      date: new Date()
-    },
-    {
-      text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut ac enim volutpat, sollicitudin metus vitae, consectetur ante. Mauris sollicitudin hendrerit odio, vel iaculis tellus tincidunt vel. Morbi eget suscipit neque. Quisque et accumsan nunc. Praesent at arcu ac nunc viverra rutrum. In faucibus arcu vel quam ornare, sed porttitor ex mollis. Etiam eu ex augue. Integer sit amet blandit lectus, id vehicula nibh. Pellentesque faucibus justo vel nisi tempus venenatis. Vestibulum eget massa ligula. Vestibulum vitae lectus eget odio euismod vulputate. Duis tincidunt dui et commodo tincidunt. Maecenas suscipit ac ipsum quis tristique. Donec placerat odio euismod faucibus efficitur."; asdd 12333333333333333333333333333333333',
-      authorName: 'User',
-      date: new Date()
-    },
-  ];
+  messages: IMessage[] = [];
 
   private destroy$ = new Subject<void>();
 
@@ -62,6 +36,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
     this.form = this.fb.group({
       message: []
     });
+    this.getLastMessages();
   }
 
   ngOnDestroy(): void {
@@ -78,7 +53,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
 
     // FIXME: we should send current user
     const newMessage = new ChatMessage('admin', this.messageControl.value, new Date());
-    this.chatApiService.pushNewMessage(newMessage)
+    this.chatApiService.addMessage(newMessage)
       .pipe(
         takeUntil(this.destroy$)
       )
@@ -86,6 +61,16 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
         this.messages.push(response);
         this.messageControl.patchValue(null);
         this.scrollToBot();
+      });
+  }
+
+  private getLastMessages(): void {
+    this.chatApiService.getLastMessages()
+      .pipe(
+        takeUntil(this.destroy$)
+      )
+      .subscribe((response) => {
+        this.messages = response;
       });
   }
 

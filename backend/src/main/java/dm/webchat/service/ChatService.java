@@ -2,6 +2,8 @@ package dm.webchat.service;
 
 import javax.transaction.Transactional;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
 import dm.webchat.controller.exception.NotFoundException;
@@ -33,5 +35,9 @@ public class ChatService {
             .text(msgDto.getText())
             .build()
         );
+    }
+
+    public Page<ChatMessage> getChatMessages(Pageable page) {
+        return chatMessageRepository.findAll(page);
     }
 }

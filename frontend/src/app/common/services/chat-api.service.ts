@@ -13,7 +13,11 @@ export class ChatApiService {
     private readonly http: HttpClient
   ) {}
 
-  pushNewMessage(message: IMessage): Observable<IMessage> {
+  addMessage(message: IMessage): Observable<IMessage> {
     return this.http.post<IMessage>(`${this.backendApi}/chat`, message);
+  }
+
+  getLastMessages(): Observable<IMessage[]> {
+    return this.http.get<IMessage[]>(`${this.backendApi}/chat?page=0&size=2&sort=date,asc`);
   }
 }
