@@ -3,11 +3,15 @@ import { AfterViewInit, Component, Inject, NgZone, OnDestroy, OnInit } from '@an
 import { AbstractControl, FormBuilder, FormGroup } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { AuthService } from 'src/app/auth/services/auth.service';
 
-import { IMessage, IMessageView } from 'src/app/models/message/message.interface';
-import { ChatMessage, ChatMessageView } from 'src/app/models/message/message.model';
+import { AuthService } from 'src/app/auth/services/auth.service';
+import { ChatMessageView } from 'src/app/models/message/chat-message-view.model';
+import { IMessageView } from 'src/app/models/message/message.interface';
+import { ChatMessage } from 'src/app/models/message/message.model';
+import { AUTH_SERVICE } from 'src/app/shared/injection-tokens';
+
 import { ChatApiService } from '../../services/chat-api.service';
+import { ChatService } from '../../services/chat.service';
 
 @Component({
   selector: 'app-chat',
@@ -31,7 +35,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
     private readonly ngZone: NgZone,
     @Inject(DOCUMENT) private document: Document,
     private readonly chatApiService: ChatApiService,
-    private readonly authService: AuthService
+    private readonly authService: AuthService,
+    private readonly chatService: ChatService
   ) { }
 
   ngOnInit(): void {
@@ -53,14 +58,16 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
   submit(): void {
     if (!this.messageControl.value) return;
 
-    // FIXME: we should send current user
-    const newMessage = new ChatMessage('admin', this.messageControl.value, new Date());
+    const newMessage = new ChatMessage(
+      this.authService.getCurrentUserLogin(),
+      this.messageControl.value, new Date()
+    );
     this.chatApiService.addMessage(newMessage)
       .pipe(
         takeUntil(this.destroy$)
       )
       .subscribe((response) => {
-        this.messages.push(new ChatMessageView(response));
+        this.messages.push(this.chatService.getChatMessageView(response));
         this.messageControl.patchValue(null);
         this.scrollToBot();
       });
@@ -72,7 +79,11 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
         takeUntil(this.destroy$)
       )
       .subscribe((response) => {
-        this.messages = response.map((serverMsg) => new ChatMessageView(serverMsg, this.authService.isCurrentUserLogin(serverMsg.authorName)));
+        this.messages = response
+          .map((serverMsg) =>
+            this.chatService.getChatMessageView(serverMsg)
+          )
+          .reverse();
       });
   }
 

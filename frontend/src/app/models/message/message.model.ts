@@ -1,3 +1,6 @@
+import { Inject } from '@angular/core';
+import { AuthService } from 'src/app/auth/services/auth.service';
+import { AUTH_SERVICE } from 'src/app/shared/injection-tokens';
 import { IMessage, IMessageView } from './message.interface';
 
 export class ChatMessage implements IMessage {
@@ -6,10 +9,4 @@ export class ChatMessage implements IMessage {
     public text: string,
     public date: Date
   ) { }
-}
-
-export class ChatMessageView extends ChatMessage implements IMessageView {
-  constructor(chatMessage: ChatMessage, public isCurrentUser: boolean = false) {
-    super(chatMessage.authorName, chatMessage.text, chatMessage.date);
-  }
 }

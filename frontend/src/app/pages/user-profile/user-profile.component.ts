@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
-import { StorageTypes } from 'src/app/auth/constants/storage-types.constant';
-import { LocalStorageService } from 'src/app/utils/services/local-storage.service';
+
+import { AuthService } from 'src/app/auth/services/auth.service';
 
 @Component({
   selector: 'app-user-profile',
@@ -15,10 +15,10 @@ export class UserProfileComponent implements OnInit {
   userRoles: string[];
 
   constructor(
-    private readonly localStorageService: LocalStorageService
+    private readonly authService: AuthService
   ) { }
 
   ngOnInit() {
-    this.username = this.localStorageService.getItem(StorageTypes.USERNAME);
+    this.username = this.authService.getCurrentUserLogin();
   }
 }

@@ -3,9 +3,7 @@ import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { takeUntil, filter } from 'rxjs/operators'
 
-import { StorageTypes } from '../auth/constants/storage-types.constant';
 import { AuthService } from '../auth/services/auth.service';
-import { LocalStorageService } from '../utils/services/local-storage.service';
 import { CommonService } from './services/common.service';
 
 @Component({
@@ -37,7 +35,6 @@ export class CommonComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   constructor(
-    private readonly localStorageService: LocalStorageService,
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly authService: AuthService,
@@ -54,7 +51,7 @@ export class CommonComponent implements OnInit, OnDestroy {
         console.info("Navigation ended on common.component:", event);
       });
 
-    this.currentUserName = this.localStorageService.getItem(StorageTypes.USERNAME) as string;
+    this.currentUserName = this.authService.getCurrentUserLogin();
 
     this.commonService.getAllRequest()
       .pipe(takeUntil(this.destroy$))

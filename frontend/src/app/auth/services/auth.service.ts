@@ -1,7 +1,6 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { JwtHelperService } from '@auth0/angular-jwt';
-import { BehaviorSubject, ReplaySubject, Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
 import { User } from 'src/app/models/auth/user.model';
 
 import { LocalStorageService } from 'src/app/utils/services/local-storage.service';
@@ -50,8 +49,12 @@ export class AuthService implements OnDestroy {
     return this.localStorageService.getItem(StorageTypes.TOKEN) as string;
   }
 
+  getCurrentUserLogin(): string {
+    return this.localStorageService.getItem(StorageTypes.USERNAME) as string;
+  }
+
   isCurrentUserLogin(login: string): boolean {
-    return this.localStorageService.getItem(StorageTypes.USERNAME) === login;
+    return this.getCurrentUserLogin() === login;
   }
 
   private isTokenValid(): boolean {
