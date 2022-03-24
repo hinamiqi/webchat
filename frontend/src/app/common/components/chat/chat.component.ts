@@ -5,10 +5,8 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { AuthService } from 'src/app/auth/services/auth.service';
-import { ChatMessageView } from 'src/app/models/message/chat-message-view.model';
 import { IMessageView } from 'src/app/models/message/message.interface';
 import { ChatMessage } from 'src/app/models/message/message.model';
-import { AUTH_SERVICE } from 'src/app/shared/injection-tokens';
 
 import { ChatApiService } from '../../services/chat-api.service';
 import { ChatService } from '../../services/chat.service';
