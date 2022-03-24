@@ -1,0 +1,7 @@
+.list-item {
+  :first-child {
+    font-size: smaller;
+    color: grey;
+    margin: unset;
+  }
+}

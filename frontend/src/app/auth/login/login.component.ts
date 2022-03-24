@@ -58,8 +58,8 @@ export class LoginComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$),
         catchError(this.errService.handleError)
       )
-      .subscribe(({ username, token }) => {
-        this.authService.login(new User(username, token));
+      .subscribe((response) => {
+        this.authService.login(new User(response));
         this.router.navigate(['./']);
       },
       (errMsg) => {

@@ -1,6 +1,15 @@
+import { ILoginResponse } from './login-response.interface';
+
 export class User {
-  constructor(
-    public readonly username: string,
-    public readonly token: string
-  ) {}
+  username: string;
+
+  token: string;
+
+  roles: string[];
+
+  constructor(user: ILoginResponse) {
+    this.username = user.username;
+    this.token = user.token;
+    this.roles = user.roles;
+  }
 }

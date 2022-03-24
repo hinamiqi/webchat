@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { Subject } from 'rxjs';
+import { filter, takeUntil } from 'rxjs/operators';
 
 import { AuthService } from 'src/app/auth/services/auth.service';
 
@@ -11,14 +13,23 @@ import { AuthService } from 'src/app/auth/services/auth.service';
 export class UserProfileComponent implements OnInit {
   username: string;
 
-  // FIXME: Add privileges to local storage
-  userRoles: string[];
+  userRoles: string;
+
+  private destroy$ = new Subject<void>();
 
   constructor(
     private readonly authService: AuthService
   ) { }
 
   ngOnInit() {
-    this.username = this.authService.getCurrentUserLogin();
+    this.authService.currentUser$
+      .pipe(
+        filter((user) => !!user),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((user) => {
+        this.username = user.username;
+        this.userRoles = user.roles.join(', ');
+      });
   }
 }

@@ -1,6 +1,6 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { JwtHelperService } from '@auth0/angular-jwt';
-import { Subject } from 'rxjs';
+import { Observable, ReplaySubject, Subject } from 'rxjs';
 import { User } from 'src/app/models/auth/user.model';
 
 import { LocalStorageService } from 'src/app/utils/services/local-storage.service';
@@ -10,7 +10,8 @@ import { StorageTypes } from '../constants/storage-types.constant';
   providedIn: 'root'
 })
 export class AuthService implements OnDestroy {
-  // isAuth = new ReplaySubject<boolean>(1);
+  readonly currentUser$: Observable<User>;
+
   get isAuth(): boolean {
     return this.isTokenValid();
   }
@@ -19,30 +20,35 @@ export class AuthService implements OnDestroy {
 
   private readonly jwtHelperService = new JwtHelperService();
 
-  constructor(private readonly localStorageService: LocalStorageService) {
-    // this.user
-    //   .pipe(takeUntil(this.destroy$))
-    //   .subscribe((user) => {
-    //     this.setToken(user.token);
-    //   });
+  private _currentUser$ = new ReplaySubject<User>(1);
+
+  constructor(
+    private readonly localStorageService: LocalStorageService
+  ) {
+    this.currentUser$ = this._currentUser$.asObservable();
+    this._currentUser$.next(new User({
+      token: this.localStorageService.getItem(StorageTypes.TOKEN),
+      username: this.localStorageService.getItem(StorageTypes.USERNAME),
+      roles: this.localStorageService.getItem(StorageTypes.USER_ROLES),
+    }));
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    this._currentUser$.complete();
   }
 
 
   login(user: User): void {
     this.setToken(user.token);
     this.setUser(user);
-    // this.isAuth.next(true);
   }
 
   logout(): void {
     this.localStorageService.removeItem(StorageTypes.TOKEN);
     this.localStorageService.removeItem(StorageTypes.USERNAME);
-    this.localStorageService.removeItem(StorageTypes.PRIVILEGES_KEY);
+    this.localStorageService.removeItem(StorageTypes.USER_ROLES);
   }
 
   getToken(): string {
@@ -68,5 +74,7 @@ export class AuthService implements OnDestroy {
 
   private setUser(user: User): void {
     this.localStorageService.setItem(StorageTypes.USERNAME, user.username);
+    this.localStorageService.setItem(StorageTypes.USER_ROLES, user.roles);
+    this._currentUser$.next(user);
   }
 }
