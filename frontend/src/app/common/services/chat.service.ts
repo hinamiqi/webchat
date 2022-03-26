@@ -11,6 +11,6 @@ export class ChatService {
   ) {}
 
   getChatMessageView(message: IMessage) {
-      return new ChatMessageView(message, this.authService.isCurrentUserLogin(message.authorName));
+      return new ChatMessageView(message, this.authService.isCurrentUser(message.author));
   }
 }

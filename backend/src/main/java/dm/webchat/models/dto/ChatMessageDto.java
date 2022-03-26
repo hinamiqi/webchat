@@ -2,6 +2,8 @@ package dm.webchat.models.dto;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import dm.webchat.models.ChatMessage;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,12 +15,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ChatMessageDto implements Serializable {
-    private String authorName;
+    @JsonProperty("author")
+    private AuthorDto author;
     private String date;
     private String text;
 
     public ChatMessageDto(ChatMessage chatMessage) {
-        this.authorName = chatMessage.getAuthor().getUsername();
+        this.author = new AuthorDto(chatMessage.getAuthor());
         this.date = chatMessage.getDate();
         this.text = chatMessage.getText();
     }

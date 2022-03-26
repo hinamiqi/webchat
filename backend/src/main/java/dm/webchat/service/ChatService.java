@@ -27,7 +27,7 @@ public class ChatService {
         String currentUserLogin = SecurityUtils.getCurrentUserLogin();
         User author = userRepository.findByUsername(currentUserLogin)
             .orElseThrow(() ->
-                new NotFoundException(String.format("No user with login (%s) found", msgDto.getAuthorName()))
+                new NotFoundException(String.format("No user with login (%s) found", msgDto.getAuthor().getUsername()))
             );
         return chatMessageRepository.save(ChatMessage.builder()
             .author(author)

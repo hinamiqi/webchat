@@ -27,11 +27,7 @@ public class ChatController {
     @PostMapping("")
     public ChatMessageDto postChatMessage(@RequestBody ChatMessageDto messageDto) {
         ChatMessage savedMessage = chatService.saveMessage(messageDto);
-        return ChatMessageDto.builder()
-            .authorName(savedMessage.getAuthor().getUsername())
-            .date(savedMessage.getDate())
-            .text(savedMessage.getText())
-            .build();
+        return new ChatMessageDto(savedMessage);
     }
 
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('USER')")

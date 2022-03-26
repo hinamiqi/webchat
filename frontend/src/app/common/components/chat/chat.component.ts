@@ -57,7 +57,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
     if (!this.messageControl.value) return;
 
     const newMessage = new ChatMessage(
-      this.authService.getCurrentUserLogin(),
+      this.authService.getCurrentUser(),
       this.messageControl.value, new Date()
     );
     this.chatApiService.addMessage(newMessage)

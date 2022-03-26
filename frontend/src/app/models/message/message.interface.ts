@@ -1,5 +1,7 @@
+import { User } from '../auth/user.model';
+
 export interface IMessage {
-  authorName: string;
+  author: User;
   text: string;
   date: Date;
 }

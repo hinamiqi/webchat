@@ -52,8 +52,8 @@ export class AuthService implements OnDestroy {
     return this.localStorageService.getItem(StorageTypes.CURRENT_USER) as User;
   }
 
-  isCurrentUserLogin(login: string): boolean {
-    return this.getCurrentUserLogin() === login;
+  isCurrentUser(user: User): boolean {
+    return this.getCurrentUser().uuid === user.uuid;
   }
 
   private isTokenValid(): boolean {
