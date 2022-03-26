@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { Subject } from 'rxjs';
-import { filter, takeUntil } from 'rxjs/operators';
 
 import { AuthService } from 'src/app/auth/services/auth.service';
 
@@ -22,14 +21,10 @@ export class UserProfileComponent implements OnInit {
   ) { }
 
   ngOnInit() {
-    this.authService.currentUser$
-      .pipe(
-        filter((user) => !!user),
-        takeUntil(this.destroy$)
-      )
-      .subscribe((user) => {
-        this.username = user.username;
-        this.userRoles = user.roles.join(', ');
-      });
+    const user = this.authService.getCurrentUser();
+    if (!!user) {
+      this.username = user.username;
+      this.userRoles = user.roles.join(', ');
+    }
   }
 }

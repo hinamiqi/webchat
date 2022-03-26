@@ -1,6 +1,7 @@
 package dm.webchat.models;
 
 import java.util.List;
+import java.util.UUID;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,7 +18,7 @@ public class JwtResponse {
     @Builder.Default
     private String type = "Bearer";
 
-    private Long id;
+    private UUID uuid;
 
     private String username;
 
