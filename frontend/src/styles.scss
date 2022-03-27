@@ -2,11 +2,11 @@ html, body {
     height: 100%;
     font-family: 'Mono';
   }
-  
+
   body {
     background: #3f3b3a;
   }
-  
+
 
 body {
     height: 100%;
@@ -23,4 +23,8 @@ body {
         max-width: 600px;
         width: 100%;
     }
+}
+
+.ng-invalid:not(form)  {
+  border-left: 5px solid #a94442; /* red */
 }

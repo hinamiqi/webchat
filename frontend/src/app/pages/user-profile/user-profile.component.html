@@ -6,3 +6,18 @@
   <p>Roles</p>
   <p>{{ userRoles }}</p>
 </div>
+
+<form *ngIf="showChangeUserPasswordForm" class="row g-3" [formGroup]="changePasswordForm" (ngSubmit)="changePassword()">
+  <div class="col-12 has-validation">
+    <input type="password" class="form-control" placeholder="Current password" formControlName="oldPassword" required="true">
+    <input type="password" class="form-control" placeholder="New password" formControlName="newPassword" required="true">
+  </div>
+
+  <div class="col-12">
+    <button class="btn btn-primary" type="submit">Change password</button>
+  </div>
+
+  <div class="col-md-4 alert alert-danger" role="alert" *ngIf="changePasswordErrorMsg">
+    {{ changePasswordErrorMsg }}
+  </div>
+</form>

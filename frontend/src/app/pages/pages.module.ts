@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 
 import { InfoPageComponent } from './info-page/info-page.component';
 import { UserProfileComponent } from './user-profile/user-profile.component';
+import { SharedModule } from '../shared/shared.module';
 
 @NgModule({
   imports: [RouterModule.forChild([
@@ -17,11 +18,13 @@ export class PagesRoutingModule {}
 @NgModule({
   imports: [
     CommonModule,
-    PagesRoutingModule
+    PagesRoutingModule,
+    SharedModule
   ],
   exports: [],
   declarations: [
-    InfoPageComponent
+    InfoPageComponent,
+    UserProfileComponent
   ],
   providers: [],
 })
