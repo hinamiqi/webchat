@@ -67,7 +67,6 @@ export class CommonComponent implements OnInit, OnDestroy {
 
   logout(): void {
     this.authService.logout();
-    this.navigateTo("/login");
   }
 
   navigateTo(route: string): void {

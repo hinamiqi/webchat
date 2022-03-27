@@ -1,6 +1,8 @@
 import { Injectable, OnDestroy } from '@angular/core';
+import { Router } from '@angular/router';
 import { JwtHelperService } from '@auth0/angular-jwt';
-import { Subject } from 'rxjs';
+import { Subject, interval } from 'rxjs';
+import { filter, takeUntil } from 'rxjs/operators';
 
 import { User } from 'src/app/models/auth/user.model';
 import { LocalStorageService } from 'src/app/utils/services/local-storage.service';
@@ -12,7 +14,7 @@ import { StorageTypes } from '../constants/storage-types.constant';
 })
 export class AuthService implements OnDestroy {
   get isAuth(): boolean {
-    return this.isTokenValid();
+    return !!this.getCurrentUser();
   }
 
   private destroy$ = new Subject<void>();
@@ -20,7 +22,8 @@ export class AuthService implements OnDestroy {
   private readonly jwtHelperService = new JwtHelperService();
 
   constructor(
-    private readonly localStorageService: LocalStorageService
+    private readonly localStorageService: LocalStorageService,
+    private readonly router: Router
   ) {}
 
   ngOnDestroy(): void {
@@ -32,12 +35,13 @@ export class AuthService implements OnDestroy {
   login(user: User): void {
     this.setToken(user.token);
     this.setUser(user);
+    this.setAuthCheck();
   }
 
   logout(): void {
     this.localStorageService.removeItem(StorageTypes.TOKEN);
-    this.localStorageService.removeItem(StorageTypes.USERNAME);
-    this.localStorageService.removeItem(StorageTypes.USER_ROLES);
+    this.localStorageService.removeItem(StorageTypes.CURRENT_USER);
+    this.router.navigate(["/login"]);
   }
 
   getToken(): string {
@@ -45,7 +49,7 @@ export class AuthService implements OnDestroy {
   }
 
   getCurrentUserLogin(): string {
-    return this.localStorageService.getItem(StorageTypes.USERNAME) as string;
+    return this.getCurrentUser().username;
   }
 
   getCurrentUser(): User {
@@ -66,7 +70,18 @@ export class AuthService implements OnDestroy {
   }
 
   private setUser(user: User): void {
-    this.localStorageService.setItem(StorageTypes.USERNAME, user.username);
     this.localStorageService.setItem(StorageTypes.CURRENT_USER, user);
+  }
+
+  private setAuthCheck(): void {
+    interval(1000)
+      .pipe(
+        filter(() => !this.isTokenValid() && this.isAuth),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => {
+        alert('Your session has timed out. You will be redirected to the login page.');
+        this.logout();
+      });
   }
 }
