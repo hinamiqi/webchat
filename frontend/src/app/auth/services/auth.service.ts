@@ -8,13 +8,16 @@ import { User } from 'src/app/models/auth/user.model';
 import { LocalStorageService } from 'src/app/utils/services/local-storage.service';
 
 import { StorageTypes } from '../constants/storage-types.constant';
+import { UserRoles } from '../constants/user-roles.const';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService implements OnDestroy {
+  user: User;
+
   get isAuth(): boolean {
-    return !!this.getCurrentUser();
+    return !!this.getToken();
   }
 
   private destroy$ = new Subject<void>();
@@ -33,6 +36,7 @@ export class AuthService implements OnDestroy {
 
 
   login(user: User): void {
+    this.user = user;
     this.setToken(user.token);
     this.setUser(user);
     this.setAuthCheck();
@@ -53,11 +57,18 @@ export class AuthService implements OnDestroy {
   }
 
   getCurrentUser(): User {
-    return this.localStorageService.getItem(StorageTypes.CURRENT_USER) as User;
+    if (!this.user) {
+      this.user = this.localStorageService.getItem(StorageTypes.CURRENT_USER) as User;
+    }
+    return this.user;
   }
 
   isCurrentUser(user: User): boolean {
     return this.getCurrentUser().uuid === user.uuid;
+  }
+
+  checkRole(role: UserRoles): boolean {
+    return this.user.roles.includes(role);
   }
 
   private isTokenValid(): boolean {
