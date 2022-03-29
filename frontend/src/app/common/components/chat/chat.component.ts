@@ -7,6 +7,7 @@ import { takeUntil } from 'rxjs/operators';
 import { AuthService } from 'src/app/auth/services/auth.service';
 import { IMessageView } from 'src/app/models/message/message.interface';
 import { ChatMessage } from 'src/app/models/message/message.model';
+import { WebSocketService } from 'src/app/shared/services/web-socket.service';
 
 import { ChatApiService } from '../../services/chat-api.service';
 import { ChatService } from '../../services/chat.service';
@@ -34,7 +35,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
     @Inject(DOCUMENT) private document: Document,
     private readonly chatApiService: ChatApiService,
     private readonly authService: AuthService,
-    private readonly chatService: ChatService
+    private readonly chatService: ChatService,
+    private readonly websocketService: WebSocketService
   ) { }
 
   ngOnInit(): void {
@@ -42,6 +44,14 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
       message: []
     });
     this.getLastMessages();
+
+    this.websocketService.watchOnMessage()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((message) => {
+        this.messages.push(this.chatService.getChatMessageView(message));
+        this.messageControl.patchValue(null);
+        this.scrollToBot();
+      });
   }
 
   ngOnDestroy(): void {
@@ -60,15 +70,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
       this.authService.getCurrentUser(),
       this.messageControl.value, new Date()
     );
-    this.chatApiService.addMessage(newMessage)
-      .pipe(
-        takeUntil(this.destroy$)
-      )
-      .subscribe((response) => {
-        this.messages.push(this.chatService.getChatMessageView(response));
-        this.messageControl.patchValue(null);
-        this.scrollToBot();
-      });
+
+    this.websocketService.send(newMessage);
   }
 
   private getLastMessages(): void {

@@ -4,6 +4,7 @@ import { Subject } from 'rxjs';
 import { takeUntil, filter } from 'rxjs/operators'
 
 import { AuthService } from '../auth/services/auth.service';
+import { WebSocketService } from '../shared/services/web-socket.service';
 import { CommonService } from './services/common.service';
 
 @Component({
@@ -38,7 +39,8 @@ export class CommonComponent implements OnInit, OnDestroy {
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly authService: AuthService,
-    private readonly commonService: CommonService
+    private readonly commonService: CommonService,
+    private readonly websocketService: WebSocketService
     ) { }
 
   ngOnInit(): void {
@@ -58,11 +60,14 @@ export class CommonComponent implements OnInit, OnDestroy {
       .subscribe((response) => {
         console.log(response);
       });
+
+    this.websocketService.connect();
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    this.websocketService.disconnect();
   }
 
   logout(): void {
