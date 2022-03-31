@@ -45,10 +45,10 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
     });
     this.getLastMessages();
 
-    this.websocketService.watchOnMessage()
+    this.websocketService.watchOnUserMessage()
       .pipe(takeUntil(this.destroy$))
       .subscribe((message) => {
-        this.messages.push(this.chatService.getChatMessageView(message));
+        this.messages.push(this.chatService.getChatMessageView(message.data));
         this.messageControl.patchValue(null);
         this.scrollToBot();
       });
@@ -71,7 +71,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
       this.messageControl.value, new Date()
     );
 
-    this.websocketService.send(newMessage);
+    this.websocketService.sendUserMessage(newMessage);
   }
 
   private getLastMessages(): void {

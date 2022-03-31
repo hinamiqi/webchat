@@ -4,6 +4,8 @@ import { RxStomp, RxStompConfig } from '@stomp/rx-stomp';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { AuthService } from 'src/app/auth/services/auth.service';
+import { IMessage } from 'src/app/models/message/message.interface';
+import { IWebSocketMessage } from 'src/app/models/websocket/websocket-message.interface';
 
 import { environment } from 'src/environments/environment';
 
@@ -34,12 +36,16 @@ export class WebSocketService {
     this.rxStomp.deactivate();
   }
 
-  watchOnMessage(): Observable<any> {
+  watchOnUserMessage(): Observable<IWebSocketMessage<IMessage>> {
     return this.watch(`/chat/new-message`);
   }
 
-  send(data: any): void {
-    this.rxStomp.publish({ destination: `/app/message`, body: JSON.stringify(data) });
+  sendUserMessage(message: IMessage): void {
+    this.send<IMessage>({ data: message, token: this.authService.getToken() });
+  }
+
+  private send<T>(wsMessage: IWebSocketMessage<T>): void {
+    this.rxStomp.publish({ destination: `/app/message`, body: JSON.stringify(wsMessage) });
   }
 
   private watch(path: string): Observable<any> {
