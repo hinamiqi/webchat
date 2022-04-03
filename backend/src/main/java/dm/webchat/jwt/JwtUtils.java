@@ -44,7 +44,6 @@ public class JwtUtils {
         try {
             final Claims claims = getAllClaimsFromToken(authToken);
             String username = claims.getSubject();
-            logger.info("Username from jwt: " + username);
             return username;
         } catch (SignatureException e) {
             logger.error("Invalid jwt signature: {}", e.getMessage());

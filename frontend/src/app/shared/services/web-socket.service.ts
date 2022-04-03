@@ -14,10 +14,6 @@ export class WebSocketService {
   private rxStomp = new RxStomp();
 
   private rxStompConfig: RxStompConfig = {
-    connectHeaders: {
-      login: 'guest',
-      passcode: 'guest',
-    },
     brokerURL: environment.websocketUrl,
     reconnectDelay: 5000,
   };
@@ -29,6 +25,11 @@ export class WebSocketService {
   }
 
   connect(): void {
+    this.rxStomp.configure({
+      connectHeaders: {
+        token: this.authService.getToken()
+      }
+    });
     this.rxStomp.activate();
   }
 
@@ -41,7 +42,7 @@ export class WebSocketService {
   }
 
   sendUserMessage(message: IMessage): void {
-    this.send<IMessage>({ data: message, token: this.authService.getToken() });
+    this.send<IMessage>({ data: message });
   }
 
   private send<T>(wsMessage: IWebSocketMessage<T>): void {

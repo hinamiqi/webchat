@@ -12,18 +12,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import dm.webchat.service.UserDetailsServiceImpl;
+import dm.webchat.service.UserAuthService;
 
 public class AuthTokenFilter extends OncePerRequestFilter {
     @Autowired
-    private JwtUtils jwtUtils;
-
-    @Autowired
-    private UserDetailsServiceImpl userDetailsService;
+    private UserAuthService userAuthService;
 
     private static final Logger logger = LoggerFactory.getLogger(AuthTokenFilter.class);
 
@@ -32,20 +28,10 @@ public class AuthTokenFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
         try {
             String jwt = parseJwt(request);
-            String username = jwtUtils.getUserNameFromJwtToken(jwt);
-            if (jwt != null && username != null) {
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    userDetails,
-                    null,
-                    userDetails.getAuthorities()
-                );
-
-                logger.info("User authorities: " + userDetails.getAuthorities().toString());
-
+            if (jwt != null) {
+                UsernamePasswordAuthenticationToken authentication = userAuthService.getAuthentication(jwt);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
-
         } catch (Exception e) {
             logger.error("Can't set user authentication: ", e);
         }

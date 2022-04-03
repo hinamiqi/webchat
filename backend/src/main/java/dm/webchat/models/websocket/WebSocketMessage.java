@@ -9,6 +9,5 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Getter
 public class WebSocketMessage {
-    String token;
     ChatMessageDto data;
 }
