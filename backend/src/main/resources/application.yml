@@ -1,6 +1,7 @@
 app:
     jwtSecret: 123456
     jwtExpirationMinutes: 60
+    messageDelayMs: 500
 spring:
     datasource:
         url: jdbc:postgresql://localhost:5432/postgres

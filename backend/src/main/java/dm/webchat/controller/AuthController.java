@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import dm.webchat.controller.exception.NotFoundException;
 import dm.webchat.helper.SecurityUtils;
 import dm.webchat.jwt.JwtUtils;
 import dm.webchat.models.ChangePasswordRequest;
@@ -67,7 +68,9 @@ public class AuthController {
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('USER')")
     @PostMapping("/change-password")
     public ResponseEntity<?> changePassword(@RequestBody ChangePasswordRequest request) {
-        String currentUserLogin = SecurityUtils.getCurrentUserLogin();
+        String currentUserLogin = SecurityUtils
+            .getCurrentUserLogin()
+            .orElseThrow(() -> new NotFoundException("No current user authorization"));
         //TODO: may be we need another way to check if old password is okay
         authenticationManager.authenticate(
             new UsernamePasswordAuthenticationToken(currentUserLogin, request.getOldPassword())

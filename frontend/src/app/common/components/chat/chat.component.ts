@@ -52,6 +52,12 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
         this.messageControl.patchValue(null);
         this.scrollToBot();
       });
+
+    this.websocketService.watchOnUserErrors()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((err) => {
+        console.log(err);
+      });
   }
 
   ngOnDestroy(): void {

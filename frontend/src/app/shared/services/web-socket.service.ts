@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { AuthService } from 'src/app/auth/services/auth.service';
 import { IMessage } from 'src/app/models/message/message.interface';
+import { IWebSocketError } from 'src/app/models/websocket/websocket-error.interface';
 import { IWebSocketMessage } from 'src/app/models/websocket/websocket-message.interface';
 
 import { environment } from 'src/environments/environment';
@@ -39,6 +40,10 @@ export class WebSocketService {
 
   watchOnUserMessage(): Observable<IWebSocketMessage<IMessage>> {
     return this.watch(`/chat/new-message`);
+  }
+
+  watchOnUserErrors(): Observable<IWebSocketError> {
+    return this.watch(`/user/queue/errors`);
   }
 
   sendUserMessage(message: IMessage): void {

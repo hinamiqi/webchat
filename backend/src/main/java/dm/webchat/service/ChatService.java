@@ -1,5 +1,7 @@
 package dm.webchat.service;
 
+import java.security.Principal;
+
 import javax.transaction.Transactional;
 
 import org.springframework.data.domain.Pageable;
@@ -22,22 +24,38 @@ public class ChatService {
 
     private final UserRepository userRepository;
 
-    @Transactional
-    public ChatMessage saveMessage(ChatMessageDto msgDto) {
-        String currentUserLogin = SecurityUtils.getCurrentUserLogin();
+    public ChatMessage saveMessage(ChatMessageDto msgDto) throws NotFoundException {
+        String currentUserLogin = SecurityUtils
+            .getCurrentUserLogin()
+            .orElseThrow(() -> new NotFoundException("No current user authorization"));
         User author = userRepository.findByUsername(currentUserLogin)
             .orElseThrow(() ->
-                new NotFoundException(String.format("No user with login (%s) found", msgDto.getAuthor().getUsername()))
+                new NotFoundException(
+                    String.format("No user with login (%s) found", msgDto.getAuthor().getUsername()))
             );
+        return saveMessageToDb(author, msgDto);
+    }
+
+    public ChatMessage saveMessage(ChatMessageDto msgDto, Principal user) throws NotFoundException {
+        User author = userRepository.findByUsername(user.getName())
+            .orElseThrow(() ->
+                new NotFoundException(
+                    String.format("No user with login (%s) found", msgDto.getAuthor().getUsername()))
+            );
+        return saveMessageToDb(author, msgDto);
+    }
+
+    public Page<ChatMessage> getChatMessages(Pageable page) {
+        return chatMessageRepository.findAll(page);
+    }
+
+    @Transactional
+    private ChatMessage saveMessageToDb(User author, ChatMessageDto msgDto) {
         return chatMessageRepository.save(ChatMessage.builder()
             .author(author)
             .date(msgDto.getDate())
             .text(msgDto.getText())
             .build()
         );
-    }
-
-    public Page<ChatMessage> getChatMessages(Pageable page) {
-        return chatMessageRepository.findAll(page);
     }
 }
