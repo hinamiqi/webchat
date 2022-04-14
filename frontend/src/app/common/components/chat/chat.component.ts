@@ -80,6 +80,12 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
     this.websocketService.sendUserMessage(newMessage);
   }
 
+  submitIfNeeded(event: KeyboardEvent): void {
+    if (event.code === 'Enter' && !event.shiftKey) {
+      this.submit();
+    }
+  }
+
   private getLastMessages(): void {
     this.chatApiService.getLastMessages()
       .pipe(

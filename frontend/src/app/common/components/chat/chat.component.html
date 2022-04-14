@@ -1,14 +1,17 @@
 <div class="messages-container">
-  <div *ngFor="let item of messages" class="message-wrapper" [ngClass]="{ isMine: item.isCurrentUser}">
-    <div class="message">
-      <p>{{ item.text }}</p>
-      <p class="sign">{{ item.author.username }}, {{ item.date | date: 'HH:mm' }}</p>
-    </div>
-  </div>
+  <app-chat-message
+    *ngFor="let message of messages"
+    [message]="message"
+  ></app-chat-message>
 </div>
 <form class="row g-3" [formGroup]="form" (ngSubmit)="submit()">
   <div class="col-12">
-    <textarea type="text" class="form-control" formControlName="message" required="true"></textarea>
+    <textarea type="text"
+              class="form-control"
+              formControlName="message"
+              (keypress)="submitIfNeeded($event)"
+              required="true">
+    </textarea>
   </div>
   <div class="col-12">
     <button class="btn btn-primary" type="submit">Send</button>

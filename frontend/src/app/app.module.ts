@@ -7,6 +7,7 @@ import { AppComponent } from './app.component';
 import { AuthModule } from './auth/auth.module';
 
 import { CommonComponent } from './common/common.component';
+import { ChatMessageComponent } from './common/components/chat-message/chat-message.component';
 import { ChatComponent } from './common/components/chat/chat.component';
 import { SharedModule } from './shared/shared.module';
 
@@ -14,7 +15,8 @@ import { SharedModule } from './shared/shared.module';
   declarations: [
     AppComponent,
     CommonComponent,
-    ChatComponent
+    ChatComponent,
+    ChatMessageComponent
   ],
   imports: [
     BrowserModule,
