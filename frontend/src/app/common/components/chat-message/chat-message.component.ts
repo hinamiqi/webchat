@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 
 import { IMessageView } from 'src/app/models/message/message.interface';
 
@@ -10,4 +10,10 @@ import { IMessageView } from 'src/app/models/message/message.interface';
 
 export class ChatMessageComponent {
   @Input() message: IMessageView;
+
+  @Output() removed = new EventEmitter<IMessageView>();
+
+  remove(): void {
+    this.removed.emit(this.message);
+  }
 }

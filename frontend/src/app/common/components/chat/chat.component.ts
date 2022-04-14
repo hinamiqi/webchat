@@ -86,6 +86,18 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
+  removeMessage(message: IMessageView): void {
+    if (!confirm('Are you sure you want to remove this message?')) return;
+
+    this.chatApiService.removeMessage(message.id)
+      .pipe(
+        takeUntil(this.destroy$)
+      )
+      .subscribe((response) => {
+        this.messages = this.messages.filter((m) => m.id !== response.id);
+      });
+  }
+
   private getLastMessages(): void {
     this.chatApiService.getLastMessages()
       .pipe(

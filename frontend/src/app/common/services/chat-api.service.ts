@@ -17,6 +17,10 @@ export class ChatApiService {
     return this.http.post<IMessage>(`${this.backendApi}/chat`, message);
   }
 
+  removeMessage(id: number): Observable<IMessage> {
+    return this.http.delete<IMessage>(`${this.backendApi}/chat/${id}`);
+  }
+
   getLastMessages(): Observable<IMessage[]> {
     return this.http.get<IMessage[]>(`${this.backendApi}/chat?page=0&size=10&sort=date,desc`);
   }

@@ -12,6 +12,8 @@ import org.springframework.messaging.simp.annotation.SendToUser;
 import org.springframework.stereotype.Controller;
 
 import dm.webchat.jwt.JwtUtils;
+import dm.webchat.models.ChatMessage;
+import dm.webchat.models.dto.ChatMessageDto;
 import dm.webchat.models.error.WebSocketError;
 import dm.webchat.models.error.WebSocketErrorCodeEnum;
 import dm.webchat.models.websocket.WebSocketMessage;
@@ -40,9 +42,9 @@ public class WebSocketController {
       if (!user.getName().equals(message.getData().getAuthor().getUsername())) {
         throw new BadRequestHttpException("Message author is not the user, who sent the message. Message rejected.");
       }
-      chatService.saveMessage(message.getData(), user);
+      ChatMessage saved = chatService.saveMessage(message.getData(), user);
       Thread.sleep(messageDelay); // delay for testing purpose
-      return message;
+      return WebSocketMessage.builder().data(new ChatMessageDto(saved)).build();
     }
 
     @MessageExceptionHandler

@@ -2,6 +2,7 @@
   <app-chat-message
     *ngFor="let message of messages"
     [message]="message"
+    (removed)="removeMessage($event)"
   ></app-chat-message>
 </div>
 <form class="row g-3" [formGroup]="form" (ngSubmit)="submit()">

@@ -4,6 +4,7 @@ export interface IMessage {
   author: User;
   text: string;
   date: Date;
+  id?: number;
 }
 
 export interface IMessageView extends IMessage {

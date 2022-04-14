@@ -6,6 +6,7 @@
 
 .message {
   flex: 0 0 fit-content;
+  position: relative;
 
   width: fit-content;
   max-width: 100%;
@@ -34,4 +35,26 @@
 .sign {
   font-size: smaller;
   color: grey;
+}
+
+.remove-icon {
+  font-size: 10px;
+  width: 15px;
+  height: 15px;
+  position: absolute;
+  right: 5px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  opacity: 0;
+  transition: opacity 0.25s linear;
+}
+
+.remove-icon:hover {
+  background-color: rgb(160, 160, 160);
+  border-radius: 50%;
+
+  opacity: 1;
 }

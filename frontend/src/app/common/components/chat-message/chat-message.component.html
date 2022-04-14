@@ -1,5 +1,9 @@
 <div class="message-container" [ngClass]="{ 'author-is-current-user': message.isCurrentUser}">
   <div class="message">
+    <span class="remove-icon bi bi-x-lg"
+          *ngIf="message.isCurrentUser"
+          (click)="remove()">
+    </span>
     <p>{{ message.text }}</p>
     <p class="sign">{{ message.author.username }}, {{ message.date | date: 'HH:mm' }}</p>
   </div>

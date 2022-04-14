@@ -19,10 +19,12 @@ public class ChatMessageDto implements Serializable {
     private AuthorDto author;
     private String date;
     private String text;
+    private Long id;
 
     public ChatMessageDto(ChatMessage chatMessage) {
         this.author = new AuthorDto(chatMessage.getAuthor());
         this.date = chatMessage.getDate();
         this.text = chatMessage.getText();
+        this.id = chatMessage.getId();
     }
 }

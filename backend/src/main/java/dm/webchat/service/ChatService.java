@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
+import dm.webchat.controller.exception.BadRequestHttpException;
 import dm.webchat.controller.exception.NotFoundException;
 import dm.webchat.helper.SecurityUtils;
 import dm.webchat.models.ChatMessage;
@@ -47,6 +48,25 @@ public class ChatService {
 
     public Page<ChatMessage> getChatMessages(Pageable page) {
         return chatMessageRepository.findAll(page);
+    }
+
+    public ChatMessage deleteMessage(Long id) {
+        String currentUserLogin = SecurityUtils
+            .getCurrentUserLogin()
+            .orElseThrow(() -> new NotFoundException("No current user authorization"));
+        User author = userRepository.findByUsername(currentUserLogin)
+            .orElseThrow(() ->
+                new NotFoundException(
+                    String.format("No user with login (%s) found", currentUserLogin))
+            );
+
+        ChatMessage message = chatMessageRepository.getById(id);
+        if (!message.getAuthor().getUuid().equals(author.getUuid())) {
+            throw new BadRequestHttpException(String.format("Current user (%s) is not an author of message with id = %s", author.getUsername(), id));
+        }
+
+        chatMessageRepository.delete(message);
+        return message;
     }
 
     @Transactional

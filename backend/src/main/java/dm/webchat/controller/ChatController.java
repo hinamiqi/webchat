@@ -6,7 +6,9 @@ import java.util.stream.Collectors;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -37,5 +39,12 @@ public class ChatController {
         return messages.stream()
             .map(ChatMessageDto::new)
             .collect(Collectors.toList());
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('USER')")
+    @DeleteMapping("/{id}")
+    public ChatMessageDto deleteChatMessage(@PathVariable Long id) {
+        ChatMessage message = chatService.deleteMessage(id);
+        return new ChatMessageDto(message);
     }
 }
