@@ -1,4 +1,7 @@
-<div class="message-container" [ngClass]="{ 'author-is-current-user': message.isCurrentUser}">
+<div class="message-container" [ngClass]="{ 'author-is-current-user': message.isCurrentUser }">
+  <img *ngIf="!message.isCurrentUser"
+       [src]="imageSource"
+       class="avatar">
   <div class="message">
     <span class="remove-icon bi bi-x-lg"
           *ngIf="message.isCurrentUser"

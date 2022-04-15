@@ -1,14 +1,15 @@
 .message-container {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   margin: 2px;
 }
 
 .message {
-  flex: 0 0 fit-content;
+  flex: 0 1 fit-content;
   position: relative;
 
   width: fit-content;
+  height: fit-content;
   max-width: 100%;
 
   border-radius: 8px;
@@ -25,8 +26,16 @@
   }
 }
 
+.avatar {
+  flex: 0 1;
+  width: 50px;
+  height: 50px;
+
+  margin-right: 5px;
+}
+
 .author-is-current-user {
-  align-items: flex-end;
+  justify-content: flex-end;
   .message {
     background-color: rgb(194, 194, 194);
   }
