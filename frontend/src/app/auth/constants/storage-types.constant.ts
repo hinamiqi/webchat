@@ -3,4 +3,5 @@ export enum StorageTypes {
     USERNAME = 'username',
     USER_ROLES = 'user_roles',
     CURRENT_USER = 'current_user',
+    AVATARS = 'avatars',
   }
