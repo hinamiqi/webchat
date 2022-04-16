@@ -5,8 +5,9 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { AuthService } from 'src/app/auth/services/auth.service';
-import { IMessageView } from 'src/app/models/message/message.interface';
+import { IMessage, IMessageView } from 'src/app/models/message/message.interface';
 import { ChatMessage } from 'src/app/models/message/message.model';
+import { GlobalEventWebSocketType, IGlobalEvent } from 'src/app/models/websocket/global-event.interface';
 import { WebSocketService } from 'src/app/shared/services/web-socket.service';
 
 import { ChatApiService } from '../../services/chat-api.service';
@@ -45,19 +46,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
     });
     this.getLastMessages();
 
-    this.websocketService.watchOnUserMessage()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((message) => {
-        this.messages.push(this.chatService.getChatMessageView(message.data));
-        this.messageControl.patchValue(null);
-        this.scrollToBot();
-      });
-
-    this.websocketService.watchOnUserErrors()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((err) => {
-        console.log(err);
-      });
+    this.listenToWebSocketMessages();
   }
 
   ngOnDestroy(): void {
@@ -93,9 +82,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
       .pipe(
         takeUntil(this.destroy$)
       )
-      .subscribe((response) => {
-        this.messages = this.messages.filter((m) => m.id !== response.id);
-      });
+      .subscribe(() => {});
   }
 
   private getLastMessages(): void {
@@ -122,5 +109,43 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
         });
       }, 100);
     });
+  }
+
+  private listenToWebSocketMessages(): void {
+    this.websocketService.watchOnUserMessage()
+    .pipe(takeUntil(this.destroy$))
+    .subscribe((message) => {
+      this.messages.push(this.chatService.getChatMessageView(message.data));
+      this.messageControl.patchValue(null);
+      this.scrollToBot();
+    });
+
+    this.websocketService.watchOnUserErrors()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((err) => {
+        console.log(err);
+      });
+
+    this.websocketService.watchOnGlobalEvents()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((event) => {
+        console.log(`Recieved GLOBAL_EVENT of type ${event.type}: `, event.data);
+        this.handleGlobalEvent(event);
+      });
+  }
+
+  private handleGlobalEvent(event: IGlobalEvent): void {
+    switch (event.type) {
+      case GlobalEventWebSocketType.MESSAGE_DELETED:
+        this.removeMessageFromStack(event.data as IMessage);
+        break;
+      case GlobalEventWebSocketType.USER_STATUS:
+      default:
+        break;
+    }
+  }
+
+  private removeMessageFromStack(message: IMessage) {
+    this.messages = this.messages.filter((m) => m.id !== message.id);
   }
 }

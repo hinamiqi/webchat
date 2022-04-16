@@ -25,6 +25,8 @@ public class ChatService {
 
     private final UserRepository userRepository;
 
+    private final WebSocketService webSocketService;
+
     public ChatMessage saveMessage(ChatMessageDto msgDto) throws NotFoundException {
         String currentUserLogin = SecurityUtils
             .getCurrentUserLogin()
@@ -66,6 +68,8 @@ public class ChatService {
         }
 
         chatMessageRepository.delete(message);
+
+        webSocketService.sendRemoveMessageEvent(message);
         return message;
     }
 
