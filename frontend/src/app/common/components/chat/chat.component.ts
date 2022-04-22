@@ -5,13 +5,12 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { AuthService } from 'src/app/auth/services/auth.service';
-import { IMessage, IMessageView } from 'src/app/models/message/message.interface';
+import { IMessage } from 'src/app/models/message/message.interface';
 import { ChatMessage } from 'src/app/models/message/message.model';
 import { GlobalEventWebSocketType, IGlobalEvent } from 'src/app/models/websocket/global-event.interface';
 import { WebSocketService } from 'src/app/shared/services/web-socket.service';
 
 import { ChatApiService } from '../../services/chat-api.service';
-import { ChatService } from '../../services/chat.service';
 
 @Component({
   selector: 'app-chat',
@@ -22,7 +21,7 @@ import { ChatService } from '../../services/chat.service';
 export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
   form: FormGroup;
 
-  messages: IMessageView[] = [];
+  messages: IMessage[] = [];
 
   private destroy$ = new Subject<void>();
 
@@ -36,7 +35,6 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
     @Inject(DOCUMENT) private document: Document,
     private readonly chatApiService: ChatApiService,
     private readonly authService: AuthService,
-    private readonly chatService: ChatService,
     private readonly websocketService: WebSocketService
   ) { }
 
@@ -75,7 +73,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  removeMessage(message: IMessageView): void {
+  removeMessage(message: IMessage): void {
     if (!confirm('Are you sure you want to remove this message?')) return;
 
     this.chatApiService.removeMessage(message.id)
@@ -91,11 +89,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
         takeUntil(this.destroy$)
       )
       .subscribe((response) => {
-        this.messages = response
-          .map((serverMsg) =>
-            this.chatService.getChatMessageView(serverMsg)
-          )
-          .reverse();
+        this.messages = response.reverse();
       });
   }
 
@@ -115,7 +109,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
     this.websocketService.watchOnUserMessage()
     .pipe(takeUntil(this.destroy$))
     .subscribe((message) => {
-      this.messages.push(this.chatService.getChatMessageView(message.data));
+      this.messages.push(message.data);
       this.messageControl.patchValue(null);
       this.scrollToBot();
     });
