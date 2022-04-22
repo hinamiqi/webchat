@@ -4,7 +4,7 @@
        class="avatar">
   <div class="message">
     <span class="remove-icon bi bi-x-lg"
-          *ngIf="isCurrentUserAuthor"
+          *ngIf="isCurrentUserAuthor && canRemove"
           (click)="remove()">
     </span>
     <p>{{ message.text }}</p>

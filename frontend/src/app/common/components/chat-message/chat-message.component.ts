@@ -4,6 +4,7 @@ import { AuthService } from 'src/app/auth/services/auth.service';
 import { IMessage } from 'src/app/models/message/message.interface';
 
 import { AvatarService } from 'src/app/shared/services/avatar.service';
+import { DateHelperService } from 'src/app/utils/services/date-helper.service';
 
 @Component({
   selector: 'app-chat-message',
@@ -20,6 +21,12 @@ export class ChatMessageComponent implements OnInit, OnChanges {
 
   isCurrentUserAuthor = false;
 
+  private date: Date;
+
+  get canRemove(): boolean {
+    return this.date > DateHelperService.getDateMinusMinutes(new Date(), 1);
+  }
+
   constructor(
     private readonly sanitizer: DomSanitizer,
     private readonly avatarService: AvatarService,
@@ -34,6 +41,7 @@ export class ChatMessageComponent implements OnInit, OnChanges {
   ngOnChanges({ message }: SimpleChanges): void {
       if (message) {
         this.isCurrentUserAuthor = this.authService.isCurrentUser((<IMessage>message.currentValue).author);
+        this.date = new Date(this.message.date);
       }
   }
 
