@@ -1,10 +1,13 @@
 package dm.webchat.service;
 
 import java.security.Principal;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 
 import javax.transaction.Transactional;
 
 import org.springframework.data.domain.Pageable;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 
@@ -16,16 +19,19 @@ import dm.webchat.models.User;
 import dm.webchat.models.dto.ChatMessageDto;
 import dm.webchat.repositories.ChatMessageRepository;
 import dm.webchat.repositories.UserRepository;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
 
     private final UserRepository userRepository;
 
     private final WebSocketService webSocketService;
+
+    @Value("${app.messageRemoveTimeMinutes}")
+    private int messageRemoveTimeMinutes;
 
     public ChatMessage saveMessage(ChatMessageDto msgDto) throws NotFoundException {
         String currentUserLogin = SecurityUtils
@@ -63,6 +69,9 @@ public class ChatService {
             );
 
         ChatMessage message = chatMessageRepository.getById(id);
+        if (!validateMessageDate(message)) {
+            throw new BadRequestHttpException(String.format("Message with id = %s is too old and can't be deleted!", id));
+        }
         if (!message.getAuthor().getUuid().equals(author.getUuid())) {
             throw new BadRequestHttpException(String.format("Current user (%s) is not an author of message with id = %s", author.getUsername(), id));
         }
@@ -81,5 +90,11 @@ public class ChatService {
             .text(msgDto.getText())
             .build()
         );
+    }
+
+    private boolean validateMessageDate(ChatMessage message) {
+        ZonedDateTime msgDate = ZonedDateTime.parse(message.getDate());
+        ZonedDateTime calcDate = ZonedDateTime.now().minus(1, ChronoUnit.MINUTES);
+        return msgDate.isAfter(calcDate);
     }
 }

@@ -6,6 +6,8 @@ import { IMessage } from 'src/app/models/message/message.interface';
 import { AvatarService } from 'src/app/shared/services/avatar.service';
 import { DateHelperService } from 'src/app/utils/services/date-helper.service';
 
+import { DEFAULT_MSG_REMOVE_TIME_MINUTES } from 'src/app/app.config';
+
 @Component({
   selector: 'app-chat-message',
   templateUrl: './chat-message.component.html',
@@ -24,7 +26,7 @@ export class ChatMessageComponent implements OnInit, OnChanges {
   private date: Date;
 
   get canRemove(): boolean {
-    return this.date > DateHelperService.getDateMinusMinutes(new Date(), 1);
+    return this.date > DateHelperService.getDateMinusMinutes(new Date(), DEFAULT_MSG_REMOVE_TIME_MINUTES);
   }
 
   constructor(
