@@ -1,6 +1,6 @@
 package dm.webchat.models.websocket;
 
 public enum WebSocketGlobalEventTypeEnum {
-    USER_STATUS,
+    USER_ACTIVITY,
     MESSAGE_DELETED
 }

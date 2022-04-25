@@ -5,7 +5,9 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import dm.webchat.models.ChatMessage;
+import dm.webchat.models.User;
 import dm.webchat.models.dto.ChatMessageDto;
+import dm.webchat.models.dto.UserDto;
 import dm.webchat.models.websocket.WebSocketGlobalEvent;
 import dm.webchat.models.websocket.WebSocketGlobalEventTypeEnum;
 import lombok.AllArgsConstructor;
@@ -20,6 +22,15 @@ public class WebSocketService {
         WebSocketGlobalEvent event = WebSocketGlobalEvent.builder()
             .type(WebSocketGlobalEventTypeEnum.MESSAGE_DELETED)
             .data(new ChatMessageDto(message))
+            .build();
+
+        messageSender.convertAndSend("/chat/new-event", event);
+    }
+
+    public void sendUserActivityEvent(User user) {
+        WebSocketGlobalEvent event = WebSocketGlobalEvent.builder()
+            .type(WebSocketGlobalEventTypeEnum.USER_ACTIVITY)
+            .data(new UserDto(user))
             .build();
 
         messageSender.convertAndSend("/chat/new-event", event);

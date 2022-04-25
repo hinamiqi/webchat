@@ -16,13 +16,13 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class ChatMessageDto implements Serializable {
     @JsonProperty("author")
-    private AuthorDto author;
+    private UserDto author;
     private String date;
     private String text;
     private Long id;
 
     public ChatMessageDto(ChatMessage chatMessage) {
-        this.author = new AuthorDto(chatMessage.getAuthor());
+        this.author = new UserDto(chatMessage.getAuthor());
         this.date = chatMessage.getDate();
         this.text = chatMessage.getText();
         this.id = chatMessage.getId();

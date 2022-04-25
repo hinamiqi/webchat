@@ -19,6 +19,7 @@ import dm.webchat.models.error.WebSocketErrorCodeEnum;
 import dm.webchat.models.websocket.WebSocketMessage;
 import dm.webchat.repositories.UserRepository;
 import dm.webchat.service.ChatService;
+import dm.webchat.service.WebSocketService;
 import dm.webchat.controller.exception.BadRequestHttpException;
 
 @Controller
@@ -32,6 +33,9 @@ public class WebSocketController {
     @Autowired
     ChatService chatService;
 
+    @Autowired
+    WebSocketService websocketService;
+
     @Value("${app.messageDelayMs}")
     private Integer messageDelay;
 
@@ -44,6 +48,9 @@ public class WebSocketController {
       }
       ChatMessage saved = chatService.saveMessage(message.getData(), user);
       Thread.sleep(messageDelay); // delay for testing purpose
+
+      websocketService.sendUserActivityEvent(userRepository.findByUsername(user.getName()).get());
+
       return WebSocketMessage.builder().data(new ChatMessageDto(saved)).build();
     }
 

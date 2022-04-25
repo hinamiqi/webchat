@@ -1,5 +1,5 @@
 export enum GlobalEventWebSocketType {
-  USER_STATUS = 'USER_STATUS',
+  USER_ACTIVITY = 'USER_ACTIVITY',
   MESSAGE_DELETED = 'MESSAGE_DELETED'
 }
 

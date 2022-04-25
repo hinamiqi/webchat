@@ -44,10 +44,6 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  private setJwt(): void {
-    this.localStorageService.setDefaultToken();
-  }
-
   login(): void {
     if (this.form.invalid) return;
 

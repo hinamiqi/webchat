@@ -5,9 +5,11 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { AuthService } from 'src/app/auth/services/auth.service';
+import { User } from 'src/app/models/auth/user.model';
 import { IMessage } from 'src/app/models/message/message.interface';
 import { ChatMessage } from 'src/app/models/message/message.model';
 import { GlobalEventWebSocketType, IGlobalEvent } from 'src/app/models/websocket/global-event.interface';
+import { UserStatusService } from 'src/app/shared/services/user-status.service';
 import { WebSocketService } from 'src/app/shared/services/web-socket.service';
 
 import { ChatApiService } from '../../services/chat-api.service';
@@ -35,7 +37,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
     @Inject(DOCUMENT) private document: Document,
     private readonly chatApiService: ChatApiService,
     private readonly authService: AuthService,
-    private readonly websocketService: WebSocketService
+    private readonly websocketService: WebSocketService,
+    private readonly userStatusService: UserStatusService
   ) { }
 
   ngOnInit(): void {
@@ -45,6 +48,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
     this.getLastMessages();
 
     this.listenToWebSocketMessages();
+
+    this.userStatusService.setUserStatusesExpireScheduler();
   }
 
   ngOnDestroy(): void {
@@ -133,7 +138,11 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
       case GlobalEventWebSocketType.MESSAGE_DELETED:
         this.removeMessageFromStack(event.data as IMessage);
         break;
-      case GlobalEventWebSocketType.USER_STATUS:
+      case GlobalEventWebSocketType.USER_ACTIVITY:
+        if (!!(<User>event.data).uuid) {
+          this.userStatusService.userActivity(event.data);
+        }
+        break;
       default:
         break;
     }

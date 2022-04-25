@@ -10,13 +10,13 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class AuthorDto {
+public class UserDto {
     @JsonProperty("username")
     private String username;
     @JsonProperty("uuid")
     private UUID uuid;
 
-    public AuthorDto(User user) {
+    public UserDto(User user) {
         this.username = user.getUsername();
         this.uuid = user.getUuid();
     }

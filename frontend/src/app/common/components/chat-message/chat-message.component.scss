@@ -44,6 +44,8 @@
 .sign {
   font-size: smaller;
   color: grey;
+  display: inline-flex;
+  align-items: center;
 }
 
 .remove-icon {
@@ -66,4 +68,16 @@
   border-radius: 50%;
 
   opacity: 1;
+}
+
+.user-status {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: rgb(139, 63, 63);
+  margin-right: 2px;
+}
+
+.user-online {
+  background-color: rgb(63, 139, 73);
 }

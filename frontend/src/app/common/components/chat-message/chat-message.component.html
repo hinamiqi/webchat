@@ -8,6 +8,9 @@
           (click)="remove()">
     </span>
     <p>{{ message.text }}</p>
-    <p class="sign">{{ message.author.username }}, {{ message.date | date: 'HH:mm' }}</p>
+    <p class="sign">
+      <span class="user-status" [ngClass]="{ 'user-online': isOnline }"></span>
+      {{ message.author.username }}, {{ message.date | date: 'HH:mm' }}
+    </p>
   </div>
 </div>

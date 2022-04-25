@@ -25,6 +25,7 @@ import dm.webchat.models.LoginRequest;
 import dm.webchat.models.User;
 import dm.webchat.repositories.UserRepository;
 import dm.webchat.service.UserDetailsImpl;
+import dm.webchat.service.WebSocketService;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -41,6 +42,9 @@ public class AuthController {
     @Autowired
     PasswordEncoder encoder;
 
+    @Autowired
+    WebSocketService websocketService;
+
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody LoginRequest loginRequest) throws Exception {
         Authentication authentication = authenticationManager.authenticate(
@@ -54,6 +58,10 @@ public class AuthController {
         List<String> roles = userDetails.getAuthorities().stream()
             .map(r -> r.getAuthority())
             .collect(Collectors.toList());
+
+        User user = userRepository.findByUsername(userDetails.getUsername()).get();
+
+        websocketService.sendUserActivityEvent(user);
 
         return ResponseEntity.ok(
             JwtResponse.builder()

@@ -7,6 +7,7 @@ import { AvatarService } from 'src/app/shared/services/avatar.service';
 import { DateHelperService } from 'src/app/utils/services/date-helper.service';
 
 import { DEFAULT_MSG_REMOVE_TIME_MINUTES } from 'src/app/app.config';
+import { UserStatusService } from 'src/app/shared/services/user-status.service';
 
 @Component({
   selector: 'app-chat-message',
@@ -29,10 +30,15 @@ export class ChatMessageComponent implements OnInit, OnChanges {
     return this.date > DateHelperService.getDateMinusMinutes(new Date(), DEFAULT_MSG_REMOVE_TIME_MINUTES);
   }
 
+  get isOnline(): boolean {
+    return this.userStatusService.isUserOnline(this.message.author);
+  }
+
   constructor(
     private readonly sanitizer: DomSanitizer,
     private readonly avatarService: AvatarService,
-    private readonly authService: AuthService
+    private readonly authService: AuthService,
+    private readonly userStatusService: UserStatusService
   ) {}
 
   ngOnInit(): void {

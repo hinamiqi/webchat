@@ -4,6 +4,7 @@ import { JwtHelperService } from '@auth0/angular-jwt';
 import { Subject, interval } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
 
+import { AUTH_CHECK_INTERVAL_MS } from 'src/app/app.config';
 import { User } from 'src/app/models/auth/user.model';
 import { LocalStorageService } from 'src/app/utils/services/local-storage.service';
 
@@ -85,7 +86,7 @@ export class AuthService implements OnDestroy {
   }
 
   private setAuthCheck(): void {
-    interval(1000)
+    interval(AUTH_CHECK_INTERVAL_MS)
       .pipe(
         filter(() => !this.isTokenValid() && this.isAuth),
         takeUntil(this.destroy$)
