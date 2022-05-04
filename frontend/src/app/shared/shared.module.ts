@@ -1,6 +1,8 @@
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
+import { MessageInputComponent } from './components/message-input.component';
+
 @NgModule({
   imports: [
     FormsModule,
@@ -8,9 +10,12 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
   ],
   exports: [
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    MessageInputComponent
   ],
-  declarations: [],
+  declarations: [
+    MessageInputComponent
+  ],
   providers: [],
 })
 export class SharedModule { }

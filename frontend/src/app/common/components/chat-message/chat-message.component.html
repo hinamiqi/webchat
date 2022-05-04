@@ -2,15 +2,25 @@
   <img *ngIf="!isCurrentUserAuthor"
        [src]="imageSource"
        class="avatar">
-  <div class="message">
-    <span class="remove-icon bi bi-x-lg"
-          *ngIf="isCurrentUserAuthor && canRemove"
-          (click)="remove()">
+  <div class="message" *ngIf="!editMode">
+    <span class="action-icons">
+      <i class="icon bi bi-pencil-fill"
+        *ngIf="isCurrentUserAuthor && canEdit"
+        (click)="edit()"></i>
+      <i class="icon bi bi-x-lg"
+            *ngIf="isCurrentUserAuthor && canRemove"
+            (click)="remove()"></i>
     </span>
     <p>{{ message.text }}</p>
     <p class="sign">
       <span class="user-status" [ngClass]="{ 'user-online': isOnline }"></span>
       {{ message.author.username }}, {{ message.date | date: 'HH:mm' }}
     </p>
+  </div>
+  <div class="message" *ngIf="editMode">
+    <app-message-input
+      [initialText]="message.text"
+      (submitted)="submit($event)"
+    ></app-message-input>
   </div>
 </div>

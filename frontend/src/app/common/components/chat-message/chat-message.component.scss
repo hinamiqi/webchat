@@ -48,28 +48,6 @@
   align-items: center;
 }
 
-.remove-icon {
-  font-size: 10px;
-  width: 15px;
-  height: 15px;
-  position: absolute;
-  right: 5px;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-
-  opacity: 0;
-  transition: opacity 0.25s linear;
-}
-
-.remove-icon:hover {
-  background-color: rgb(160, 160, 160);
-  border-radius: 50%;
-
-  opacity: 1;
-}
-
 .user-status {
   width: 10px;
   height: 10px;
@@ -80,4 +58,27 @@
 
 .user-online {
   background-color: rgb(63, 139, 73);
+}
+
+// Action icon bar
+
+.action-icons {
+  font-size: 10px;
+  width: 35px;
+  height: 15px;
+  position: absolute;
+  right: 5px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.message-container:hover .action-icons {
+  opacity: 1;
+}
+
+.action-icons {
+  opacity: 0;
+  transition: opacity 0.25s linear;
 }

@@ -6,7 +6,7 @@ import { IMessage } from 'src/app/models/message/message.interface';
 import { AvatarService } from 'src/app/shared/services/avatar.service';
 import { DateHelperService } from 'src/app/utils/services/date-helper.service';
 
-import { DEFAULT_MSG_REMOVE_TIME_MINUTES } from 'src/app/app.config';
+import { DEFAULT_MSG_REMOVE_TIME_MINUTES, DEFAULT_MSG_EDIT_TIME_MINUTES } from 'src/app/app.config';
 import { UserStatusService } from 'src/app/shared/services/user-status.service';
 
 @Component({
@@ -20,6 +20,8 @@ export class ChatMessageComponent implements OnInit, OnChanges {
 
   @Output() removed = new EventEmitter<IMessage>();
 
+  editMode = false;
+
   imageSource: SafeResourceUrl;
 
   isCurrentUserAuthor = false;
@@ -28,6 +30,10 @@ export class ChatMessageComponent implements OnInit, OnChanges {
 
   get canRemove(): boolean {
     return this.date > DateHelperService.getDateMinusMinutes(new Date(), DEFAULT_MSG_REMOVE_TIME_MINUTES);
+  }
+
+  get canEdit(): boolean {
+    return this.date > DateHelperService.getDateMinusMinutes(new Date(), DEFAULT_MSG_EDIT_TIME_MINUTES);
   }
 
   get isOnline(): boolean {
@@ -55,5 +61,14 @@ export class ChatMessageComponent implements OnInit, OnChanges {
 
   remove(): void {
     this.removed.emit(this.message);
+  }
+
+  edit(): void {
+    this.editMode = true;
+  }
+
+  submit(message: string): void {
+    this.editMode = false;
+    this.message.text = message;
   }
 }
