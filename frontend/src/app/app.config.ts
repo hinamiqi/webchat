@@ -8,9 +8,7 @@
  * server side checks.
 */
 
-export const DEFAULT_MSG_REMOVE_TIME_MINUTES = 1;
-
-export const DEFAULT_MSG_EDIT_TIME_MINUTES = 5;
+export const DEFAULT_MSG_ALTER_TIME_MINUTES = 1;
 
 export const AUTH_CHECK_INTERVAL_MS = 1000;
 

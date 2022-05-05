@@ -19,6 +19,9 @@ import dm.webchat.models.User;
 import dm.webchat.models.dto.ChatMessageDto;
 import dm.webchat.repositories.ChatMessageRepository;
 import dm.webchat.repositories.UserRepository;
+
+import static dm.webchat.helper.EmptinessHelper.*;
+
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -30,8 +33,8 @@ public class ChatService {
 
     private final WebSocketService webSocketService;
 
-    @Value("${app.messageRemoveTimeMinutes}")
-    private int messageRemoveTimeMinutes;
+    @Value("${app.messageAlterTimeMinutes:1}")
+    private int messageAlterTimeMinutes;
 
     public ChatMessage saveMessage(ChatMessageDto msgDto) throws NotFoundException {
         String currentUserLogin = SecurityUtils
@@ -42,7 +45,22 @@ public class ChatService {
                 new NotFoundException(
                     String.format("No user with login (%s) found", msgDto.getAuthor().getUsername()))
             );
-        return saveMessageToDb(author, msgDto);
+        return addMessageToDb(author, msgDto);
+    }
+
+    public ChatMessage editMessage(ChatMessageDto msgDto) throws NotFoundException {
+        String currentUserLogin = SecurityUtils
+            .getCurrentUserLogin()
+            .orElseThrow(() -> new NotFoundException("No current user authorization"));
+        User author = userRepository.findByUsername(currentUserLogin)
+            .orElseThrow(() ->
+                new NotFoundException(
+                    String.format("No user with login (%s) found", msgDto.getAuthor().getUsername()))
+            );
+        ChatMessage savedMessage = editMessageInDb(author, msgDto);
+        webSocketService.sendEditMessageEvent(savedMessage);
+
+        return savedMessage;
     }
 
     public ChatMessage saveMessage(ChatMessageDto msgDto, Principal user) throws NotFoundException {
@@ -51,7 +69,7 @@ public class ChatService {
                 new NotFoundException(
                     String.format("No user with login (%s) found", msgDto.getAuthor().getUsername()))
             );
-        return saveMessageToDb(author, msgDto);
+        return addMessageToDb(author, msgDto);
     }
 
     public Page<ChatMessage> getChatMessages(Pageable page) {
@@ -69,9 +87,7 @@ public class ChatService {
             );
 
         ChatMessage message = chatMessageRepository.getById(id);
-        if (!validateMessageDate(message)) {
-            throw new BadRequestHttpException(String.format("Message with id = %s is too old and can't be deleted!", id));
-        }
+        validateMessageDate(message);
         if (!message.getAuthor().getUuid().equals(author.getUuid())) {
             throw new BadRequestHttpException(String.format("Current user (%s) is not an author of message with id = %s", author.getUsername(), id));
         }
@@ -83,7 +99,9 @@ public class ChatService {
     }
 
     @Transactional
-    private ChatMessage saveMessageToDb(User author, ChatMessageDto msgDto) {
+    private ChatMessage addMessageToDb(User author, ChatMessageDto msgDto) {
+        validateMessageText(msgDto);
+
         return chatMessageRepository.save(ChatMessage.builder()
             .author(author)
             .date(msgDto.getDate())
@@ -92,9 +110,35 @@ public class ChatService {
         );
     }
 
-    private boolean validateMessageDate(ChatMessage message) {
+    @Transactional
+    private ChatMessage editMessageInDb(User author, ChatMessageDto msgDto) {
+        ChatMessage message = chatMessageRepository.findById(msgDto.getId()).orElseThrow(() -> 
+            new BadRequestHttpException(String.format("No message with id = %s exists", msgDto))
+        );
+        validateMessageDate(message);
+        validateMessageText(msgDto);
+        if (!author.getUuid().equals(message.getAuthor().getUuid())) {
+            throw new BadRequestHttpException(String.format(
+                "It seems, that You (%s) are not author of that message (%s). You sneaky bustard!",
+                author.getUsername(), message.getAuthor().getUsername()));
+        }
+
+        message.setOldText(message.getText());
+        message.setText(msgDto.getText());
+        return chatMessageRepository.save(message);
+    }
+
+    private void validateMessageDate(ChatMessage message) {
         ZonedDateTime msgDate = ZonedDateTime.parse(message.getDate());
-        ZonedDateTime calcDate = ZonedDateTime.now().minus(1, ChronoUnit.MINUTES);
-        return msgDate.isAfter(calcDate);
+        ZonedDateTime calcDate = ZonedDateTime.now().minus(messageAlterTimeMinutes, ChronoUnit.MINUTES);
+        if (!msgDate.isAfter(calcDate)) {
+            throw new BadRequestHttpException(String.format("Message with id = %s is too old and can't be altered", message.getId()));
+        }
+    }
+
+    private void validateMessageText(ChatMessageDto msgDto) {
+        if (isEmpty(msgDto.getText())) {
+            throw new BadRequestHttpException("Message text can't be empty");
+        }
     }
 }

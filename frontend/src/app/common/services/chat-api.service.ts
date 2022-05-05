@@ -21,6 +21,10 @@ export class ChatApiService {
     return this.http.delete<IMessage>(`${this.backendApi}/chat/${id}`);
   }
 
+  editMessage(message: IMessage): Observable<IMessage> {
+    return this.http.post<IMessage>(`${this.backendApi}/chat/${message.id}`, message);
+  }
+
   getLastMessages(): Observable<IMessage[]> {
     return this.http.get<IMessage[]>(`${this.backendApi}/chat?page=0&size=10&sort=date,desc`);
   }

@@ -47,4 +47,11 @@ public class ChatController {
         ChatMessage message = chatService.deleteMessage(id);
         return new ChatMessageDto(message);
     }
+
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('USER')")
+    @PostMapping("/{id}")
+    public ChatMessageDto editChatMessage(@RequestBody ChatMessageDto messageDto) {
+        ChatMessage savedMessage = chatService.editMessage(messageDto);
+        return new ChatMessageDto(savedMessage);
+    }
 }

@@ -136,11 +136,16 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
   private handleGlobalEvent(event: IGlobalEvent): void {
     switch (event.type) {
       case GlobalEventWebSocketType.MESSAGE_DELETED:
-        this.removeMessageFromStack(event.data as IMessage);
+        this.removeMessageFromStack(<IMessage>event.data);
         break;
       case GlobalEventWebSocketType.USER_ACTIVITY:
         if (!!(<User>event.data).uuid) {
           this.userStatusService.userActivity(event.data);
+        }
+        break;
+      case GlobalEventWebSocketType.MESSAGE_EDITED:
+        if (!this.authService.isCurrentUser((<IMessage>event.data).author)) {
+          this.editMessageInStack(<IMessage>event.data);
         }
         break;
       default:
@@ -150,5 +155,14 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private removeMessageFromStack(message: IMessage) {
     this.messages = this.messages.filter((m) => m.id !== message.id);
+  }
+
+  private editMessageInStack(message: IMessage) {
+    const oldMessage = this.messages.find((m) => m.id === message.id);
+
+    if (!!oldMessage) {
+      oldMessage.text = message.text;
+      oldMessage.oldText = message.oldText;
+    }
   }
 }

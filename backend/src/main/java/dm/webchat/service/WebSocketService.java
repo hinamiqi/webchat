@@ -27,6 +27,16 @@ public class WebSocketService {
         messageSender.convertAndSend("/chat/new-event", event);
     }
 
+    public void sendEditMessageEvent(ChatMessage message) {
+        WebSocketGlobalEvent event = WebSocketGlobalEvent.builder()
+            .type(WebSocketGlobalEventTypeEnum.MESSAGE_EDITED)
+            .data(new ChatMessageDto(message))
+            .build();
+
+        messageSender.convertAndSend("/chat/new-event", event);
+    }
+
+
     public void sendUserActivityEvent(User user) {
         WebSocketGlobalEvent event = WebSocketGlobalEvent.builder()
             .type(WebSocketGlobalEventTypeEnum.USER_ACTIVITY)

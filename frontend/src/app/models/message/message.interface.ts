@@ -5,4 +5,5 @@ export interface IMessage {
   text: string;
   date: Date;
   id?: number;
+  oldText?: string;
 }

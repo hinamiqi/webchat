@@ -5,16 +5,18 @@
   <div class="message" *ngIf="!editMode">
     <span class="action-icons">
       <i class="icon bi bi-pencil-fill"
-        *ngIf="isCurrentUserAuthor && canEdit"
+        *ngIf="canAlterMessage"
         (click)="edit()"></i>
       <i class="icon bi bi-x-lg"
-            *ngIf="isCurrentUserAuthor && canRemove"
-            (click)="remove()"></i>
+        *ngIf="canAlterMessage"
+        (click)="remove()"></i>
     </span>
     <p>{{ message.text }}</p>
     <p class="sign">
       <span class="user-status" [ngClass]="{ 'user-online': isOnline }"></span>
-      {{ message.author.username }}, {{ message.date | date: 'HH:mm' }}
+      {{ message.author.username }},
+      <span *ngIf="isMessageEdited">edited</span>
+      {{ message.date | date: 'HH:mm' }}
     </p>
   </div>
   <div class="message" *ngIf="editMode">
