@@ -45,6 +45,22 @@ public class ChatService {
                 new NotFoundException(
                     String.format("No user with login (%s) found", msgDto.getAuthor().getUsername()))
             );
+
+        if (!author.getUuid().equals(msgDto.getAuthor().getUuid())) {
+            throw new BadRequestHttpException("Message author is not the user, who sent the message. Message rejected.");
+        }
+
+        ChatMessage savedMessage = addMessageToDb(author, msgDto);
+        webSocketService.publishChatMessage(savedMessage, author);
+        return savedMessage;
+    }
+
+    public ChatMessage saveMessage(ChatMessageDto msgDto, Principal user) throws NotFoundException {
+        User author = userRepository.findByUsername(user.getName())
+            .orElseThrow(() ->
+                new NotFoundException(
+                    String.format("No user with login (%s) found", msgDto.getAuthor().getUsername()))
+            );
         return addMessageToDb(author, msgDto);
     }
 
@@ -61,15 +77,6 @@ public class ChatService {
         webSocketService.sendEditMessageEvent(savedMessage);
 
         return savedMessage;
-    }
-
-    public ChatMessage saveMessage(ChatMessageDto msgDto, Principal user) throws NotFoundException {
-        User author = userRepository.findByUsername(user.getName())
-            .orElseThrow(() ->
-                new NotFoundException(
-                    String.format("No user with login (%s) found", msgDto.getAuthor().getUsername()))
-            );
-        return addMessageToDb(author, msgDto);
     }
 
     public Page<ChatMessage> getChatMessages(Pageable page) {

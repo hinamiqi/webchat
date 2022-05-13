@@ -25,6 +25,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
 
   messages: IMessage[] = [];
 
+  lastMessage: string;
+
   private destroy$ = new Subject<void>();
 
   get messageControl(): AbstractControl {
@@ -61,21 +63,19 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
     this.scrollToBot();
   }
 
-  submit(): void {
-    if (!this.messageControl.value) return;
+  submit(text: string): void {
+    if (!text) return;
 
     const newMessage = new ChatMessage(
       this.authService.getCurrentUser(),
-      this.messageControl.value, new Date()
+      text, new Date()
     );
 
-    this.websocketService.sendUserMessage(newMessage);
-  }
-
-  submitIfNeeded(event: KeyboardEvent): void {
-    if (event.code === 'Enter' && !event.shiftKey) {
-      this.submit();
-    }
+    this.chatApiService.addMessage(newMessage)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.lastMessage = null;
+      });
   }
 
   removeMessage(message: IMessage): void {
