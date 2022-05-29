@@ -2,7 +2,7 @@
   <img *ngIf="!isCurrentUserAuthor"
        [src]="imageSource"
        class="avatar">
-  <div class="message" *ngIf="!editMode">
+  <div class="message" *ngIf="!editMode" (mouseover)="showDiff()" (mouseout)="hideDiff()">
     <span class="action-icons">
       <i class="icon bi bi-pencil-fill"
         *ngIf="canAlterMessage"
@@ -11,7 +11,8 @@
         *ngIf="canAlterMessage"
         (click)="remove()"></i>
     </span>
-    <p>{{ message.text }}</p>
+    <p *ngIf="!isDiffShow">{{ message.text }}</p>
+    <div *ngIf="isDiffShow && isMessageEdited" [innerHTML]="messageDiff"></div>
     <p class="sign">
       <span class="user-status" [ngClass]="{ 'user-online': isOnline }"></span>
       {{ message.author.username }},

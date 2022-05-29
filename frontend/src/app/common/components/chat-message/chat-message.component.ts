@@ -29,6 +29,10 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
 
   isCurrentUserAuthor = false;
 
+  isDiffShow = false;
+
+  messageDiff: string;
+
   private date: Date;
 
   private destroy$ = new Subject<void>();
@@ -63,6 +67,10 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
         this.isCurrentUserAuthor = this.authService.isCurrentUser((<IMessage>message.currentValue).author);
         this.date = new Date(this.message.date);
       }
+
+      if (message && !!(<IMessage>message.currentValue).oldText) {
+        this.setMessageDiff(<IMessage>message.currentValue);
+      }
   }
 
   ngOnDestroy(): void {
@@ -86,5 +94,47 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
       .subscribe((response) => {
         this.message.text = response.text;
       });
+  }
+
+  showDiff(): void {
+    if (!this.isMessageEdited) return;
+
+    this.isDiffShow = true;
+  }
+
+  hideDiff(): void {
+    this.isDiffShow = false;
+  }
+
+  private setMessageDiff(message: IMessage): void {
+    let htmlText = '';
+
+    for (let i = 0; i < message.oldText.length; i++) {
+      let isSame = message.oldText.charAt(i) === message.text.charAt(i);
+
+      if (isSame) {
+          htmlText += message.oldText.charAt(i);
+          continue;
+      }
+
+      if (!isSame) {
+        htmlText += '<del>';
+        let j = i;
+        while (!isSame || j < message.oldText.length) {
+          htmlText += message.oldText.charAt(j);
+          isSame = message.oldText.charAt(j) === message.text.charAt(j);
+          j += 1;
+        }
+        htmlText += '</del>';
+        htmlText += '<ins>';
+        for (let x = i; x <= j; x++) {
+          htmlText += message.text.charAt(x);
+        }
+        htmlText += '</ins>';
+        i = j;
+      }
+  }
+
+    this.messageDiff = htmlText;
   }
 }
