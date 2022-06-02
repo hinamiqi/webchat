@@ -15,7 +15,7 @@
     <div *ngIf="isDiffShow && isMessageEdited" [innerHTML]="messageDiff"></div>
     <p class="sign">
       <span class="user-status" [ngClass]="{ 'user-online': isOnline }"></span>
-      {{ message.author.username }},
+      <span class="user-name" (click)="sendPrivateMessage()">{{ message.author.username }}</span>,
       <span *ngIf="isMessageEdited">edited</span>
       {{ message.date | date: 'HH:mm' }}
     </p>

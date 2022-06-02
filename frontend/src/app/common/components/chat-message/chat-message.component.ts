@@ -1,4 +1,5 @@
 import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
+
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -104,6 +105,10 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
 
   hideDiff(): void {
     this.isDiffShow = false;
+  }
+
+  sendPrivateMessage(): void {
+
   }
 
   private setMessageDiff(message: IMessage): void {
