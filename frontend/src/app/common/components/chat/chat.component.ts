@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { AfterViewInit, Component, Inject, NgZone, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Inject, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -21,6 +21,8 @@ import { ChatApiService } from '../../services/chat-api.service';
 })
 
 export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
+  @ViewChild('chat') messageContainer: ElementRef;
+
   form: FormGroup;
 
   messages: IMessage[] = [];
@@ -101,9 +103,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
   private scrollToBot(): void {
     this.ngZone.runOutsideAngular(() => {
       setTimeout(() => {
-        const container = this.document.querySelector('.messages-container');
-        container.scroll({
-          top: container.scrollHeight,
+        this.messageContainer.nativeElement.scroll({
+          top: this.messageContainer.nativeElement.scrollHeight,
           behavior: 'auto',
         });
       }, 100);
