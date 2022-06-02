@@ -1,13 +1,16 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+
 import { AuthService } from 'src/app/auth/services/auth.service';
 import { IMessage } from 'src/app/models/message/message.interface';
-
 import { AvatarService } from 'src/app/shared/services/avatar.service';
 import { DateHelperService } from 'src/app/utils/services/date-helper.service';
-
-import { DEFAULT_MSG_REMOVE_TIME_MINUTES } from 'src/app/app.config';
+import { DEFAULT_MSG_ALTER_TIME_MINUTES } from 'src/app/app.config';
 import { UserStatusService } from 'src/app/shared/services/user-status.service';
+
+import { ChatApiService } from '../../services/chat-api.service';
 
 @Component({
   selector: 'app-chat-message',
@@ -15,30 +18,43 @@ import { UserStatusService } from 'src/app/shared/services/user-status.service';
   styleUrls: ['./chat-message.component.scss']
 })
 
-export class ChatMessageComponent implements OnInit, OnChanges {
+export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
   @Input() message: IMessage;
 
   @Output() removed = new EventEmitter<IMessage>();
+
+  editMode = false;
 
   imageSource: SafeResourceUrl;
 
   isCurrentUserAuthor = false;
 
+  isDiffShow = false;
+
+  messageDiff: string;
+
   private date: Date;
 
-  get canRemove(): boolean {
-    return this.date > DateHelperService.getDateMinusMinutes(new Date(), DEFAULT_MSG_REMOVE_TIME_MINUTES);
+  private destroy$ = new Subject<void>();
+
+  get canAlterMessage(): boolean {
+    return this.isCurrentUserAuthor && this.date > DateHelperService.getDateMinusMinutes(new Date(), DEFAULT_MSG_ALTER_TIME_MINUTES);
   }
 
   get isOnline(): boolean {
     return this.userStatusService.isUserOnline(this.message.author);
   }
 
+  get isMessageEdited(): boolean {
+    return !!this.message.oldText?.length;
+  }
+
   constructor(
     private readonly sanitizer: DomSanitizer,
     private readonly avatarService: AvatarService,
     private readonly authService: AuthService,
-    private readonly userStatusService: UserStatusService
+    private readonly userStatusService: UserStatusService,
+    private readonly chatApiService: ChatApiService
   ) {}
 
   ngOnInit(): void {
@@ -51,9 +67,74 @@ export class ChatMessageComponent implements OnInit, OnChanges {
         this.isCurrentUserAuthor = this.authService.isCurrentUser((<IMessage>message.currentValue).author);
         this.date = new Date(this.message.date);
       }
+
+      if (message && !!(<IMessage>message.currentValue).oldText) {
+        this.setMessageDiff(<IMessage>message.currentValue);
+      }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   remove(): void {
     this.removed.emit(this.message);
+  }
+
+  edit(): void {
+    this.editMode = true;
+  }
+
+  submit(text: string): void {
+    this.editMode = false;
+
+    this.chatApiService.editMessage({ ...this.message, text })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((response) => {
+        this.message.text = response.text;
+      });
+  }
+
+  showDiff(): void {
+    if (!this.isMessageEdited) return;
+
+    this.isDiffShow = true;
+  }
+
+  hideDiff(): void {
+    this.isDiffShow = false;
+  }
+
+  private setMessageDiff(message: IMessage): void {
+    let htmlText = '';
+
+    for (let i = 0; i < message.oldText.length; i++) {
+      let isSame = message.oldText.charAt(i) === message.text.charAt(i);
+
+      if (isSame) {
+          htmlText += message.oldText.charAt(i);
+          continue;
+      }
+
+      if (!isSame) {
+        htmlText += '<del>';
+        let j = i;
+        while (!isSame || j < message.oldText.length) {
+          htmlText += message.oldText.charAt(j);
+          isSame = message.oldText.charAt(j) === message.text.charAt(j);
+          j += 1;
+        }
+        htmlText += '</del>';
+        htmlText += '<ins>';
+        for (let x = i; x <= j; x++) {
+          htmlText += message.text.charAt(x);
+        }
+        htmlText += '</ins>';
+        i = j;
+      }
+  }
+
+    this.messageDiff = htmlText;
   }
 }

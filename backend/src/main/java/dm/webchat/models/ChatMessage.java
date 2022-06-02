@@ -39,4 +39,7 @@ public class ChatMessage {
 
     @Column
     private String text;
+
+    @Column(name = "old_text")
+    private String oldText;
 }

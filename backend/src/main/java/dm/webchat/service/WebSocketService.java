@@ -10,6 +10,7 @@ import dm.webchat.models.dto.ChatMessageDto;
 import dm.webchat.models.dto.UserDto;
 import dm.webchat.models.websocket.WebSocketGlobalEvent;
 import dm.webchat.models.websocket.WebSocketGlobalEventTypeEnum;
+import dm.webchat.models.websocket.WebSocketMessage;
 import lombok.AllArgsConstructor;
 
 @Service
@@ -17,6 +18,13 @@ import lombok.AllArgsConstructor;
 public class WebSocketService {
     @Autowired
     private SimpMessagingTemplate messageSender;
+
+    public void publishChatMessage(ChatMessage message, User author) {
+        sendUserActivityEvent(author);
+
+        messageSender.convertAndSend("/chat/new-message",
+            WebSocketMessage.builder().data(new ChatMessageDto(message)).build());
+    }
 
     public void sendRemoveMessageEvent(ChatMessage message) {
         WebSocketGlobalEvent event = WebSocketGlobalEvent.builder()
@@ -26,6 +34,16 @@ public class WebSocketService {
 
         messageSender.convertAndSend("/chat/new-event", event);
     }
+
+    public void sendEditMessageEvent(ChatMessage message) {
+        WebSocketGlobalEvent event = WebSocketGlobalEvent.builder()
+            .type(WebSocketGlobalEventTypeEnum.MESSAGE_EDITED)
+            .data(new ChatMessageDto(message))
+            .build();
+
+        messageSender.convertAndSend("/chat/new-event", event);
+    }
+
 
     public void sendUserActivityEvent(User user) {
         WebSocketGlobalEvent event = WebSocketGlobalEvent.builder()

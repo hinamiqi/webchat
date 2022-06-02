@@ -2,15 +2,28 @@
   <img *ngIf="!isCurrentUserAuthor"
        [src]="imageSource"
        class="avatar">
-  <div class="message">
-    <span class="remove-icon bi bi-x-lg"
-          *ngIf="isCurrentUserAuthor && canRemove"
-          (click)="remove()">
+  <div class="message" *ngIf="!editMode" (mouseover)="showDiff()" (mouseout)="hideDiff()">
+    <span class="action-icons">
+      <i class="icon bi bi-pencil-fill"
+        *ngIf="canAlterMessage"
+        (click)="edit()"></i>
+      <i class="icon bi bi-x-lg"
+        *ngIf="canAlterMessage"
+        (click)="remove()"></i>
     </span>
-    <p>{{ message.text }}</p>
+    <p *ngIf="!isDiffShow">{{ message.text }}</p>
+    <div *ngIf="isDiffShow && isMessageEdited" [innerHTML]="messageDiff"></div>
     <p class="sign">
       <span class="user-status" [ngClass]="{ 'user-online': isOnline }"></span>
-      {{ message.author.username }}, {{ message.date | date: 'HH:mm' }}
+      {{ message.author.username }},
+      <span *ngIf="isMessageEdited">edited</span>
+      {{ message.date | date: 'HH:mm' }}
     </p>
+  </div>
+  <div class="message" *ngIf="editMode">
+    <app-message-input
+      [initialText]="message.text"
+      (submitted)="submit($event)"
+    ></app-message-input>
   </div>
 </div>
