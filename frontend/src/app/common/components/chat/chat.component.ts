@@ -1,6 +1,6 @@
 import { DOCUMENT } from '@angular/common';
 import { AfterViewInit, Component, ElementRef, Inject, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { AbstractControl, FormBuilder, FormGroup } from '@angular/forms';
+import { AbstractControl, UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -23,7 +23,7 @@ import { ChatApiService } from '../../services/chat-api.service';
 export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('chat') messageContainer: ElementRef;
 
-  form: FormGroup;
+  form: UntypedFormGroup;
 
   messages: IMessage[] = [];
 
@@ -36,7 +36,7 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   constructor(
-    private readonly fb: FormBuilder,
+    private readonly fb: UntypedFormBuilder,
     private readonly ngZone: NgZone,
     @Inject(DOCUMENT) private document: Document,
     private readonly chatApiService: ChatApiService,

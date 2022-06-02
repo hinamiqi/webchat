@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { catchError, takeUntil } from 'rxjs/operators';
@@ -17,7 +17,7 @@ import { AuthService } from '../services/auth.service';
   styleUrls: ['./login.component.scss']
 })
 export class LoginComponent implements OnInit, OnDestroy {
-  form: FormGroup;
+  form: UntypedFormGroup;
 
   errorMessage: string = null;
 
@@ -27,7 +27,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     private readonly localStorageService: LocalStorageService,
     private readonly router: Router,
     private readonly authApiService: AuthApiService,
-    private readonly fb: FormBuilder,
+    private readonly fb: UntypedFormBuilder,
     private readonly errService: ErrorHandlingService,
     private readonly authService: AuthService
   ) {}

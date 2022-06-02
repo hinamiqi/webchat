@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { UserRoles } from 'src/app/auth/constants/user-roles.const';
@@ -22,7 +22,7 @@ export class UserProfileComponent implements OnInit {
 
   showChangeUserPasswordForm = false;
 
-  changePasswordForm: FormGroup;
+  changePasswordForm: UntypedFormGroup;
 
   changePasswordErrorMsg: string;
 
@@ -30,7 +30,7 @@ export class UserProfileComponent implements OnInit {
 
   constructor(
     private readonly authService: AuthService,
-    private readonly fb: FormBuilder,
+    private readonly fb: UntypedFormBuilder,
     private readonly authApiService: AuthApiService
   ) { }
 
