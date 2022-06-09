@@ -15,7 +15,7 @@
     <div *ngIf="isDiffShow && isMessageEdited" [innerHTML]="messageDiff"></div>
     <p class="sign">
       <span class="user-status" [ngClass]="{ 'user-online': isOnline }"></span>
-      <span class="user-name" (click)="sendPrivateMessage()">{{ message.author.username }}</span>,
+      <span class="user-name" (click)="openPopup()">{{ message.author.username }}</span>,
       <span *ngIf="isMessageEdited">edited</span>
       {{ message.date | date: 'HH:mm' }}
     </p>
@@ -27,3 +27,9 @@
     ></app-message-input>
   </div>
 </div>
+<app-simple-dialog [dialogTitle]="'Написать пользователю ' + message.author.username">
+  <app-message-input
+      [initialText]="message.text"
+      (submitted)="submitToUser($event)"
+    ></app-message-input>
+</app-simple-dialog>

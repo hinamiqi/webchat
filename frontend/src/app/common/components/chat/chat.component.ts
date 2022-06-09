@@ -27,6 +27,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
 
   messages: IMessage[] = [];
 
+  privateMessages: IMessage[] = [];
+
   lastMessage: string;
 
   private destroy$ = new Subject<void>();
@@ -113,12 +115,20 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private listenToWebSocketMessages(): void {
     this.websocketService.watchOnUserMessage()
-    .pipe(takeUntil(this.destroy$))
-    .subscribe((message) => {
-      this.messages.push(message.data);
-      this.messageControl.patchValue(null);
-      this.scrollToBot();
-    });
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((message) => {
+        this.messages.push(message.data);
+        this.messageControl.patchValue(null);
+        this.scrollToBot();
+      });
+
+    this.websocketService.watchOnPrivateUserMessages()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((message) => {
+        console.log('New private message: ', message)
+        this.privateMessages.push(message.data);
+      });
+
 
     this.websocketService.watchOnUserErrors()
       .pipe(takeUntil(this.destroy$))

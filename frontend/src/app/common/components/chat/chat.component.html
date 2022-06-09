@@ -8,3 +8,6 @@
 <app-message-input [initialText]="lastMessage"
                    (submitted)="submit($event)">
 </app-message-input>
+<div *ngIf="privateMessages.length">
+  Got new private messages
+</div>

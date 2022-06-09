@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
@@ -10,6 +10,8 @@ import { AvatarService } from 'src/app/shared/services/avatar.service';
 import { DateHelperService } from 'src/app/utils/services/date-helper.service';
 import { DEFAULT_MSG_ALTER_TIME_MINUTES } from 'src/app/app.config';
 import { UserStatusService } from 'src/app/shared/services/user-status.service';
+import { SimpleDialogComponent } from 'src/app/shared/components/simple-dialog/simple-dialog.component';
+import { ChatMessage } from 'src/app/models/message/message.model';
 
 import { ChatApiService } from '../../services/chat-api.service';
 
@@ -20,6 +22,8 @@ import { ChatApiService } from '../../services/chat-api.service';
 })
 
 export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
+  @ViewChild(SimpleDialogComponent) dialog: SimpleDialogComponent;
+
   @Input() message: IMessage;
 
   @Output() removed = new EventEmitter<IMessage>();
@@ -97,6 +101,20 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
       });
   }
 
+  submitToUser(text: string): void {
+    const newMessage = new ChatMessage(
+      this.authService.getCurrentUser(),
+      text, new Date()
+    );
+
+    this.chatApiService
+      .addMessageToUser(newMessage, this.message.author.uuid)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.dialog.close();
+      });
+  }
+
   showDiff(): void {
     if (!this.isMessageEdited) return;
 
@@ -107,8 +125,8 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
     this.isDiffShow = false;
   }
 
-  sendPrivateMessage(): void {
-
+  openPopup() {
+    this.dialog.open();
   }
 
   private setMessageDiff(message: IMessage): void {
