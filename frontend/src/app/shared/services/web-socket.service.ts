@@ -44,7 +44,7 @@ export class WebSocketService {
   }
 
   watchOnPrivateUserMessages(): Observable<IWebSocketMessage<IMessage>> {
-    return this.watch(`/private/${this.authService.getCurrentUser().uuid}`);
+    return this.watch(`/user/queue/new-private-message`);
   }
 
   watchOnUserErrors(): Observable<IWebSocketError> {

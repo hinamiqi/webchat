@@ -27,8 +27,7 @@ public class WebSocketService {
     }
 
     public void sendPrivateMessage(ChatMessageDto messageDto, User targetUser) {
-        messageSender.convertAndSend("/private/" + targetUser.getUuid().toString(),
-           WebSocketMessage.builder().data(messageDto).build());
+        messageSender.convertAndSendToUser(targetUser.getUsername(), "/queue/new-private-message", WebSocketMessage.builder().data(messageDto).build());
     }
 
     public void sendRemoveMessageEvent(ChatMessage message) {
