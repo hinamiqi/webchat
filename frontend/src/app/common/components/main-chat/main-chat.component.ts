@@ -1,8 +1,9 @@
 import { DOCUMENT } from '@angular/common';
-import { AfterViewInit, Component, ElementRef, Inject, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, Inject, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { AbstractControl, UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+
+import { Observable, Subject } from 'rxjs';
+import { filter, map, takeUntil } from 'rxjs/operators';
 
 import { AuthService } from 'src/app/auth/services/auth.service';
 import { User } from 'src/app/models/auth/user.model';
@@ -22,21 +23,29 @@ import { IChatMessageConfig } from '../chat-message/chat-message-config.model';
   styleUrls: ['./main-chat.component.scss']
 })
 
-export class MainChatComponent implements OnInit, OnDestroy, AfterViewInit {
+export class MainChatComponent implements OnInit, OnDestroy {
   @ViewChild('chat') messageContainer: ElementRef;
 
   form: UntypedFormGroup;
 
   messages: IMessage[] = [];
 
-  privateMessages: IMessage[] = [];
-
   lastMessage: string;
+
+  mainChatTitle = 'Great patriots';
+
+  chatList$: Observable<string[]>;
+
+  currentTab: string;
 
   private destroy$ = new Subject<void>();
 
   get messageControl(): AbstractControl {
     return this.form?.get('message');
+  }
+
+  get isMainTab(): boolean {
+    return !this.currentTab;
   }
 
   constructor(
@@ -59,15 +68,16 @@ export class MainChatComponent implements OnInit, OnDestroy, AfterViewInit {
     this.listenToWebSocketMessages();
 
     this.userStatusService.setUserStatusesExpireScheduler();
+
+    this.chatList$ = this.commonService.privateMessages$
+      .pipe(
+        map((list) => list ? Array.from(list.keys()) : null)
+      );
   }
 
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-  }
-
-  ngAfterViewInit(): void {
-    this.scrollToBot();
   }
 
   submit(text: string): void {
@@ -95,6 +105,15 @@ export class MainChatComponent implements OnInit, OnDestroy, AfterViewInit {
       .subscribe(() => {});
   }
 
+  changeChat(chatName: string): void {
+    this.currentTab = chatName;
+    if (!!this.currentTab) {
+      this.messages = this.commonService.getPrivateMessagesOfUser(chatName);
+    } else {
+      this.getLastMessages();
+    }
+  }
+
   private getLastMessages(): void {
     this.chatApiService.getLastMessages()
       .pipe(
@@ -102,6 +121,7 @@ export class MainChatComponent implements OnInit, OnDestroy, AfterViewInit {
       )
       .subscribe((response) => {
         this.messages = response.reverse();
+        this.scrollToBot();
       });
   }
 
@@ -118,7 +138,10 @@ export class MainChatComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private listenToWebSocketMessages(): void {
     this.websocketService.watchOnUserMessage()
-      .pipe(takeUntil(this.destroy$))
+      .pipe(
+        filter(() => this.isMainTab), //TODO: We should get main messages on any tab!
+        takeUntil(this.destroy$)
+      )
       .subscribe((message) => {
         this.messages.push(message.data);
         this.messageControl.patchValue(null);
@@ -128,11 +151,8 @@ export class MainChatComponent implements OnInit, OnDestroy, AfterViewInit {
     this.websocketService.watchOnPrivateUserMessages()
       .pipe(takeUntil(this.destroy$))
       .subscribe((message) => {
-        console.log('New private message: ', message)
-        // this.privateMessages.push(message.data);
         this.commonService.pushPrivateMessage(message.data);
       });
-
 
     this.websocketService.watchOnUserErrors()
       .pipe(takeUntil(this.destroy$))

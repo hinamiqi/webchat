@@ -29,11 +29,6 @@
   </div>
 </div>
 <app-simple-dialog *ngIf="config.canSendPrivate" [dialogTitle]="'Написать пользователю ' + message.author.username">
-  <app-chat-message
-    *ngFor="let message of privateMessages$ | async"
-    [message]="message"
-    [config]="privateMessageConfig"
-  ></app-chat-message>
   <app-message-input
       [initialText]="message.text"
       (submitted)="submitToUser($event)"

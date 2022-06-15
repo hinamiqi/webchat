@@ -64,10 +64,6 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
     return !!this.message.oldText?.length;
   }
 
-  get privateMessages$(): Observable<IMessage[]> {
-    return this.commonService.privateMessages$;
-  }
-
   constructor(
     private readonly sanitizer: DomSanitizer,
     private readonly avatarService: AvatarService,

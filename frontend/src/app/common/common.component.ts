@@ -5,7 +5,6 @@ import { takeUntil, filter } from 'rxjs/operators'
 
 import { AuthService } from '../auth/services/auth.service';
 import { WebSocketService } from '../shared/services/web-socket.service';
-import { CommonService } from './services/common.service';
 
 @Component({
   selector: 'app-common',
@@ -16,12 +15,11 @@ export class CommonComponent implements OnInit, OnDestroy {
 
   title = 'Main page';
 
-  menuItems = [
-    { name: 'Info', route: '/info' },
-    { name: 'User', route: '/info/profile' }
-  ];
+  userProfileRoute = '/info/profile';
 
-  textPlaceholder = "Main page";
+  chatRoute = '/chat';
+
+  textPlaceholder = 'Main page';
 
   currentUserName: string;
 
@@ -30,7 +28,7 @@ export class CommonComponent implements OnInit, OnDestroy {
   }
 
   get isMainPage(): boolean {
-    return this.router?.routerState.snapshot.url === "/";
+    return this.router?.routerState.snapshot.url === this.chatRoute;
   }
 
   private destroy$ = new Subject<void>();
