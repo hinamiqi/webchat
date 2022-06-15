@@ -3,7 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 
 import { AuthGuardService } from './auth/services/auth-guard.service';
 import { CommonComponent } from './common/common.component';
-import { ChatComponent } from './common/components/chat/chat.component';
+import { MainChatComponent } from './common/components/main-chat/main-chat.component';
 
 const routes: Routes = [
     {
@@ -18,7 +18,7 @@ const routes: Routes = [
           },
           {
             path: 'chat',
-            component: ChatComponent,
+            component: MainChatComponent,
             canActivate: [AuthGuardService]
           },
           {

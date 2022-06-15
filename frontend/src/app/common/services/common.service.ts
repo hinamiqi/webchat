@@ -1,19 +1,21 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { IMessage } from 'src/app/models/message/message.interface';
 
 import { environment } from 'src/environments/environment';
 
 @Injectable({providedIn: 'root'})
 export class CommonService {
-  private readonly backendApi = environment.backendUrl;
+  readonly privateMessages$: Observable<IMessage[]>;
 
-  constructor(
-    private readonly http: HttpClient
-  ) {}
+  private _privateMessages$ = new BehaviorSubject<IMessage[]>([]);
 
-  // TODO: we do not need this
-  getAllRequest(): Observable<string> {
-    return this.http.get<string>(`${this.backendApi}/main/all`);
+  constructor() {
+    this.privateMessages$ = this._privateMessages$.asObservable();
+  }
+
+  pushPrivateMessage(msg: IMessage): void {
+    this._privateMessages$.next([...this._privateMessages$.value, msg]);
   }
 }

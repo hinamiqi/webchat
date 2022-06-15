@@ -3,7 +3,7 @@
        [src]="imageSource"
        class="avatar">
   <div class="message" *ngIf="!editMode" (mouseover)="showDiff()" (mouseout)="hideDiff()">
-    <span class="action-icons">
+    <span class="action-icons" *ngIf="config.editable">
       <i class="icon bi bi-pencil-fill"
         *ngIf="canAlterMessage"
         (click)="edit()"></i>
@@ -15,8 +15,9 @@
     <div *ngIf="isDiffShow && isMessageEdited" [innerHTML]="messageDiff"></div>
     <p class="sign">
       <span class="user-status" [ngClass]="{ 'user-online': isOnline }"></span>
-      <span class="user-name" (click)="openPopup()">{{ message.author.username }}</span>,
-      <span *ngIf="isMessageEdited">edited</span>
+      <span *ngIf="config.canSendPrivate" class="user-name" (click)="openPopup()">{{ message.author.username }}</span>
+      <span *ngIf="!config.canSendPrivate">{{ message.author.username }}</span>
+      <span *ngIf="isMessageEdited">, edited</span>
       {{ message.date | date: 'HH:mm' }}
     </p>
   </div>
@@ -27,7 +28,12 @@
     ></app-message-input>
   </div>
 </div>
-<app-simple-dialog [dialogTitle]="'Написать пользователю ' + message.author.username">
+<app-simple-dialog *ngIf="config.canSendPrivate" [dialogTitle]="'Написать пользователю ' + message.author.username">
+  <app-chat-message
+    *ngFor="let message of privateMessages$ | async"
+    [message]="message"
+    [config]="privateMessageConfig"
+  ></app-chat-message>
   <app-message-input
       [initialText]="message.text"
       (submitted)="submitToUser($event)"

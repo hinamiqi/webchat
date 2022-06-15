@@ -13,14 +13,16 @@ import { UserStatusService } from 'src/app/shared/services/user-status.service';
 import { WebSocketService } from 'src/app/shared/services/web-socket.service';
 
 import { ChatApiService } from '../../services/chat-api.service';
+import { CommonService } from '../../services/common.service';
+import { IChatMessageConfig } from '../chat-message/chat-message-config.model';
 
 @Component({
   selector: 'app-chat',
-  templateUrl: './chat.component.html',
-  styleUrls: ['./chat.component.scss']
+  templateUrl: './main-chat.component.html',
+  styleUrls: ['./main-chat.component.scss']
 })
 
-export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
+export class MainChatComponent implements OnInit, OnDestroy, AfterViewInit {
   @ViewChild('chat') messageContainer: ElementRef;
 
   form: UntypedFormGroup;
@@ -44,7 +46,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
     private readonly chatApiService: ChatApiService,
     private readonly authService: AuthService,
     private readonly websocketService: WebSocketService,
-    private readonly userStatusService: UserStatusService
+    private readonly userStatusService: UserStatusService,
+    private readonly commonService: CommonService
   ) { }
 
   ngOnInit(): void {
@@ -126,7 +129,8 @@ export class ChatComponent implements OnInit, OnDestroy, AfterViewInit {
       .pipe(takeUntil(this.destroy$))
       .subscribe((message) => {
         console.log('New private message: ', message)
-        this.privateMessages.push(message.data);
+        // this.privateMessages.push(message.data);
+        this.commonService.pushPrivateMessage(message.data);
       });
 
 

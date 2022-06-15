@@ -39,7 +39,6 @@ export class CommonComponent implements OnInit, OnDestroy {
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly authService: AuthService,
-    private readonly commonService: CommonService,
     private readonly websocketService: WebSocketService
     ) { }
 
@@ -54,12 +53,6 @@ export class CommonComponent implements OnInit, OnDestroy {
       });
 
     this.currentUserName = this.authService.getCurrentUserLogin();
-
-    this.commonService.getAllRequest()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((response) => {
-        console.log(response);
-      });
 
     this.websocketService.connect();
   }

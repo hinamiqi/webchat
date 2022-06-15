@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { Subject } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { AuthService } from 'src/app/auth/services/auth.service';
@@ -14,6 +14,9 @@ import { SimpleDialogComponent } from 'src/app/shared/components/simple-dialog/s
 import { ChatMessage } from 'src/app/models/message/message.model';
 
 import { ChatApiService } from '../../services/chat-api.service';
+import { CommonService } from '../../services/common.service';
+
+import { ChatMessageConfig, IChatMessageConfig } from './chat-message-config.model';
 
 @Component({
   selector: 'app-chat-message',
@@ -23,6 +26,8 @@ import { ChatApiService } from '../../services/chat-api.service';
 
 export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
   @ViewChild(SimpleDialogComponent) dialog: SimpleDialogComponent;
+
+  @Input() config: IChatMessageConfig = new ChatMessageConfig();
 
   @Input() message: IMessage;
 
@@ -37,6 +42,11 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
   isDiffShow = false;
 
   messageDiff: string;
+
+  privateMessageConfig: IChatMessageConfig = {
+    editable: false,
+    canSendPrivate: false
+  };
 
   private date: Date;
 
@@ -54,12 +64,17 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
     return !!this.message.oldText?.length;
   }
 
+  get privateMessages$(): Observable<IMessage[]> {
+    return this.commonService.privateMessages$;
+  }
+
   constructor(
     private readonly sanitizer: DomSanitizer,
     private readonly avatarService: AvatarService,
     private readonly authService: AuthService,
     private readonly userStatusService: UserStatusService,
-    private readonly chatApiService: ChatApiService
+    private readonly chatApiService: ChatApiService,
+    private readonly commonService: CommonService
   ) {}
 
   ngOnInit(): void {
@@ -126,6 +141,7 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   openPopup() {
+    if (!this.config.canSendPrivate) return;
     this.dialog.open();
   }
 
