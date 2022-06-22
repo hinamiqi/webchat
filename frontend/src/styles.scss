@@ -50,3 +50,15 @@ body {
   overflow-y: auto;
   overflow-x: hidden;
 }
+
+.my-own-badge {
+  display: inline-flex;
+  justify-content: center;
+  align-items:center;
+  color:white;
+  background-color: cadetblue;
+  border-radius: 3px;
+  font-size: smaller;
+  width: 12px;
+  height: 12px;
+}
