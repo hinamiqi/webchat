@@ -6,16 +6,13 @@ import { Observable, of, Subject } from 'rxjs';
 import { finalize, map, switchMap, takeUntil } from 'rxjs/operators';
 
 import { AuthService } from 'src/app/auth/services/auth.service';
-import { User } from 'src/app/models/auth/user.model';
 import { IMessage } from 'src/app/models/message/message.interface';
 import { ChatMessage } from 'src/app/models/message/message.model';
-import { GlobalEventWebSocketType, IGlobalEvent } from 'src/app/models/websocket/global-event.interface';
 import { UserStatusService } from 'src/app/shared/services/user-status.service';
 import { WebSocketService } from 'src/app/shared/services/web-socket.service';
 
 import { ChatApiService } from '../../services/chat-api.service';
 import { CommonService } from '../../services/common.service';
-import { IChatMessageConfig } from '../chat-message/chat-message-config.model';
 
 @Component({
   selector: 'app-chat',
@@ -36,7 +33,7 @@ export class MainChatComponent implements OnInit, OnDestroy {
 
   chatList$: Observable<string[]>;
 
-  newMainMessageCount: number;
+  newMessagesCount: Map<string,number> = new Map();
 
   currentTab: string;
 
@@ -53,10 +50,8 @@ export class MainChatComponent implements OnInit, OnDestroy {
   constructor(
     private readonly fb: UntypedFormBuilder,
     private readonly ngZone: NgZone,
-    @Inject(DOCUMENT) private document: Document,
     private readonly chatApiService: ChatApiService,
     private readonly authService: AuthService,
-    private readonly websocketService: WebSocketService,
     private readonly userStatusService: UserStatusService,
     private readonly commonService: CommonService
   ) { }
@@ -65,22 +60,30 @@ export class MainChatComponent implements OnInit, OnDestroy {
     this.form = this.fb.group({
       message: []
     });
-    this.getLastMessages();
 
     this.userStatusService.setUserStatusesExpireScheduler();
 
-    this.chatList$ = this.commonService.privateMessages$
+    this.chatList$ = this.commonService.messages$
       .pipe(
-        map((list) => list ? Array.from(list.keys()) : null)
+        map((list) => {
+          if (!list) return null;
+          return Array.from(list.keys()).map((key) => key || this.mainChatTitle)
+        })
       );
 
-   this.commonService.mainChatMessages$
+    this.messages$ = this.commonService.getMainMessages();
+
+    this.commonService.newMessages$
       .pipe(
         takeUntil(this.destroy$)
       )
-      .subscribe((messages) => {
-        this.newMainMessageCount += 1;
+      .subscribe((counts) => {
+        const count = counts.get(this.isMainTab ? null : this.currentTab);
+        if (count > 0) this.scrollToBot();
+        this.newMessagesCount = counts;
       });
+
+    this.getLastMessages();
   }
 
   ngOnDestroy(): void {
@@ -114,24 +117,36 @@ export class MainChatComponent implements OnInit, OnDestroy {
   }
 
   changeChat(chatName: string): void {
+    if (this.currentTab === chatName) return;
+
     this.currentTab = chatName;
-    if (!!this.currentTab) {
-      this.messages$ = this.commonService.getPrivateMessagesOfUser(chatName);
-    } else {
+
+    if (chatName === this.mainChatTitle) {
+      this.messages$ = this.commonService.getMainMessages();
       this.getLastMessages();
+      this.newMessagesCount.set(null, 0);
+    } else {
+      this.messages$ = this.commonService.getPrivateMessagesOfUser(chatName);
+      this.newMessagesCount.set(chatName, 0);
     }
   }
 
+  getNewMessageCount(chatName: string): number {
+    const key = chatName === this.mainChatTitle ? null : chatName;
+    return this.newMessagesCount.get(key);
+  }
+
   private getLastMessages(): void {
-    this.newMainMessageCount = 0;
-    this.messages$ = this.chatApiService.getLastMessages()
+    this.chatApiService.getLastMessages()
       .pipe(
         finalize(() => {
           this.scrollToBot();
         }),
         switchMap((response) => of(response.reverse())),
         takeUntil(this.destroy$)
-      );
+      ).subscribe((messages) => {
+        this.commonService.pushLastMessages(messages);
+      });
   }
 
   private scrollToBot(): void {

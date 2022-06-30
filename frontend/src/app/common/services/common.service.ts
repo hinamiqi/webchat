@@ -6,45 +6,56 @@ import { AuthService } from 'src/app/auth/services/auth.service';
 import { User } from 'src/app/models/auth/user.model';
 
 import { IMessage } from 'src/app/models/message/message.interface';
-import { PrivateMessageList } from 'src/app/models/message/private-message-list.interface';
+import { MessageList } from 'src/app/models/message/private-message-list.interface';
 import { GlobalEventWebSocketType, IGlobalEvent } from 'src/app/models/websocket/global-event.interface';
 import { UserStatusService } from 'src/app/shared/services/user-status.service';
 
 @Injectable({providedIn: 'root'})
 export class CommonService {
-  readonly privateMessages$: Observable<PrivateMessageList>;
+  readonly messages$: Observable<MessageList>;
 
-  readonly mainChatMessages$: Observable<IMessage[]>;
+  readonly newMessages$: Observable<Map<string, number>>;
 
-  private _privateMessages$ = new BehaviorSubject<PrivateMessageList>(new Map());
+  private _messages$ = new BehaviorSubject<MessageList>(new Map());
 
-  private _mainChatMessages$ = new BehaviorSubject<IMessage[]>([]);
+  private _newMessages$ = new BehaviorSubject<Map<string, number>>(new Map());
 
   constructor(
     private readonly userStatusService: UserStatusService,
     private readonly authService: AuthService
   ) {
-    this.privateMessages$ = this._privateMessages$.asObservable();
-    this.mainChatMessages$ = this._mainChatMessages$.asObservable();
+    this.messages$ = this._messages$.asObservable();
+    this.newMessages$ = this._newMessages$.asObservable();
   }
 
   pushPrivateMessage(msg: IMessage): void {
-    const map = this._privateMessages$.value;
-    const authorMessages = map.get(msg.author.username) || [];
-    map.set(msg.author.username, [...authorMessages, msg]);
-    this._privateMessages$.next(map);
+    const map = this._messages$.value;
+    const author = msg.author.username;
+    const authorMessages = map.get(author) || [];
+    this.pushNewMessages(author, [...authorMessages, msg]);
   }
 
   pushMainMessage(msg: IMessage): void {
-    this._mainChatMessages$.next([...this._mainChatMessages$.value, msg]);
+    const map = this._messages$.value;
+    const mainMessages = map.get(null) || [];
+    this.pushNewMessages(null, [...mainMessages, msg]);
+  }
+
+  pushLastMessages(messages: IMessage[]): void {
+    this.pushNewMessages(null, messages, null);
   }
 
   getPrivateMessagesOfUser(username: string): Observable<IMessage[]> {
-    return this.privateMessages$
+    return this.messages$
       .pipe(switchMap((map) => {
         if (map.has(username)) return of(map.get(username));
         return of([]);
       }));
+  }
+
+  getMainMessages(): Observable<IMessage[]> {
+    return this.messages$
+      .pipe(switchMap((messageList) => of(messageList.get(null))))
   }
 
   handleGlobalEvent(event: IGlobalEvent): void {
@@ -67,19 +78,37 @@ export class CommonService {
     }
   }
 
+  private pushNewMessages(chatKey: string, messages: IMessage[], count = 1): void {
+    const map = this._messages$.value;
+    map.set(chatKey, messages);
+    this._messages$.next(map);
+
+    const counts = this._newMessages$.value;
+    const newCount = count
+      ? ( counts.get(chatKey) || 0) + 1
+      : 0;
+    counts.set(chatKey, newCount);
+    this._newMessages$.next(counts);
+  }
+
   private removeMainMessage(message: IMessage): void {
-    const currentMessages = this._mainChatMessages$.value;
-    this._mainChatMessages$.next(currentMessages.filter((m) => m.id === message.id));
+    const map = this._messages$.value;
+    const currentMessages = map.get(null);
+    const newMessages = currentMessages.filter((m) => m.id === message.id);
+    map.set(null, newMessages);
+    this._messages$.next(map);
   }
 
   private editMainMessage(message: IMessage) {
-    const currentMessages = this._mainChatMessages$.value;
+    const map = this._messages$.value;
+    const currentMessages = map.get(null);
     const oldMessage = currentMessages.find((m) => m.id === message.id);
 
     if (!oldMessage) return;
 
     oldMessage.text = message.text;
     oldMessage.oldText = message.oldText;
-    this._mainChatMessages$.next(currentMessages);
+    map.set(null, currentMessages);
+    this._messages$.next(map);
   }
 }

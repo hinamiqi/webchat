@@ -1,13 +1,9 @@
 <ul class="nav nav-tabs" *ngIf="chatList$ | async; let list">
-  <li class="nav-item">
-    <a class="nav-link" (click)="changeChat(null)" [ngClass]="{ active: isMainTab }">
-      {{ mainChatTitle }}
-      <span *ngIf="!isMainTab && newMainMessageCount" class="my-own-badge">{{ newMainMessageCount }}</span>
-    </a>
-  </li>
+
   <li class="nav-item" *ngFor="let chatName of list">
     <a class="nav-link" (click)="changeChat(chatName)" [ngClass]="{ active: currentTab === chatName }">
       {{ chatName }}
+      <span *ngIf="getNewMessageCount(chatName)" class="my-own-badge">{{ getNewMessageCount(chatName) }}</span>
     </a>
   </li>
 </ul>

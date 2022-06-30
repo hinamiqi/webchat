@@ -1,3 +1,3 @@
 import { IMessage } from './message.interface';
 
-export type PrivateMessageList = Map<string, IMessage[]>;
+export type MessageList = Map<string, IMessage[]>;
