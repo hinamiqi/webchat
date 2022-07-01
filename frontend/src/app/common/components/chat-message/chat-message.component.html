@@ -11,7 +11,7 @@
         *ngIf="canAlterMessage"
         (click)="remove()"></i>
     </span>
-    <p *ngIf="!isDiffShow">{{ message.text }}</p>
+    <div *ngIf="!isDiffShow" [innerHTML]="safeText"></div>
     <div *ngIf="isDiffShow && isMessageEdited" [innerHTML]="messageDiff"></div>
     <p class="sign">
       <span class="user-status" [ngClass]="{ 'user-online': isOnline }"></span>

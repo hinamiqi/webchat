@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SecurityContext, SimpleChanges, ViewChild } from '@angular/core';
 
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Observable, Subject } from 'rxjs';
@@ -29,7 +29,16 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
 
   @Input() config: IChatMessageConfig = new ChatMessageConfig();
 
-  @Input() message: IMessage;
+  @Input() set message(val: IMessage) {
+    val.text = val.text.replace(/\n/, `<br>`);
+    if (val.oldText) {
+      val.oldText = val.text.replace(/\n/, `<br>`);
+    }
+    this._message = val
+  }
+  get message(): IMessage {
+    return this._message;
+  }
 
   @Output() removed = new EventEmitter<IMessage>();
 
@@ -52,6 +61,8 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
 
   private destroy$ = new Subject<void>();
 
+  private _message: IMessage;
+
   get canAlterMessage(): boolean {
     return this.isCurrentUserAuthor && this.date > DateHelperService.getDateMinusMinutes(new Date(), DEFAULT_MSG_ALTER_TIME_MINUTES);
   }
@@ -62,6 +73,10 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
 
   get isMessageEdited(): boolean {
     return !!this.message.oldText?.length;
+  }
+
+  get safeText(): string {
+    return this.message?.text && this.sanitizer.sanitize(SecurityContext.HTML, this.message.text);
   }
 
   constructor(
@@ -142,28 +157,30 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   private setMessageDiff(message: IMessage): void {
+    const oldText = this.sanitizer.sanitize(SecurityContext.HTML, message.oldText);
+    const text = this.sanitizer.sanitize(SecurityContext.HTML, message.text);
     let htmlText = '';
 
-    for (let i = 0; i < message.oldText.length; i++) {
-      let isSame = message.oldText.charAt(i) === message.text.charAt(i);
+    for (let i = 0; i < oldText.length; i++) {
+      let isSame = oldText.charAt(i) === text.charAt(i);
 
       if (isSame) {
-          htmlText += message.oldText.charAt(i);
+          htmlText += oldText.charAt(i);
           continue;
       }
 
       if (!isSame) {
         htmlText += '<del>';
         let j = i;
-        while (!isSame || j < message.oldText.length) {
-          htmlText += message.oldText.charAt(j);
-          isSame = message.oldText.charAt(j) === message.text.charAt(j);
+        while (!isSame || j < oldText.length) {
+          htmlText += oldText.charAt(j);
+          isSame = oldText.charAt(j) === text.charAt(j);
           j += 1;
         }
         htmlText += '</del>';
         htmlText += '<ins>';
         for (let x = i; x <= j; x++) {
-          htmlText += message.text.charAt(x);
+          htmlText += text.charAt(x);
         }
         htmlText += '</ins>';
         i = j;
