@@ -17,6 +17,10 @@ export class ChatApiService {
     return this.http.post<IMessage>(`${this.backendApi}/chat`, message);
   }
 
+  addMessageToUser(message: IMessage, userId: string): Observable<IMessage> {
+    return this.http.post<IMessage>(`${this.backendApi}/chat/private/${userId}`, message);
+  }
+
   removeMessage(id: number): Observable<IMessage> {
     return this.http.delete<IMessage>(`${this.backendApi}/chat/${id}`);
   }

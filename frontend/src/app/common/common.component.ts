@@ -16,12 +16,11 @@ export class CommonComponent implements OnInit, OnDestroy {
 
   title = 'Main page';
 
-  menuItems = [
-    { name: 'Info', route: '/info' },
-    { name: 'User', route: '/info/profile' }
-  ];
+  userProfileRoute = '/info/profile';
 
-  textPlaceholder = "Main page";
+  chatRoute = '/chat';
+
+  textPlaceholder = 'Main page';
 
   currentUserName: string;
 
@@ -30,7 +29,7 @@ export class CommonComponent implements OnInit, OnDestroy {
   }
 
   get isMainPage(): boolean {
-    return this.router?.routerState.snapshot.url === "/";
+    return this.router?.routerState.snapshot.url === this.chatRoute;
   }
 
   private destroy$ = new Subject<void>();
@@ -39,8 +38,8 @@ export class CommonComponent implements OnInit, OnDestroy {
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly authService: AuthService,
-    private readonly commonService: CommonService,
-    private readonly websocketService: WebSocketService
+    private readonly websocketService: WebSocketService,
+    private readonly commonService: CommonService
     ) { }
 
   ngOnInit(): void {
@@ -55,13 +54,9 @@ export class CommonComponent implements OnInit, OnDestroy {
 
     this.currentUserName = this.authService.getCurrentUserLogin();
 
-    this.commonService.getAllRequest()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((response) => {
-        console.log(response);
-      });
-
     this.websocketService.connect();
+
+    this.listenToWebSocketMessages();
   }
 
   ngOnDestroy(): void {
@@ -80,6 +75,35 @@ export class CommonComponent implements OnInit, OnDestroy {
 
   isRouteSelected(route: string): boolean {
     return this.router.routerState.snapshot.url === route;
+  }
+
+  private listenToWebSocketMessages(): void {
+    this.websocketService.watchOnUserMessage()
+      .pipe(
+        takeUntil(this.destroy$)
+      )
+      .subscribe((message) => {
+        this.commonService.pushMainMessage(message.data);
+      });
+
+    this.websocketService.watchOnPrivateUserMessages()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((message) => {
+        this.commonService.pushPrivateMessage(message.data);
+      });
+
+    this.websocketService.watchOnUserErrors()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((err) => {
+        console.log(`WebSocketError: `, err);
+      });
+
+    this.websocketService.watchOnGlobalEvents()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((event) => {
+        console.log(`Recieved GLOBAL_EVENT of type ${event.type}: `, event.data);
+        this.commonService.handleGlobalEvent(event);
+      });
   }
 }
 

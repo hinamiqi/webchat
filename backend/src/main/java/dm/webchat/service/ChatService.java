@@ -55,8 +55,8 @@ public class ChatService {
         return savedMessage;
     }
 
-    public ChatMessage saveMessage(ChatMessageDto msgDto, Principal user) throws NotFoundException {
-        User author = userRepository.findByUsername(user.getName())
+    public ChatMessage saveMessage(ChatMessageDto msgDto, Principal authorPrincipal) throws NotFoundException {
+        User author = userRepository.findByUsername(authorPrincipal.getName())
             .orElseThrow(() ->
                 new NotFoundException(
                     String.format("No user with login (%s) found", msgDto.getAuthor().getUsername()))

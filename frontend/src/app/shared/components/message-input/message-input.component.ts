@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
-import { AbstractControl, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-message-input',
@@ -11,14 +11,14 @@ export class MessageInputComponent implements OnInit, OnChanges {
 
   @Output() submitted = new EventEmitter<string>();
 
-  form: FormGroup;
+  form: UntypedFormGroup;
 
   get messageControl(): AbstractControl {
     return this.form?.get('message');
   }
 
   constructor(
-    private readonly fb: FormBuilder
+    private readonly fb: UntypedFormBuilder
   ) { }
 
   ngOnInit() {

@@ -1,10 +1,10 @@
 <nav class="navbar navbar-expand-sm bg-light justify-content-between">
   <a class="navbar-brand" (click)="navigateTo('/')" [ngClass]="{ 'menu-selected-item': isMainPage }">Chat</a>
   <ul class="navbar-nav nav-pills">
-    <li class="nav-item" *ngFor="let i of menuItems" [ngClass]="{ 'menu-selected-item': isRouteSelected(i.route) }">
-      <a class="nav-link" (click)="navigateTo(i.route)">{{ i.name }}</a>
+    <li class="nav-item" [ngClass]="{ 'menu-selected-item': isRouteSelected(userProfileRoute) }">
+      <a class="nav-link" (click)="navigateTo(userProfileRoute)">{{ currentUserName }}</a>
     </li>
-    <li class="nav-item active" *ngIf="isAuth" [title]="currentUserName">
+    <li class="nav-item" *ngIf="isAuth">
       <a class="nav-link" (click)="logout()">Logout</a>
     </li>
   </ul>

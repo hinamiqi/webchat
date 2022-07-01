@@ -43,6 +43,10 @@ export class WebSocketService {
     return this.watch(`/chat/new-message`);
   }
 
+  watchOnPrivateUserMessages(): Observable<IWebSocketMessage<IMessage>> {
+    return this.watch(`/user/queue/new-private-message`);
+  }
+
   watchOnUserErrors(): Observable<IWebSocketError> {
     return this.watch(`/user/queue/errors`);
   }
