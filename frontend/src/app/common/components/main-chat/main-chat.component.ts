@@ -94,6 +94,8 @@ export class MainChatComponent implements OnInit, OnDestroy {
   submit(text: string): void {
     if (!text) return;
 
+    this.lastMessage = text;
+
     const newMessage = new ChatMessage(
       this.authService.getCurrentUser(),
       text, new Date()

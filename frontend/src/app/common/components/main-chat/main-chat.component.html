@@ -14,6 +14,6 @@
     (removed)="removeMessage($event)"
   ></app-chat-message>
 </div>
-<app-message-input [initialText]="lastMessage"
-                   (submitted)="submit($event)">
+<app-message-input [(ngModel)]="lastMessage"
+                  (submitted)="submit($event)">
 </app-message-input>
