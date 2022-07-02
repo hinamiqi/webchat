@@ -1,4 +1,4 @@
-<div class="message-container" [ngClass]="{ 'author-is-current-user': isCurrentUserAuthor }">
+<div *ngIf="!message.isSeparator" class="message-container" [ngClass]="{ 'author-is-current-user': isCurrentUserAuthor }">
   <img *ngIf="!isCurrentUserAuthor"
        [src]="imageSource"
        class="avatar">
@@ -29,6 +29,7 @@
     ></app-message-input>
   </div>
 </div>
+<div *ngIf="message.isSeparator" class="flex-container">{{ message.date | date: 'dd.MM.yy' }}</div>
 <app-simple-dialog *ngIf="config.canSendPrivate" [dialogTitle]="'Send to user ' + message.author.username">
   <app-message-input
       [initialText]="message.text"

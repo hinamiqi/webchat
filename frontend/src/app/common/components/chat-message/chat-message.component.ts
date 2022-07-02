@@ -78,9 +78,7 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   get isToday(): boolean {
-    return this.date?.getDate() === this.today.getDate() &&
-      this.date?.getMonth() === this.today.getMonth() &&
-      this.date?.getFullYear() === this.today.getFullYear();
+    return !!this.date && DateHelperService.isSameDate(this.date, this.today);
   }
 
   get safeText(): string {

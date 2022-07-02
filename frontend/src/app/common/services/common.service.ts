@@ -9,6 +9,7 @@ import { IMessage } from 'src/app/models/message/message.interface';
 import { MessageList } from 'src/app/models/message/private-message-list.interface';
 import { GlobalEventWebSocketType, IGlobalEvent } from 'src/app/models/websocket/global-event.interface';
 import { UserStatusService } from 'src/app/shared/services/user-status.service';
+import { DateHelperService } from 'src/app/utils/services/date-helper.service';
 
 @Injectable({providedIn: 'root'})
 export class CommonService {
@@ -48,14 +49,14 @@ export class CommonService {
   getPrivateMessagesOfUser(username: string): Observable<IMessage[]> {
     return this.messages$
       .pipe(switchMap((map) => {
-        if (map.has(username)) return of(map.get(username));
+        if (map.has(username)) return of(this.getMessagesView(map.get(username)));
         return of([]);
       }));
   }
 
   getMainMessages(): Observable<IMessage[]> {
     return this.messages$
-      .pipe(switchMap((messageList) => of(messageList.get(null))))
+      .pipe(switchMap((messageList) => of(this.getMessagesView(messageList.get(null)))))
   }
 
   handleGlobalEvent(event: IGlobalEvent): void {
@@ -110,5 +111,26 @@ export class CommonService {
     oldMessage.oldText = message.oldText;
     map.set(null, currentMessages);
     this._messages$.next(map);
+  }
+
+  private getMessagesView(messages: IMessage[]): IMessage[] {
+    if (!messages || !messages.length) return messages;
+
+    const view: IMessage[] = [];
+    const today = new Date();
+
+    let prevDate = new Date(messages[0].date);
+    for (let msg of messages) {
+      const msgDate = new Date(msg.date);
+      if (!DateHelperService.isSameDate(msgDate, prevDate)) {
+        const separator = Object.assign({}, msg);
+        separator.date = msgDate.toDateString();
+        separator.isSeparator = true;
+        view.push(separator);
+      }
+      prevDate =  new Date(msg.date);
+      view.push(msg);
+    }
+    return view;
   }
 }

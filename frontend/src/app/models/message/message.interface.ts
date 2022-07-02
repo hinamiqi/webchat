@@ -6,4 +6,5 @@ export interface IMessage {
   date: string;
   id?: number;
   oldText?: string;
+  isSeparator?: boolean;
 }
