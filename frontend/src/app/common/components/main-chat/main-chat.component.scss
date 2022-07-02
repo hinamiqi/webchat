@@ -1,3 +1,13 @@
+@import "variables";
+
 textarea {
   max-height: 200px;
+}
+
+.scroll-btn {
+  border-radius: 10px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: $base-grey;
+  cursor: pointer;
 }

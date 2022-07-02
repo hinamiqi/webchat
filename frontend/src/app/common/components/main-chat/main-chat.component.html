@@ -1,5 +1,4 @@
 <ul class="nav nav-tabs" *ngIf="chatList$ | async; let list">
-
   <li class="nav-item" *ngFor="let chatName of list">
     <a class="nav-link" (click)="changeChat(chatName)" [ngClass]="{ active: currentTab === chatName }">
       {{ chatName }}
@@ -8,6 +7,9 @@
   </li>
 </ul>
 <div #chat class="messages-container">
+  <div class="flex-container">
+    <a class="nav-link scroll-btn" (click)="loadPrevious()">Previous {{ defaultPageSize }}...</a>
+  </div>
   <app-chat-message
     *ngFor="let message of (messages$ | async)"
     [message]="message"

@@ -1,5 +1,4 @@
-import { DOCUMENT } from '@angular/common';
-import { Component, ElementRef, Inject, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { AbstractControl, UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 
 import { Observable, of, Subject } from 'rxjs';
@@ -9,7 +8,6 @@ import { AuthService } from 'src/app/auth/services/auth.service';
 import { IMessage } from 'src/app/models/message/message.interface';
 import { ChatMessage } from 'src/app/models/message/message.model';
 import { UserStatusService } from 'src/app/shared/services/user-status.service';
-import { WebSocketService } from 'src/app/shared/services/web-socket.service';
 
 import { ChatApiService } from '../../services/chat-api.service';
 import { CommonService } from '../../services/common.service';
@@ -36,6 +34,10 @@ export class MainChatComponent implements OnInit, OnDestroy {
   newMessagesCount: Map<string,number> = new Map();
 
   currentTab: string;
+
+  readonly defaultPageSize = 10;
+
+  private _currentPageSize = this.defaultPageSize;
 
   private destroy$ = new Subject<void>();
 
@@ -96,9 +98,10 @@ export class MainChatComponent implements OnInit, OnDestroy {
 
     this.lastMessage = text;
 
+    const newDate =  new Date();
     const newMessage = new ChatMessage(
       this.authService.getCurrentUser(),
-      text, new Date()
+      text, newDate.toDateString()
     );
 
     this.chatApiService.addMessage(newMessage)
@@ -138,16 +141,21 @@ export class MainChatComponent implements OnInit, OnDestroy {
     return this.newMessagesCount.get(key);
   }
 
-  private getLastMessages(): void {
-    this.chatApiService.getLastMessages()
+  loadPrevious(): void {
+    this.getLastMessages(this.defaultPageSize);
+  }
+
+  private getLastMessages(size = 0): void {
+    this.chatApiService.getLastMessages(this._currentPageSize + size)
       .pipe(
         finalize(() => {
-          this.scrollToBot();
+          if (!size) this.scrollToBot();
         }),
         switchMap((response) => of(response.reverse())),
         takeUntil(this.destroy$)
       ).subscribe((messages) => {
         this.commonService.pushLastMessages(messages);
+        this._currentPageSize = messages.length;
       });
   }
 

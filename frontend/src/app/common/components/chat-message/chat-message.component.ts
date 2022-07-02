@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SecurityContext, SimpleChanges, ViewChild } from '@angular/core';
 
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { Observable, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { AuthService } from 'src/app/auth/services/auth.service';
@@ -59,6 +59,8 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
 
   private date: Date;
 
+  private today = new Date();
+
   private destroy$ = new Subject<void>();
 
   private _message: IMessage;
@@ -73,6 +75,12 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
 
   get isMessageEdited(): boolean {
     return !!this.message.oldText?.length;
+  }
+
+  get isToday(): boolean {
+    return this.date?.getDate() === this.today.getDate() &&
+      this.date?.getMonth() === this.today.getMonth() &&
+      this.date?.getFullYear() === this.today.getFullYear();
   }
 
   get safeText(): string {
@@ -128,9 +136,10 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   submitToUser(text: string): void {
+    const newDate =  new Date();
     const newMessage = new ChatMessage(
       this.authService.getCurrentUser(),
-      text, new Date()
+      text, newDate.toDateString()
     );
 
     this.chatApiService

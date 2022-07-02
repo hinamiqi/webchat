@@ -29,7 +29,7 @@ export class ChatApiService {
     return this.http.post<IMessage>(`${this.backendApi}/chat/${message.id}`, message);
   }
 
-  getLastMessages(): Observable<IMessage[]> {
-    return this.http.get<IMessage[]>(`${this.backendApi}/chat?page=0&size=10&sort=date,desc`);
+  getLastMessages(size = 10): Observable<IMessage[]> {
+    return this.http.get<IMessage[]>(`${this.backendApi}/chat?page=0&size=${size}&sort=date,desc`);
   }
 }
