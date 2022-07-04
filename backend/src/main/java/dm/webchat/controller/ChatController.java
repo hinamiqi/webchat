@@ -1,5 +1,6 @@
 package dm.webchat.controller;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -40,6 +41,15 @@ public class ChatController {
     @GetMapping("")
     public List<ChatMessageDto> getLastChatMessages(Pageable pageable) {
         Page<ChatMessage> messages = chatService.getChatMessages(pageable);
+        return messages.stream()
+            .map(ChatMessageDto::new)
+            .collect(Collectors.toList());
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('USER')")
+    @PostMapping("/to-date")
+    public List<ChatMessageDto> getMessagesToDate(Pageable pageable, @RequestBody ZonedDateTime date) {
+        Page<ChatMessage> messages = chatService.getChatMessagesToDate(pageable, date);
         return messages.stream()
             .map(ChatMessageDto::new)
             .collect(Collectors.toList());

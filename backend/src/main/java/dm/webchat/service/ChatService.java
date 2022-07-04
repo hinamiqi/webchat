@@ -83,6 +83,10 @@ public class ChatService {
         return chatMessageRepository.findAll(page);
     }
 
+    public Page<ChatMessage> getChatMessagesToDate(Pageable page, ZonedDateTime date) {
+        return chatMessageRepository.findByDateIsGreaterThan(page, date);
+    }
+
     public ChatMessage deleteMessage(Long id) {
         String currentUserLogin = SecurityUtils
             .getCurrentUserLogin()
@@ -136,9 +140,8 @@ public class ChatService {
     }
 
     private void validateMessageDate(ChatMessage message) {
-        ZonedDateTime msgDate = ZonedDateTime.parse(message.getDate());
         ZonedDateTime calcDate = ZonedDateTime.now().minus(messageAlterTimeMinutes, ChronoUnit.MINUTES);
-        if (!msgDate.isAfter(calcDate)) {
+        if (!message.getDate().isAfter(calcDate)) {
             throw new BadRequestHttpException(String.format("Message with id = %s is too old and can't be altered", message.getId()));
         }
     }

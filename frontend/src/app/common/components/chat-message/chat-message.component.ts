@@ -137,7 +137,7 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
     const newDate =  new Date();
     const newMessage = new ChatMessage(
       this.authService.getCurrentUser(),
-      text, newDate.toDateString()
+      text, newDate
     );
 
     this.chatApiService

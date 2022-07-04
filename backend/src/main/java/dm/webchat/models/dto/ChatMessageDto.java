@@ -1,6 +1,7 @@
 package dm.webchat.models.dto;
 
 import java.io.Serializable;
+import java.time.ZonedDateTime;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -17,7 +18,7 @@ import lombok.NoArgsConstructor;
 public class ChatMessageDto implements Serializable {
     @JsonProperty("author")
     private UserDto author;
-    private String date;
+    private ZonedDateTime date;
     private String text;
     private String oldText;
     private Long id;

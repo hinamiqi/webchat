@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 
 import { IMessage } from 'src/app/models/message/message.interface';
 import { environment } from 'src/environments/environment';
+import { DEFAULT_CHAT_PAGE_SIZE } from 'src/app/shared/constants/settings.const';
 
 @Injectable({providedIn: 'root'})
 export class ChatApiService {
@@ -29,7 +30,11 @@ export class ChatApiService {
     return this.http.post<IMessage>(`${this.backendApi}/chat/${message.id}`, message);
   }
 
-  getLastMessages(size = 10): Observable<IMessage[]> {
+  getLastMessages(size = DEFAULT_CHAT_PAGE_SIZE): Observable<IMessage[]> {
     return this.http.get<IMessage[]>(`${this.backendApi}/chat?page=0&size=${size}&sort=date,desc`);
+  }
+
+  getMessageToDate(date: Date, size = DEFAULT_CHAT_PAGE_SIZE): Observable<IMessage[]> {
+    return this.http.post<IMessage[]>(`${this.backendApi}/chat/to-date?page=0&size=${size}&sort=date,desc`, date);
   }
 }

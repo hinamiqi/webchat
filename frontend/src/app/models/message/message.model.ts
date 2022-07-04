@@ -5,7 +5,7 @@ export class ChatMessage implements IMessage {
   constructor(
     public author: User,
     public text: string,
-    public date: string,
+    public date: Date,
     public id?: number,
   ) { }
 }

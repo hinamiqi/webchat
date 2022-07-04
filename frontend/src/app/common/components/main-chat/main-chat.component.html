@@ -7,8 +7,12 @@
   </li>
 </ul>
 <div #chat class="messages-container">
-  <div class="flex-container">
+  <div class="flex-container scroll-actions">
     <a class="nav-link scroll-btn" (click)="loadPrevious()">Previous {{ defaultPageSize }}...</a>
+    <div class="input-group scroll-btn-container">
+      <a class="input-group-text nav-link scroll-btn" (click)="goToDate()">Scroll to...</a>
+      <input type="date" class="form-control scroll-btn" [(ngModel)]="scrollToDate">
+    </div>
   </div>
   <app-chat-message
     *ngFor="let message of (messages$ | async)"

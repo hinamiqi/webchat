@@ -124,7 +124,7 @@ export class CommonService {
       const msgDate = new Date(msg.date);
       if (!DateHelperService.isSameDate(msgDate, prevDate)) {
         const separator = Object.assign({}, msg);
-        separator.date = msgDate.toDateString();
+        separator.date = msgDate;
         separator.isSeparator = true;
         view.push(separator);
       }

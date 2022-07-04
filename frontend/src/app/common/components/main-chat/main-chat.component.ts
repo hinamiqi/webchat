@@ -7,6 +7,7 @@ import { finalize, map, switchMap, takeUntil } from 'rxjs/operators';
 import { AuthService } from 'src/app/auth/services/auth.service';
 import { IMessage } from 'src/app/models/message/message.interface';
 import { ChatMessage } from 'src/app/models/message/message.model';
+import { DEFAULT_CHAT_PAGE_SIZE } from 'src/app/shared/constants/settings.const';
 import { UserStatusService } from 'src/app/shared/services/user-status.service';
 
 import { ChatApiService } from '../../services/chat-api.service';
@@ -35,7 +36,9 @@ export class MainChatComponent implements OnInit, OnDestroy {
 
   currentTab: string;
 
-  readonly defaultPageSize = 10;
+  scrollToDate: string;
+
+  readonly defaultPageSize = DEFAULT_CHAT_PAGE_SIZE;
 
   private _currentPageSize = this.defaultPageSize;
 
@@ -101,7 +104,7 @@ export class MainChatComponent implements OnInit, OnDestroy {
     const newDate =  new Date();
     const newMessage = new ChatMessage(
       this.authService.getCurrentUser(),
-      text, newDate.toDateString()
+      text, newDate
     );
 
     this.chatApiService.addMessage(newMessage)
@@ -143,6 +146,22 @@ export class MainChatComponent implements OnInit, OnDestroy {
 
   loadPrevious(): void {
     this.getLastMessages(this.defaultPageSize);
+  }
+
+  goToDate(): void {
+    if (!this.scrollToDate) return;
+
+    const parsed = Date.parse(this.scrollToDate);
+    const date = new Date(parsed);
+
+    this.chatApiService.getMessageToDate(date)
+      .pipe(
+        switchMap((response) => of(response.reverse())),
+        takeUntil(this.destroy$)
+      ).subscribe((messages) => {
+        this.commonService.pushLastMessages(messages);
+        this._currentPageSize = messages.length;
+      });
   }
 
   private getLastMessages(size = 0): void {

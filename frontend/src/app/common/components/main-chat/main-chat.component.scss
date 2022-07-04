@@ -4,10 +4,25 @@ textarea {
   max-height: 200px;
 }
 
+.scroll-actions {
+  gap: 8px;
+}
+
 .scroll-btn {
   border-radius: 10px;
   border-width: 1px;
   border-style: solid;
   border-color: $base-grey;
   cursor: pointer;
+}
+
+.scroll-btn-container {
+  flex: 0 1 fit-content;;
+
+  display: flex;
+  flex-direction: row;
+
+  input {
+    flex: 0 1 fit-content;
+  }
 }

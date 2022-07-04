@@ -1,5 +1,7 @@
 package dm.webchat.models;
 
+import java.time.ZonedDateTime;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -35,7 +37,7 @@ public class ChatMessage {
     private User author;
 
     @Column
-    private String date;
+    private ZonedDateTime date;
 
     @Column
     private String text;
