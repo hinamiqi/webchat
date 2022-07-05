@@ -2,8 +2,9 @@ CREATE TABLE IF NOT EXISTS chat_message
 (
     id            BIGINT NOT NULL,
     author_id     BIGINT,
-    date          VARCHAR(30),
+    date          timestamp,
     text          text,
+    old_text      text,
 
     PRIMARY KEY( id )
 );
