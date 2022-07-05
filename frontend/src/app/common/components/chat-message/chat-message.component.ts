@@ -123,6 +123,10 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
     this.editMode = true;
   }
 
+  reply(): void {
+    this.commonService.addMessageToReply(this._message);
+  }
+
   submit(text: string): void {
     this.editMode = false;
 

@@ -1,5 +1,10 @@
 import { User } from '../auth/user.model';
 
+export interface IRepliedMessage {
+  id: number;
+  preview: string;
+}
+
 export interface IMessage {
   author: User;
   text: string;
@@ -7,4 +12,5 @@ export interface IMessage {
   id?: number;
   oldText?: string;
   isSeparator?: boolean;
+  repliedMessages?: IRepliedMessage[];
 }

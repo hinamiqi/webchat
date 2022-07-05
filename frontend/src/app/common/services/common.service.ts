@@ -5,14 +5,20 @@ import { filter, switchMap } from 'rxjs/operators';
 import { AuthService } from 'src/app/auth/services/auth.service';
 import { User } from 'src/app/models/auth/user.model';
 
-import { IMessage } from 'src/app/models/message/message.interface';
+import { IMessage, IRepliedMessage } from 'src/app/models/message/message.interface';
 import { MessageList } from 'src/app/models/message/private-message-list.interface';
 import { GlobalEventWebSocketType, IGlobalEvent } from 'src/app/models/websocket/global-event.interface';
+import { MESSAGE_TO_REPLY_PREVIEW_LENGTH } from 'src/app/shared/constants/settings.const';
+import { ELLIPSIS } from 'src/app/shared/constants/string.const';
 import { UserStatusService } from 'src/app/shared/services/user-status.service';
 import { DateHelperService } from 'src/app/utils/services/date-helper.service';
 
 @Injectable({providedIn: 'root'})
 export class CommonService {
+  get messageToReply(): IRepliedMessage[] {
+    return this._messageToReply;
+  }
+
   readonly messages$: Observable<MessageList>;
 
   readonly newMessages$: Observable<Map<string, number>>;
@@ -20,6 +26,8 @@ export class CommonService {
   private _messages$ = new BehaviorSubject<MessageList>(new Map());
 
   private _newMessages$ = new BehaviorSubject<Map<string, number>>(new Map());
+
+  private _messageToReply: IRepliedMessage[] = [];
 
   constructor(
     private readonly userStatusService: UserStatusService,
@@ -77,6 +85,17 @@ export class CommonService {
       default:
         break;
     }
+  }
+
+  addMessageToReply(message: IMessage): void {
+    const preview = message.text.length < MESSAGE_TO_REPLY_PREVIEW_LENGTH
+      ? message.text
+      : message.text.substring(0, MESSAGE_TO_REPLY_PREVIEW_LENGTH - 1) + ELLIPSIS;
+    this._messageToReply.push({ id: message.id, preview });
+  }
+
+  clearMessageToReply(): void {
+    this._messageToReply = [];
   }
 
   private pushNewMessages(chatKey: string, messages: IMessage[], count = 1): void {

@@ -1,3 +1,5 @@
+@import "variables";
+
 .message-container {
   display: flex;
   flex-direction: row;
@@ -64,11 +66,13 @@
 // Action icon bar
 
 .action-icons {
-  font-size: 10px;
+  font-size: 13px;
   width: 35px;
   height: 15px;
   position: absolute;
   right: 5px;
+
+  cursor: pointer;
 
   display: inline-flex;
   align-items: center;
@@ -88,4 +92,13 @@
   color: dodgerblue;
   text-decoration: underline;
   cursor: pointer;
+}
+
+.replied-messages {
+  padding: 5px;
+
+  &__item {
+    color: grey;
+    font-size: smaller;
+  }
 }

@@ -2,6 +2,8 @@ package dm.webchat.models.dto;
 
 import java.io.Serializable;
 import java.time.ZonedDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
@@ -22,6 +24,7 @@ public class ChatMessageDto implements Serializable {
     private String text;
     private String oldText;
     private Long id;
+    private List<RepliedMessageDto> repliedMessages;
 
     public ChatMessageDto(ChatMessage chatMessage) {
         this.author = new UserDto(chatMessage.getAuthor());
@@ -29,5 +32,8 @@ public class ChatMessageDto implements Serializable {
         this.text = chatMessage.getText();
         this.oldText = chatMessage.getOldText();
         this.id = chatMessage.getId();
+        this.repliedMessages = chatMessage.getRepliedMessages().stream()
+          .map(RepliedMessageDto::new)
+          .collect(Collectors.toList());
     }
 }

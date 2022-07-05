@@ -5,7 +5,7 @@ import { Observable, of, Subject } from 'rxjs';
 import { finalize, map, switchMap, takeUntil } from 'rxjs/operators';
 
 import { AuthService } from 'src/app/auth/services/auth.service';
-import { IMessage } from 'src/app/models/message/message.interface';
+import { IMessage, IRepliedMessage } from 'src/app/models/message/message.interface';
 import { ChatMessage } from 'src/app/models/message/message.model';
 import { DEFAULT_CHAT_PAGE_SIZE } from 'src/app/shared/constants/settings.const';
 import { UserStatusService } from 'src/app/shared/services/user-status.service';
@@ -52,6 +52,10 @@ export class MainChatComponent implements OnInit, OnDestroy {
     return !this.currentTab;
   }
 
+  get messageToReply(): IRepliedMessage[] {
+    return this.commonService.messageToReply;
+  }
+
   constructor(
     private readonly fb: UntypedFormBuilder,
     private readonly ngZone: NgZone,
@@ -94,6 +98,7 @@ export class MainChatComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
+    this.commonService.clearMessageToReply();
   }
 
   submit(text: string): void {

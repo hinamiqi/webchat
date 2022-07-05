@@ -1,1 +1,3 @@
 export const DEFAULT_CHAT_PAGE_SIZE = 10;
+
+export const MESSAGE_TO_REPLY_PREVIEW_LENGTH = 30;

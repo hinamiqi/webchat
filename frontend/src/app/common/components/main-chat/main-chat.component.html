@@ -20,6 +20,9 @@
     (removed)="removeMessage($event)"
   ></app-chat-message>
 </div>
+<div class="message-to-reply" *ngIf="messageToReply.length">
+  <p *ngFor="let m of messageToReply">> {{ m.preview }}</p>
+</div>
 <app-message-input [(ngModel)]="lastMessage"
                   (submitted)="submit($event)">
 </app-message-input>

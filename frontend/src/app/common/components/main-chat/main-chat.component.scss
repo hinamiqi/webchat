@@ -26,3 +26,11 @@ textarea {
     flex: 0 1 fit-content;
   }
 }
+
+.message-to-reply {
+  border-left: 2px solid grey;
+  padding: 0 8px;
+  margin: 8px;
+  font-size: smaller;
+  color: grey;
+}

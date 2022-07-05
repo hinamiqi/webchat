@@ -11,6 +11,13 @@
         *ngIf="canAlterMessage"
         (click)="remove()"></i>
     </span>
+    <span class="action-icons">
+      <i class="icon bi bi-reply-fill"
+        (click)="reply()"></i>
+    </span>
+    <div class="replied-messages" *ngIf="message.repliedMessages.length">
+      <p class="replied-messages__item" *ngFor="let m of message.repliedMessages">> {{ m.preview }}</p>
+    </div>
     <div *ngIf="!isDiffShow" [innerHTML]="safeText"></div>
     <div *ngIf="isDiffShow && isMessageEdited" [innerHTML]="messageDiff"></div>
     <p class="sign">

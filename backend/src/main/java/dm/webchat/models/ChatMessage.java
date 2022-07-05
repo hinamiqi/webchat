@@ -1,6 +1,7 @@
 package dm.webchat.models;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -8,7 +9,9 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
@@ -44,4 +47,10 @@ public class ChatMessage {
 
     @Column(name = "old_text")
     private String oldText;
+
+    @OneToMany
+    @JoinTable(name = "message_reply_link",
+               joinColumns = @JoinColumn(name = "message_id"),
+               inverseJoinColumns = @JoinColumn(name = "reply_message_id"))
+    private List<ChatMessage> repliedMessages;
 }
