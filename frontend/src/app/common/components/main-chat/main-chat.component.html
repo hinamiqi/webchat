@@ -21,7 +21,10 @@
   ></app-chat-message>
 </div>
 <div class="message-to-reply" *ngIf="messageToReply.length">
-  <p *ngFor="let m of messageToReply">> {{ m.preview }}</p>
+  <span *ngFor="let m of messageToReply">
+    <span (click)="scrollToMessage(m.id)">{{ m.preview }}</span>
+    <i class="icon bi bi-x-lg" (click)="removeReply(m)"></i>
+  </span>
 </div>
 <app-message-input [(ngModel)]="lastMessage"
                   (submitted)="submit($event)">

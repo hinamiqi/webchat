@@ -8,7 +8,7 @@ import { User } from 'src/app/models/auth/user.model';
 import { IMessage, IRepliedMessage } from 'src/app/models/message/message.interface';
 import { MessageList } from 'src/app/models/message/private-message-list.interface';
 import { GlobalEventWebSocketType, IGlobalEvent } from 'src/app/models/websocket/global-event.interface';
-import { MESSAGE_TO_REPLY_PREVIEW_LENGTH } from 'src/app/shared/constants/settings.const';
+import { MAX_REPLY_MESSAGES, MESSAGE_TO_REPLY_PREVIEW_LENGTH } from 'src/app/shared/constants/settings.const';
 import { ELLIPSIS } from 'src/app/shared/constants/string.const';
 import { UserStatusService } from 'src/app/shared/services/user-status.service';
 import { DateHelperService } from 'src/app/utils/services/date-helper.service';
@@ -88,10 +88,16 @@ export class CommonService {
   }
 
   addMessageToReply(message: IMessage): void {
+    const isInReplyAlready = this._messageToReply.find((m) => m.id === message.id);
+    if (isInReplyAlready || this._messageToReply.length >= MAX_REPLY_MESSAGES) return;
     const preview = message.text.length < MESSAGE_TO_REPLY_PREVIEW_LENGTH
       ? message.text
       : message.text.substring(0, MESSAGE_TO_REPLY_PREVIEW_LENGTH - 1) + ELLIPSIS;
     this._messageToReply.push({ id: message.id, preview });
+  }
+
+  removeMessageFromReply(message: IRepliedMessage): void {
+    this._messageToReply = this._messageToReply.filter((m) => m.id !== message.id);
   }
 
   clearMessageToReply(): void {

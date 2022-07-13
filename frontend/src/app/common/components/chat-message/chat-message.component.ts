@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SecurityContext, SimpleChanges, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SecurityContext, SimpleChanges, ViewChild } from '@angular/core';
 
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
@@ -86,6 +86,7 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   constructor(
+    public elementRef: ElementRef,
     private readonly sanitizer: DomSanitizer,
     private readonly avatarService: AvatarService,
     private readonly authService: AuthService,

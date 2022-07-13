@@ -28,9 +28,27 @@ textarea {
 }
 
 .message-to-reply {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
   border-left: 2px solid grey;
   padding: 0 8px;
   margin: 8px;
   font-size: smaller;
   color: grey;
+
+  > span {
+    display: inline-flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-direction: row;
+    gap: 8px;
+
+    i {
+      cursor: pointer;
+      font-size: smaller;
+      color: brown;
+    }
+  }
 }

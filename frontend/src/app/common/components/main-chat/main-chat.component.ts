@@ -1,4 +1,4 @@
-import { Component, ElementRef, NgZone, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, NgZone, OnDestroy, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
 import { AbstractControl, UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 
 import { Observable, of, Subject } from 'rxjs';
@@ -12,6 +12,7 @@ import { UserStatusService } from 'src/app/shared/services/user-status.service';
 
 import { ChatApiService } from '../../services/chat-api.service';
 import { CommonService } from '../../services/common.service';
+import { ChatMessageComponent } from '../chat-message/chat-message.component';
 
 @Component({
   selector: 'app-chat',
@@ -21,6 +22,8 @@ import { CommonService } from '../../services/common.service';
 
 export class MainChatComponent implements OnInit, OnDestroy {
   @ViewChild('chat') messageContainer: ElementRef;
+
+  @ViewChildren(ChatMessageComponent) messageQueryList: QueryList<ChatMessageComponent>;
 
   form: UntypedFormGroup;
 
@@ -129,6 +132,10 @@ export class MainChatComponent implements OnInit, OnDestroy {
       .subscribe(() => {});
   }
 
+  removeReply(message: IRepliedMessage): void {
+    this.commonService.removeMessageFromReply(message);
+  }
+
   changeChat(chatName: string): void {
     if (this.currentTab === chatName) return;
 
@@ -166,6 +173,22 @@ export class MainChatComponent implements OnInit, OnDestroy {
       ).subscribe((messages) => {
         this.commonService.pushLastMessages(messages);
         this._currentPageSize = messages.length;
+      });
+  }
+
+  scrollToMessage(messageId: number): void {
+    this.messages$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((messages) => {
+        const index = messages.findIndex((m) => m.id === messageId);
+        console.log(index);
+        const message = this.messageQueryList.find((m) => m.message.id === messageId);
+
+        this.ngZone.runOutsideAngular(() => {
+          setTimeout(() => {
+            message.elementRef.nativeElement.scrollIntoView({behavior: 'smooth'});
+          }, 100);
+        });
       });
   }
 
