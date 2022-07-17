@@ -16,7 +16,8 @@
         (click)="reply()"></i>
     </span>
     <div class="replied-messages" *ngIf="message.repliedMessages.length">
-      <p class="replied-messages__item" *ngFor="let m of message.repliedMessages">> {{ m.preview }}</p>
+      <p class="replied-messages__item cursor-pointer" *ngFor="let m of message.repliedMessages"
+         (click)="scrollToMessage(m)">> {{ m.preview }}</p>
     </div>
     <div *ngIf="!isDiffShow" [innerHTML]="safeText"></div>
     <div *ngIf="isDiffShow && isMessageEdited" [innerHTML]="messageDiff"></div>

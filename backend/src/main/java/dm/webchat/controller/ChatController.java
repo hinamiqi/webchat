@@ -56,6 +56,15 @@ public class ChatController {
     }
 
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('USER')")
+    @PostMapping("/to-message")
+    public List<ChatMessageDto> getMessagesToMessage(Pageable pageable, @RequestBody Long messageId) {
+        List<ChatMessage> messages = chatService.getChatMessagesToMessage(messageId);
+        return messages.stream()
+            .map(ChatMessageDto::new)
+            .collect(Collectors.toList());
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('USER')")
     @PostMapping("/private/{userId}")
     public void postPrivateMessageToUser(@RequestBody ChatMessageDto messageDto, @PathVariable UUID userId) {
         privateMessageService.sendPrivateMessage(messageDto, userId);

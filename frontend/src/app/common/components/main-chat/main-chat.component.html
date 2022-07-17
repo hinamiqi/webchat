@@ -17,12 +17,14 @@
   <app-chat-message
     *ngFor="let message of (messages$ | async)"
     [message]="message"
+    [ngClass]="{ highlighted: highlightMessageId === message.id}"
     (removed)="removeMessage($event)"
   ></app-chat-message>
 </div>
+<div class="cursor-pointer" *ngIf="prevScrollMessageId" (click)="goToPrevMessage()"><i class="icon bi bi-chevron-down"></i></div>
 <div class="message-to-reply" *ngIf="messageToReply.length">
   <span *ngFor="let m of messageToReply">
-    <span (click)="scrollToMessage(m.id)">{{ m.preview }}</span>
+    <span class="cursor-pointer" (click)="scrollToMessage(m.id)">{{ m.preview }}</span>
     <i class="icon bi bi-x-lg" (click)="removeReply(m)"></i>
   </span>
 </div>

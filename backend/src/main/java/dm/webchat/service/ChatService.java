@@ -3,6 +3,7 @@ package dm.webchat.service;
 import java.security.Principal;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 import javax.transaction.Transactional;
 
@@ -85,6 +86,11 @@ public class ChatService {
 
     public Page<ChatMessage> getChatMessagesToDate(Pageable page, ZonedDateTime date) {
         return chatMessageRepository.findByDateIsGreaterThan(page, date);
+    }
+
+    public List<ChatMessage> getChatMessagesToMessage(Long messageId) {
+        ChatMessage message = chatMessageRepository.getById(messageId);
+        return chatMessageRepository.findByDateIsGreaterThanEqualOrderByDateDesc(message.getDate());
     }
 
     public ChatMessage deleteMessage(Long id) {

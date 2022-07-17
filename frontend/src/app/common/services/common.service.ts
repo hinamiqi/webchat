@@ -23,9 +23,13 @@ export class CommonService {
 
   readonly newMessages$: Observable<Map<string, number>>;
 
+  readonly scrollQueue$: Observable<number[]>;
+
   private _messages$ = new BehaviorSubject<MessageList>(new Map());
 
   private _newMessages$ = new BehaviorSubject<Map<string, number>>(new Map());
+
+  private _scrollQueue$ = new BehaviorSubject<number[]>(null);
 
   private _messageToReply: IRepliedMessage[] = [];
 
@@ -35,6 +39,7 @@ export class CommonService {
   ) {
     this.messages$ = this._messages$.asObservable();
     this.newMessages$ = this._newMessages$.asObservable();
+    this.scrollQueue$ = this._scrollQueue$.asObservable();
   }
 
   pushPrivateMessage(msg: IMessage): void {
@@ -65,6 +70,10 @@ export class CommonService {
   getMainMessages(): Observable<IMessage[]> {
     return this.messages$
       .pipe(switchMap((messageList) => of(this.getMessagesView(messageList.get(null)))))
+  }
+
+  getCurrentMessages(key: string = null): IMessage[] {
+    return this._messages$.value.get(key);
   }
 
   handleGlobalEvent(event: IGlobalEvent): void {
@@ -102,6 +111,21 @@ export class CommonService {
 
   clearMessageToReply(): void {
     this._messageToReply = [];
+  }
+
+  scrollToMessage(toMessageId: number, fromMessageId: number): void {
+    let queue = this._scrollQueue$.value;
+    if (!queue) queue = [];
+    queue.push(fromMessageId);
+    queue.push(toMessageId);
+    this._scrollQueue$.next(queue);
+  }
+
+  goToPrevMessage(): void {
+    let queue = this._scrollQueue$.value;
+    queue.pop();
+    this._scrollQueue$.next(queue);
+    queue.pop();
   }
 
   private pushNewMessages(chatKey: string, messages: IMessage[], count = 1): void {

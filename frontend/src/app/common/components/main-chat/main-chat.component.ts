@@ -2,7 +2,7 @@ import { Component, ElementRef, NgZone, OnDestroy, OnInit, QueryList, ViewChild,
 import { AbstractControl, UntypedFormBuilder, UntypedFormGroup } from '@angular/forms';
 
 import { Observable, of, Subject } from 'rxjs';
-import { finalize, map, switchMap, takeUntil } from 'rxjs/operators';
+import { filter, finalize, map, switchMap, takeUntil } from 'rxjs/operators';
 
 import { AuthService } from 'src/app/auth/services/auth.service';
 import { IMessage, IRepliedMessage } from 'src/app/models/message/message.interface';
@@ -23,7 +23,16 @@ import { ChatMessageComponent } from '../chat-message/chat-message.component';
 export class MainChatComponent implements OnInit, OnDestroy {
   @ViewChild('chat') messageContainer: ElementRef;
 
-  @ViewChildren(ChatMessageComponent) messageQueryList: QueryList<ChatMessageComponent>;
+  @ViewChildren(ChatMessageComponent) set messageQueryList(val: QueryList<ChatMessageComponent>) {
+    if (!!this.messageToScrollId) {
+      this.scrollToMessage(this.messageToScrollId);
+    }
+    this._messageQueryList = val;
+  }
+  get messageQueryList(): QueryList<ChatMessageComponent> {
+    return this._messageQueryList;
+  }
+  _messageQueryList: QueryList<ChatMessageComponent>;
 
   form: UntypedFormGroup;
 
@@ -40,6 +49,12 @@ export class MainChatComponent implements OnInit, OnDestroy {
   currentTab: string;
 
   scrollToDate: string;
+
+  prevScrollMessageId: number;
+
+  messageToScrollId: number;
+
+  highlightMessageId: number
 
   readonly defaultPageSize = DEFAULT_CHAT_PAGE_SIZE;
 
@@ -94,6 +109,22 @@ export class MainChatComponent implements OnInit, OnDestroy {
         if (count > 0) this.scrollToBot();
         this.newMessagesCount = counts;
       });
+
+    this.commonService.scrollQueue$
+    .pipe(
+      filter((queue) => !!queue),
+      takeUntil(this.destroy$)
+    )
+    .subscribe((queue) => {
+      if (queue.length > 1) {
+        this.prevScrollMessageId = queue[queue.length - 2];
+        this.highlightMessageId = queue[queue.length - 1];
+      } else {
+        this.prevScrollMessageId = undefined;
+      }
+
+      this.scrollToMessage(queue[queue.length - 1]);
+    });
 
     this.getLastMessages();
   }
@@ -177,19 +208,26 @@ export class MainChatComponent implements OnInit, OnDestroy {
   }
 
   scrollToMessage(messageId: number): void {
-    this.messages$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((messages) => {
-        const index = messages.findIndex((m) => m.id === messageId);
-        console.log(index);
-        const message = this.messageQueryList.find((m) => m.message.id === messageId);
-
-        this.ngZone.runOutsideAngular(() => {
-          setTimeout(() => {
-            message.elementRef.nativeElement.scrollIntoView({behavior: 'smooth'});
-          }, 100);
+    const messageToScroll = this.messageQueryList.find((m) => m.message.id === messageId);
+    if (!!messageToScroll) {
+      this.messageToScrollId = undefined;
+      this.scrollMessageToView(messageToScroll);
+    } else {
+      this.messageToScrollId = messageId;
+      this.chatApiService.getToMessage(messageId)
+        .pipe(
+          switchMap((response) => of(response.reverse())),
+          takeUntil(this.destroy$)
+        ).subscribe((messages) => {
+          this.commonService.pushLastMessages(messages);
+          this._currentPageSize = messages.length;
         });
-      });
+    }
+  }
+
+  goToPrevMessage(): void {
+    this.highlightMessageId = undefined;
+    this.commonService.goToPrevMessage();
   }
 
   private getLastMessages(size = 0): void {
@@ -213,6 +251,14 @@ export class MainChatComponent implements OnInit, OnDestroy {
           top: this.messageContainer.nativeElement.scrollHeight,
           behavior: 'auto',
         });
+      }, 100);
+    });
+  }
+
+  private scrollMessageToView(message: ChatMessageComponent): void {
+    this.ngZone.runOutsideAngular(() => {
+      setTimeout(() => {
+        message.elementRef.nativeElement.scrollIntoView({behavior: 'smooth'});
       }, 100);
     });
   }

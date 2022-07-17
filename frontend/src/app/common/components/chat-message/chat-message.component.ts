@@ -5,7 +5,7 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { AuthService } from 'src/app/auth/services/auth.service';
-import { IMessage } from 'src/app/models/message/message.interface';
+import { IMessage, IRepliedMessage } from 'src/app/models/message/message.interface';
 import { AvatarService } from 'src/app/shared/services/avatar.service';
 import { DateHelperService } from 'src/app/utils/services/date-helper.service';
 import { DEFAULT_MSG_ALTER_TIME_MINUTES } from 'src/app/app.config';
@@ -163,9 +163,13 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
     this.isDiffShow = false;
   }
 
-  openPopup() {
+  openPopup(): void {
     if (!this.config.canSendPrivate) return;
     this.dialog.open();
+  }
+
+  scrollToMessage(toMessage: IRepliedMessage): void {
+    this.commonService.scrollToMessage(toMessage.id, this._message.id);
   }
 
   private setMessageDiff(message: IMessage): void {
