@@ -4,6 +4,7 @@ import java.security.Principal;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
 
@@ -18,6 +19,7 @@ import dm.webchat.helper.SecurityUtils;
 import dm.webchat.models.ChatMessage;
 import dm.webchat.models.User;
 import dm.webchat.models.dto.ChatMessageDto;
+import dm.webchat.models.dto.RepliedMessageDto;
 import dm.webchat.repositories.ChatMessageRepository;
 import dm.webchat.repositories.UserRepository;
 
@@ -119,10 +121,18 @@ public class ChatService {
     private ChatMessage addMessageToDb(User author, ChatMessageDto msgDto) {
         validateMessageText(msgDto);
 
+        List<ChatMessage> repliedMessages = this.chatMessageRepository.findAllById(
+            msgDto.getRepliedMessages()
+              .stream()
+              .map(RepliedMessageDto::getId)
+              .collect(Collectors.toList())
+        );
+
         return chatMessageRepository.save(ChatMessage.builder()
             .author(author)
             .date(msgDto.getDate())
             .text(msgDto.getText())
+            .repliedMessages(repliedMessages)
             .build()
         );
     }

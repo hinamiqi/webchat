@@ -143,11 +143,16 @@ export class MainChatComponent implements OnInit, OnDestroy {
     const newDate =  new Date();
     const newMessage = new ChatMessage(
       this.authService.getCurrentUser(),
-      text, newDate
+      text, newDate, this.messageToReply
     );
 
     this.chatApiService.addMessage(newMessage)
-      .pipe(takeUntil(this.destroy$))
+      .pipe(
+        finalize(() => {
+          this.commonService.clearMessageToReply();
+        }),
+        takeUntil(this.destroy$)
+      )
       .subscribe(() => {
         this.lastMessage = null;
       });

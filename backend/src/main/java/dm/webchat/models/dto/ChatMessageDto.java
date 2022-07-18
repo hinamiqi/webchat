@@ -32,8 +32,10 @@ public class ChatMessageDto implements Serializable {
         this.text = chatMessage.getText();
         this.oldText = chatMessage.getOldText();
         this.id = chatMessage.getId();
-        this.repliedMessages = chatMessage.getRepliedMessages().stream()
-          .map(RepliedMessageDto::new)
-          .collect(Collectors.toList());
+        if (chatMessage.getRepliedMessages() != null) {
+            this.repliedMessages = chatMessage.getRepliedMessages().stream()
+                .map(RepliedMessageDto::new)
+                .collect(Collectors.toList());
+        }
     }
 }

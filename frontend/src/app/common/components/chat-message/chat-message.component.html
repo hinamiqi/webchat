@@ -15,7 +15,7 @@
       <i class="icon bi bi-reply-fill"
         (click)="reply()"></i>
     </span>
-    <div class="replied-messages" *ngIf="message.repliedMessages.length">
+    <div class="replied-messages" *ngIf="message.repliedMessages?.length">
       <p class="replied-messages__item cursor-pointer" *ngFor="let m of message.repliedMessages"
          (click)="scrollToMessage(m)">> {{ m.preview }}</p>
     </div>
