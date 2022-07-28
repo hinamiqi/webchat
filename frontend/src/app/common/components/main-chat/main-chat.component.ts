@@ -54,7 +54,9 @@ export class MainChatComponent implements OnInit, OnDestroy {
 
   messageToScrollId: number;
 
-  highlightMessageId: number
+  highlightMessageId: number;
+
+  showScrollDown = false;
 
   readonly defaultPageSize = DEFAULT_CHAT_PAGE_SIZE;
 
@@ -212,6 +214,10 @@ export class MainChatComponent implements OnInit, OnDestroy {
       });
   }
 
+  chatScrolled(): void {
+    this.showScrollDown = !this.isScrolledToBot();
+  }
+
   scrollToMessage(messageId: number): void {
     const messageToScroll = this.messageQueryList.find((m) => m.message.id === messageId);
     if (!!messageToScroll) {
@@ -230,9 +236,13 @@ export class MainChatComponent implements OnInit, OnDestroy {
     }
   }
 
-  goToPrevMessage(): void {
-    this.highlightMessageId = undefined;
-    this.commonService.goToPrevMessage();
+  scrollDown(): void {
+    if (this.prevScrollMessageId) {
+      this.highlightMessageId = undefined;
+      this.commonService.goToPrevMessage();
+    } else {
+      this.scrollToBot();
+    }
   }
 
   private getLastMessages(size = 0): void {
@@ -264,7 +274,13 @@ export class MainChatComponent implements OnInit, OnDestroy {
     this.ngZone.runOutsideAngular(() => {
       setTimeout(() => {
         message.elementRef.nativeElement.scrollIntoView({behavior: 'smooth'});
+        this.chatScrolled();
       }, 100);
     });
+  }
+
+  private isScrolledToBot(): boolean {
+    if (!this.messageContainer) return true;
+    return this.messageContainer.nativeElement.scrollHeight - this.messageContainer.nativeElement.clientHeight === this.messageContainer.nativeElement.scrollTop;
   }
 }

@@ -6,7 +6,7 @@
     </a>
   </li>
 </ul>
-<div #chat class="messages-container">
+<div #chat class="messages-container" (scroll)="chatScrolled()">
   <div class="flex-container scroll-actions">
     <a class="nav-link scroll-btn" (click)="loadPrevious()">Previous {{ defaultPageSize }}...</a>
     <div class="input-group scroll-btn-container">
@@ -20,8 +20,10 @@
     [ngClass]="{ highlighted: highlightMessageId === message.id}"
     (removed)="removeMessage($event)"
   ></app-chat-message>
+  <div class="scroll-down cursor-pointer" *ngIf="showScrollDown" (click)="scrollDown()">
+    <i class="icon bi bi-chevron-down"></i>
+  </div>
 </div>
-<div class="cursor-pointer" *ngIf="prevScrollMessageId" (click)="goToPrevMessage()"><i class="icon bi bi-chevron-down"></i></div>
 <div class="message-to-reply" *ngIf="messageToReply.length">
   <span *ngFor="let m of messageToReply">
     <span class="cursor-pointer" (click)="scrollToMessage(m.id)">{{ m.preview }}</span>

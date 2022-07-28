@@ -32,11 +32,11 @@ textarea {
   flex-direction: column;
   gap: 8px;
 
-  border-left: 2px solid grey;
+  border-left: 2px solid $base-grey;
   padding: 0 8px;
   margin: 8px;
   font-size: smaller;
-  color: grey;
+  color: $base-grey;
 
   > span {
     display: inline-flex;
@@ -54,5 +54,28 @@ textarea {
 }
 
 .highlighted {
-  background-color: grey;
+  background-color: $highlight;
+}
+
+.messages-container {
+  position: relative;
+
+  .scroll-down {
+
+    width: 24px;
+    height: 24px;
+
+    position: fixed;
+    z-index: 1;
+    right: 30%;
+    top: 43%;
+
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+
+    border-radius: 50%;
+    background-color: $highlight;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.2);
+  }
 }
