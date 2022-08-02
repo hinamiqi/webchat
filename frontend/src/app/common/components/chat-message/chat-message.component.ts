@@ -14,7 +14,7 @@ import { SimpleDialogComponent } from 'src/app/shared/components/simple-dialog/s
 import { ChatMessage } from 'src/app/models/message/message.model';
 
 import { ChatApiService } from '../../services/chat-api.service';
-import { CommonService } from '../../services/common.service';
+import { MessageService } from '../../services/message.service';
 
 import { ChatMessageConfig, IChatMessageConfig } from './chat-message-config.model';
 
@@ -92,7 +92,7 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
     private readonly authService: AuthService,
     private readonly userStatusService: UserStatusService,
     private readonly chatApiService: ChatApiService,
-    private readonly commonService: CommonService
+    private readonly commonService: MessageService
   ) {}
 
   ngOnInit(): void {

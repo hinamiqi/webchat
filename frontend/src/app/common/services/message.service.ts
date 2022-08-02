@@ -14,7 +14,7 @@ import { UserStatusService } from 'src/app/shared/services/user-status.service';
 import { DateHelperService } from 'src/app/utils/services/date-helper.service';
 
 @Injectable({providedIn: 'root'})
-export class CommonService {
+export class MessageService {
   get messageToReply(): IRepliedMessage[] {
     return this._messageToReply;
   }

@@ -5,7 +5,7 @@ import { takeUntil, filter } from 'rxjs/operators'
 
 import { AuthService } from '../auth/services/auth.service';
 import { WebSocketService } from '../shared/services/web-socket.service';
-import { CommonService } from './services/common.service';
+import { MessageService } from './services/message.service';
 
 @Component({
   selector: 'app-common',
@@ -39,7 +39,7 @@ export class CommonComponent implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly authService: AuthService,
     private readonly websocketService: WebSocketService,
-    private readonly commonService: CommonService
+    private readonly commonService: MessageService
     ) { }
 
   ngOnInit(): void {

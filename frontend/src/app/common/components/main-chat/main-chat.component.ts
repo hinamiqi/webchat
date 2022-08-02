@@ -11,7 +11,7 @@ import { DEFAULT_CHAT_PAGE_SIZE } from 'src/app/shared/constants/settings.const'
 import { UserStatusService } from 'src/app/shared/services/user-status.service';
 
 import { ChatApiService } from '../../services/chat-api.service';
-import { CommonService } from '../../services/common.service';
+import { MessageService } from '../../services/message.service';
 import { ChatMessageComponent } from '../chat-message/chat-message.component';
 
 @Component({
@@ -78,11 +78,11 @@ export class MainChatComponent implements OnInit, OnDestroy {
 
   constructor(
     private readonly fb: UntypedFormBuilder,
-    private readonly ngZone: NgZone,
+    private readonly ngZone: NgZone,//TODO remove
     private readonly chatApiService: ChatApiService,
     private readonly authService: AuthService,
     private readonly userStatusService: UserStatusService,
-    private readonly commonService: CommonService
+    private readonly commonService: MessageService
   ) { }
 
   ngOnInit(): void {
