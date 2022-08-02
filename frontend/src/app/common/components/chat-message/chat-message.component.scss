@@ -15,7 +15,7 @@
   max-width: 100%;
 
   border-radius: 8px;
-  border: 1px solid rgb(194, 194, 194);
+  border: 1px solid $base-grey;
 
   padding: 2px 5px;
 
@@ -39,13 +39,13 @@
 .author-is-current-user {
   justify-content: flex-end;
   .message {
-    background-color: rgb(194, 194, 194);
+    background-color: $base-grey;
   }
 }
 
 .sign {
   font-size: smaller;
-  color: grey;
+  color: $dark-grey;
   display: inline-flex;
   align-items: center;
   gap: 2px;
@@ -67,7 +67,7 @@
 
 .action-icons {
   font-size: 13px;
-  width: 35px;
+  width: fit-content;
   height: 15px;
   position: absolute;
   right: 5px;
@@ -77,6 +77,19 @@
   display: inline-flex;
   align-items: center;
   justify-content: flex-end;
+
+  &__item {
+    width: 19px;
+    height: 19px;
+    border-radius: 50%;
+
+    background-color: $base-grey-transparent;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.2);
+
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+  }
 }
 
 .message-container:hover .action-icons {
@@ -89,7 +102,7 @@
 }
 
 .user-name:hover {
-  color: dodgerblue;
+  color: $highlight;
   text-decoration: underline;
   cursor: pointer;
 }
@@ -98,7 +111,7 @@
   padding: 5px;
 
   &__item {
-    color: grey;
+    color: $dark-grey;
     font-size: smaller;
   }
 }

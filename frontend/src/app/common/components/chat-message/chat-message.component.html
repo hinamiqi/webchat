@@ -4,16 +4,9 @@
        class="avatar">
   <div class="message" *ngIf="!editMode" (mouseover)="showDiff()" (mouseout)="hideDiff()">
     <span class="action-icons" *ngIf="config.editable">
-      <i class="icon bi bi-pencil-fill"
-        *ngIf="canAlterMessage"
-        (click)="edit()"></i>
-      <i class="icon bi bi-x-lg"
-        *ngIf="canAlterMessage"
-        (click)="remove()"></i>
-    </span>
-    <span class="action-icons">
-      <i class="icon bi bi-reply-fill"
-        (click)="reply()"></i>
+      <span class="action-icons__item" *ngIf="canAlterMessage"><i class="icon bi bi-pencil-fill" (click)="edit()"></i></span>
+      <span class="action-icons__item" *ngIf="canAlterMessage"><i class="icon bi bi-x-lg" (click)="remove()"></i></span>
+      <span class="action-icons__item"><i class="icon bi bi-reply-fill" (click)="reply()"></i></span>
     </span>
     <div class="replied-messages" *ngIf="message.repliedMessages?.length">
       <p class="replied-messages__item cursor-pointer" *ngFor="let m of message.repliedMessages"

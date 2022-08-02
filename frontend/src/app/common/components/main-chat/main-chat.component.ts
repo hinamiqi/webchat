@@ -237,8 +237,8 @@ export class MainChatComponent implements OnInit, OnDestroy {
   }
 
   scrollDown(): void {
+    this.highlightMessageId = undefined;
     if (this.prevScrollMessageId) {
-      this.highlightMessageId = undefined;
       this.commonService.goToPrevMessage();
     } else {
       this.scrollToBot();
