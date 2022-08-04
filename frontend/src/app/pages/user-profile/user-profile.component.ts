@@ -7,6 +7,7 @@ import { UserRoles } from 'src/app/auth/constants/user-roles.const';
 import { AuthApiService } from 'src/app/auth/services/auth-api.service';
 
 import { AuthService } from 'src/app/auth/services/auth.service';
+import { UserProfileService } from '../services/user-profile.service';
 
 const DEFAULT_CHANGE_PASSWORD_ERROR = `Can't change password for unknown reason`;
 @Component({
@@ -26,12 +27,19 @@ export class UserProfileComponent implements OnInit {
 
   changePasswordErrorMsg: string;
 
+  selectedFile: File;
+
+  retrievedImage: any;
+
+  imageName: string;
+
   private destroy$ = new Subject<void>();
 
   constructor(
     private readonly authService: AuthService,
     private readonly fb: UntypedFormBuilder,
-    private readonly authApiService: AuthApiService
+    private readonly authApiService: AuthApiService,
+    private readonly userProfileService: UserProfileService
   ) { }
 
   ngOnInit() {
@@ -63,6 +71,30 @@ export class UserProfileComponent implements OnInit {
       },
       (err: HttpErrorResponse) =>{
         this.changePasswordErrorMsg = err.message;
+      });
+  }
+
+  onFileChanged(event): void {
+    console.log(event);
+    console.log(typeof event);
+    this.selectedFile = event.target.files[0];
+  }
+
+  onUpload(): void {
+    console.log(this.selectedFile);
+    this.userProfileService.uploadImage(this.selectedFile)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((response) => {
+        console.log(response);
+      });
+  }
+
+  getImage(): void {
+    this.userProfileService.getImage(this.imageName)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((response) => {
+        console.log(response);
+        this.retrievedImage = 'data:image/jpeg;base64,' + response.picByte;
       });
   }
 }
