@@ -28,6 +28,8 @@ textarea {
 }
 
 .message-to-reply {
+  position: relative;
+
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -57,25 +59,24 @@ textarea {
   background-color: $highlight;
 }
 
-.messages-container {
+.bottom {
   position: relative;
+}
 
-  .scroll-down {
+.scroll-down {
+  position: absolute;
+  z-index: 10;
+  top: -20%;
+  left: 90%;
 
-    width: 24px;
-    height: 24px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
 
-    position: fixed;
-    z-index: 1;
-    right: 30%;
-    top: 43%;
+  width: 24px;
+  height: 24px;
 
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-
-    border-radius: 50%;
-    background-color: $highlight;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.2);
-  }
+  border-radius: 50%;
+  background-color: $highlight;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.2);
 }

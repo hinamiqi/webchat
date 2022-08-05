@@ -20,9 +20,7 @@
     [ngClass]="{ highlighted: highlightMessageId === message.id}"
     (removed)="removeMessage($event)"
   ></app-chat-message>
-  <div class="scroll-down cursor-pointer" *ngIf="showScrollDown" (click)="scrollDown()">
-    <i class="icon bi bi-chevron-down"></i>
-  </div>
+
 </div>
 <div class="message-to-reply" *ngIf="messageToReply.length">
   <span *ngFor="let m of messageToReply">
@@ -30,6 +28,9 @@
     <i class="icon bi bi-x-lg" (click)="removeReply(m)"></i>
   </span>
 </div>
-<app-message-input [(ngModel)]="lastMessage"
-                  (submitted)="submit($event)">
-</app-message-input>
+<div class="bottom">
+  <app-message-input [(ngModel)]="lastMessage"
+    (submitted)="submit($event)">
+  </app-message-input>
+  <span class="scroll-down cursor-pointer" *ngIf="showScrollDown" (click)="scrollDown()"><i class="icon bi bi-chevron-down"></i></span>
+</div>
