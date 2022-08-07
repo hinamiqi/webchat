@@ -3,6 +3,8 @@ package dm.webchat.service;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.zip.DataFormatException;
 import java.util.zip.Deflater;
 import java.util.zip.Inflater;
@@ -20,10 +22,16 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class FileService {
-    private final ImageRepository imageRepository; 
+    private final ImageRepository imageRepository;
+
     public MemeDto getMeme(String name) {
         ImageModel image = imageRepository.findByName(name).orElseThrow(() -> new NotFoundException("No image with name = " + name));
         return new MemeDto(image, decompressBytes(image.getPicByte()));
+    }
+
+    public List<MemeDto> getAllMemes() {
+        List<ImageModel> images = imageRepository.findAll();
+        return images.stream().map(image -> new MemeDto(image, decompressBytes(image.getPicByte()))).collect(Collectors.toList());
     }
 
     public MemeDto uploadMeme(MultipartFile file) {

@@ -7,7 +7,7 @@ import { UserRoles } from 'src/app/auth/constants/user-roles.const';
 import { AuthApiService } from 'src/app/auth/services/auth-api.service';
 
 import { AuthService } from 'src/app/auth/services/auth.service';
-import { UserProfileService } from '../services/user-profile.service';
+import { ImageService } from '../../common/services/images.service';
 
 const DEFAULT_CHANGE_PASSWORD_ERROR = `Can't change password for unknown reason`;
 @Component({
@@ -33,13 +33,15 @@ export class UserProfileComponent implements OnInit {
 
   imageName: string;
 
+  canUploadImage: boolean;
+
   private destroy$ = new Subject<void>();
 
   constructor(
     private readonly authService: AuthService,
     private readonly fb: UntypedFormBuilder,
     private readonly authApiService: AuthApiService,
-    private readonly userProfileService: UserProfileService
+    private readonly imageService: ImageService
   ) { }
 
   ngOnInit() {
@@ -55,9 +57,16 @@ export class UserProfileComponent implements OnInit {
       oldPassword: ['', Validators.required],
       newPassword: ['', Validators.required]
     });
+
+    this.loadPrivileges();
   }
 
-  changePassword() {
+  loadPrivileges(): void {
+    const userRoles = this.authService.getCurrentUser().roles;
+    this.canUploadImage = userRoles.includes(UserRoles.ADMIN);
+  }
+
+  changePassword(): void {
     if (this.changePasswordForm.invalid) return;
 
     this.authApiService.changePassword(this.changePasswordForm.value)
@@ -81,8 +90,12 @@ export class UserProfileComponent implements OnInit {
   }
 
   onUpload(): void {
-    console.log(this.selectedFile);
-    this.userProfileService.uploadImage(this.selectedFile)
+    if (!this.selectedFile) {
+      alert("No file chosen!");
+      return;
+    }
+
+    this.imageService.uploadImage(this.selectedFile)
       .pipe(takeUntil(this.destroy$))
       .subscribe((response) => {
         console.log(response);
@@ -90,11 +103,18 @@ export class UserProfileComponent implements OnInit {
   }
 
   getImage(): void {
-    this.userProfileService.getImage(this.imageName)
+    if (!this.imageName) {
+      alert("Input filename!");
+      return;
+    }
+
+    this.imageService.getImage(this.imageName)
       .pipe(takeUntil(this.destroy$))
       .subscribe((response) => {
         console.log(response);
         this.retrievedImage = 'data:image/jpeg;base64,' + response.picByte;
+      }, (err: HttpErrorResponse) => {
+        alert(err.error?.errorMessage);
       });
   }
 }

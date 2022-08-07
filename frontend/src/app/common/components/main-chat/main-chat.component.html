@@ -20,7 +20,6 @@
     [ngClass]="{ highlighted: highlightMessageId === message.id}"
     (removed)="removeMessage($event)"
   ></app-chat-message>
-
 </div>
 <div class="message-to-reply" *ngIf="messageToReply.length">
   <span *ngFor="let m of messageToReply">
@@ -30,7 +29,14 @@
 </div>
 <div class="bottom">
   <app-message-input [(ngModel)]="lastMessage"
-    (submitted)="submit($event)">
+    [canAddImage]="true"
+    (submitted)="submit($event)"
+    (addImageEvent)="addImage()">
   </app-message-input>
   <span class="scroll-down cursor-pointer" *ngIf="showScrollDown" (click)="scrollDown()"><i class="icon bi bi-chevron-down"></i></span>
 </div>
+<app-simple-dialog #addImageDialog [dialogTitle]="'Chose image'">
+  <div class="image-select" *ngIf="imageList?.length">
+    <img class="image-select__preview" *ngFor="let image of imageList" [src]="image.picByte" (click)="submitImage(image)">
+  </div>
+</app-simple-dialog>

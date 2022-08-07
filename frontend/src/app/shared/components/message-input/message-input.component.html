@@ -7,7 +7,9 @@
               required="true">
     </textarea>
   </div>
-  <div class="col-12">
+  <div class="col-12 actions">
     <button class="btn btn-primary" type="submit">Send</button>
+    <button *ngIf="canAddImage" class="btn btn-primary" (click)="addImage()">Add image</button>
+    <button *ngIf="showCancelBtn" class="btn btn-primary" (click)="cancel()">Cancel</button>
   </div>
 </form>

@@ -1,9 +1,10 @@
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { AbstractControl, ControlValueAccessor, NG_VALUE_ACCESSOR, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-message-input',
   templateUrl: './message-input.component.html',
+  styleUrls: ['./message-input.component.scss'],
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -15,7 +16,15 @@ import { AbstractControl, ControlValueAccessor, NG_VALUE_ACCESSOR, UntypedFormBu
 export class MessageInputComponent implements OnInit, ControlValueAccessor {
   @Input() initialText: string;
 
+  @Input() canAddImage: boolean;
+
+  @Input() showCancelBtn: boolean;
+
   @Output() submitted = new EventEmitter<string>();
+
+  @Output() addImageEvent = new EventEmitter<void>();
+
+  @Output() cancelEvent = new EventEmitter<void>();
 
   form: UntypedFormGroup;
 
@@ -72,5 +81,13 @@ export class MessageInputComponent implements OnInit, ControlValueAccessor {
     if (!this.messageControl.value) return;
 
     this.submitted.emit(<string>this.messageControl.value);
+  }
+
+  addImage(): void {
+    this.addImageEvent.emit();
+  }
+
+  cancel(): void {
+    this.cancelEvent.emit();
   }
 }

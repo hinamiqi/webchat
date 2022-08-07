@@ -1,5 +1,7 @@
 package dm.webchat.controller;
 
+import java.util.List;
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,6 +28,12 @@ public class FileController {
     }
 
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('USER')")
+    @GetMapping("/meme/get-all")
+    public List<MemeDto> getAllMemes() {
+        return fileService.getAllMemes();
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping("/meme")
     public MemeDto uploadMeme(@RequestBody MultipartFile file) {
         return fileService.uploadMeme(file);

@@ -120,8 +120,8 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
     this.removed.emit(this.message);
   }
 
-  edit(): void {
-    this.editMode = true;
+  toggleEdit(): void {
+    this.editMode = !this.editMode;
   }
 
   reply(): void {

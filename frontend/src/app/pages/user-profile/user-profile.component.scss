@@ -1,7 +1,22 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 .list-item {
   :first-child {
     font-size: smaller;
     color: grey;
     margin: unset;
   }
+}
+
+.item > .row {
+  margin-bottom: 8px;
+}
+
+.image-preview {
+  max-width: 100px;
+  max-height: 100px;
 }

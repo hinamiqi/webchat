@@ -5,13 +5,16 @@ import { Observable, of, Subject } from 'rxjs';
 import { filter, finalize, map, switchMap, takeUntil } from 'rxjs/operators';
 
 import { AuthService } from 'src/app/auth/services/auth.service';
+import { IImage } from 'src/app/models/file/image.interface';
 import { IMessage, IRepliedMessage } from 'src/app/models/message/message.interface';
 import { ChatMessage } from 'src/app/models/message/message.model';
+import { SimpleDialogComponent } from 'src/app/shared/components/simple-dialog/simple-dialog.component';
 import { DEFAULT_CHAT_PAGE_SIZE } from 'src/app/shared/constants/settings.const';
 import { UserStatusService } from 'src/app/shared/services/user-status.service';
 
 import { ChatApiService } from '../../services/chat-api.service';
 import { MessageService } from '../../services/message.service';
+import { ImageService } from '../../services/images.service';
 import { ChatMessageComponent } from '../chat-message/chat-message.component';
 
 @Component({
@@ -22,6 +25,8 @@ import { ChatMessageComponent } from '../chat-message/chat-message.component';
 
 export class MainChatComponent implements OnInit, OnDestroy {
   @ViewChild('chat') messageContainer: ElementRef;
+
+  @ViewChild('addImageDialog') addImageDialog: SimpleDialogComponent;
 
   @ViewChildren(ChatMessageComponent) set messageQueryList(val: QueryList<ChatMessageComponent>) {
     if (!!this.messageToScrollId) {
@@ -58,6 +63,8 @@ export class MainChatComponent implements OnInit, OnDestroy {
 
   showScrollDown = false;
 
+  imageList: IImage[];
+
   readonly defaultPageSize = DEFAULT_CHAT_PAGE_SIZE;
 
   private _currentPageSize = this.defaultPageSize;
@@ -82,7 +89,8 @@ export class MainChatComponent implements OnInit, OnDestroy {
     private readonly chatApiService: ChatApiService,
     private readonly authService: AuthService,
     private readonly userStatusService: UserStatusService,
-    private readonly commonService: MessageService
+    private readonly commonService: MessageService,
+    private readonly imageService: ImageService,
   ) { }
 
   ngOnInit(): void {
@@ -243,6 +251,20 @@ export class MainChatComponent implements OnInit, OnDestroy {
     } else {
       this.scrollToBot();
     }
+  }
+
+  addImage(): void {
+    this.imageService.getAllImages()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((response) => {
+        this.imageList = response.map((i) =>({ ...i, picByte: 'data:image/jpeg;base64,' + i.picByte }));
+      });
+    this.addImageDialog.open();
+  }
+
+  submitImage(image: IImage): void {
+    console.log(`Send image ${image.name}`);
+    this.addImageDialog.close();
   }
 
   private getLastMessages(size = 0): void {

@@ -4,7 +4,7 @@
        class="avatar">
   <div class="message" *ngIf="!editMode" (mouseover)="showDiff()" (mouseout)="hideDiff()">
     <span class="action-icons" *ngIf="config.editable">
-      <span class="action-icons__item" *ngIf="canAlterMessage"><i class="icon bi bi-pencil-fill" (click)="edit()"></i></span>
+      <span class="action-icons__item" *ngIf="canAlterMessage"><i class="icon bi bi-pencil-fill" (click)="toggleEdit()"></i></span>
       <span class="action-icons__item" *ngIf="canAlterMessage"><i class="icon bi bi-x-lg" (click)="remove()"></i></span>
       <span class="action-icons__item"><i class="icon bi bi-reply-fill" (click)="reply()"></i></span>
     </span>
@@ -26,7 +26,9 @@
   <div class="message" *ngIf="editMode">
     <app-message-input
       [initialText]="message.text"
+      [showCancelBtn]="true"
       (submitted)="submit($event)"
+      (cancelEvent)="toggleEdit()"
     ></app-message-input>
   </div>
 </div>
@@ -35,5 +37,5 @@
   <app-message-input
       [initialText]="message.text"
       (submitted)="submitToUser($event)"
-    ></app-message-input>
+  ></app-message-input>
 </app-simple-dialog>
