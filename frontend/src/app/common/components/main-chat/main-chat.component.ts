@@ -16,6 +16,7 @@ import { ChatApiService } from '../../services/chat-api.service';
 import { MessageService } from '../../services/message.service';
 import { ImageService } from '../../services/images.service';
 import { ChatMessageComponent } from '../chat-message/chat-message.component';
+import { IMeme } from 'src/app/models/file/meme.interface';
 
 @Component({
   selector: 'app-chat',
@@ -63,7 +64,7 @@ export class MainChatComponent implements OnInit, OnDestroy {
 
   showScrollDown = false;
 
-  imageList: IImage[];
+  memeList: IMeme[];
 
   readonly defaultPageSize = DEFAULT_CHAT_PAGE_SIZE;
 
@@ -92,6 +93,10 @@ export class MainChatComponent implements OnInit, OnDestroy {
     private readonly commonService: MessageService,
     private readonly imageService: ImageService,
   ) { }
+
+  getSrcFromImage = (image: IImage) => {
+      return `data:image/jpeg;base64,${image.picByte}`;
+  };
 
   ngOnInit(): void {
     this.form = this.fb.group({
@@ -254,16 +259,17 @@ export class MainChatComponent implements OnInit, OnDestroy {
   }
 
   addImage(): void {
-    this.imageService.getAllImages()
+    this.imageService.getAllMemes()
       .pipe(takeUntil(this.destroy$))
       .subscribe((response) => {
-        this.imageList = response.map((i) =>({ ...i, picByte: 'data:image/jpeg;base64,' + i.picByte }));
+        console.log(response);
+        this.memeList = response;
       });
     this.addImageDialog.open();
   }
 
-  submitImage(image: IImage): void {
-    console.log(`Send image ${image.name}`);
+  submitMeme(meme: IMeme): void {
+    console.log(`Submit meme ${meme.name} containing image ${meme.image.name}`);
     this.addImageDialog.close();
   }
 

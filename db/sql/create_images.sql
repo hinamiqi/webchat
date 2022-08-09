@@ -8,4 +8,4 @@ CREATE TABLE IF NOT EXISTS images
     PRIMARY KEY( id )
 );
 
-ALTER TABLE IF EXISTS chat_message owner TO postgres;
+ALTER TABLE IF EXISTS images owner TO postgres;

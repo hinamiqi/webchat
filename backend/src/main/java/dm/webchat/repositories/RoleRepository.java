@@ -8,6 +8,6 @@ import org.springframework.stereotype.Repository;
 import dm.webchat.models.Role;
 
 @Repository
-public interface RoleRepository  extends JpaRepository<Role, Long> {
+public interface RoleRepository extends JpaRepository<Role, Long> {
     Optional<Role> findByName(String name);
 }
