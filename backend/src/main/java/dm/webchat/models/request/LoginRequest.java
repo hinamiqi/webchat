@@ -1,4 +1,4 @@
-package dm.webchat.models;
+package dm.webchat.models.request;
 
 import lombok.Getter;
 import lombok.NonNull;

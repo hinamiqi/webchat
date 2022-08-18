@@ -3,9 +3,11 @@ package dm.webchat.service;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import dm.webchat.controller.exception.InternalException;
@@ -37,6 +39,7 @@ public class FileService {
         return images.stream().map(image -> new ImageDto(image, FileHelper.decompressBytes(image.getPicByte()))).collect(Collectors.toList());
     }
 
+    @Transactional
     public ImageDto uploadImage(MultipartFile file) {
         byte[] bytes;
         try {
@@ -51,6 +54,26 @@ public class FileService {
             .picByte(FileHelper.compressBytes(bytes))
             .build());
         return new ImageDto(newImage);
+    }
+
+    @Transactional
+    public MemeDto uploadMeme(MultipartFile file, String name) {
+        byte[] bytes;
+        try {
+            bytes = file.getBytes();
+        } catch (IOException e) {
+            throw new InternalException("Something wrong with this file");
+        }
+
+        ImageModel newImage = imageRepository.save(ImageModel.builder()
+            .name(file.getOriginalFilename())
+            .type(file.getContentType())
+            .picByte(FileHelper.compressBytes(bytes))
+            .build());
+
+        Meme meme = memeRepository.save(Meme.builder().uuid(UUID.randomUUID()).image(newImage).name(name).build());
+
+        return new MemeDto(meme);
     }
 
     public List<MemeDto> getAllMemes() {

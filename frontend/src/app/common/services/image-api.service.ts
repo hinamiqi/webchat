@@ -20,6 +20,12 @@ export class ImageApiService {
     return this.http.post<IImage>(`${this.backendApi}/file/image`, uploadImageData);
   }
 
+  uploadMeme(file: File, name: string): Observable<IMeme> {
+    const form = new FormData();
+    form.append('file', file, name);
+    return this.http.post<IMeme>(`${this.backendApi}/file/meme`, form);
+  }
+
   getImage(name: string): Observable<IImage> {
     let params = new HttpParams();
     params = params.append('name', name);

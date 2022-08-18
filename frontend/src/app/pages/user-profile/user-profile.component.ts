@@ -29,7 +29,7 @@ export class UserProfileComponent implements OnInit {
 
   selectedFile: File;
 
-  retrievedImage: any;
+  selectedImage: any;
 
   imageName: string;
 
@@ -41,7 +41,7 @@ export class UserProfileComponent implements OnInit {
     private readonly authService: AuthService,
     private readonly fb: UntypedFormBuilder,
     private readonly authApiService: AuthApiService,
-    private readonly imageService: ImageApiService
+    private readonly imageApiService: ImageApiService
   ) { }
 
   ngOnInit() {
@@ -87,6 +87,9 @@ export class UserProfileComponent implements OnInit {
     console.log(event);
     console.log(typeof event);
     this.selectedFile = event.target.files[0];
+    const reader = new FileReader();
+    reader.onload = e => this.selectedImage = reader.result;
+    reader.readAsDataURL(this.selectedFile);
   }
 
   onUpload(): void {
@@ -95,26 +98,15 @@ export class UserProfileComponent implements OnInit {
       return;
     }
 
-    this.imageService.uploadImage(this.selectedFile)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((response) => {
-        console.log(response);
-      });
-  }
-
-  getImage(): void {
     if (!this.imageName) {
-      alert("Input filename!");
+      alert("No meme name chosen!");
       return;
     }
 
-    this.imageService.getImage(this.imageName)
+    this.imageApiService.uploadMeme(this.selectedFile, this.imageName)
       .pipe(takeUntil(this.destroy$))
       .subscribe((response) => {
         console.log(response);
-        this.retrievedImage = 'data:image/jpeg;base64,' + response.picByte;
-      }, (err: HttpErrorResponse) => {
-        alert(err.error?.errorMessage);
       });
   }
 }

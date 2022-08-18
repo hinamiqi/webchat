@@ -51,4 +51,10 @@ public class FileController {
     public MemeDto getMeme(@RequestParam String name) {
         return fileService.getMeme(name);
     }
+
+    @PreAuthorize("hasAuthority('ADMIN')")
+    @PostMapping("/meme")
+    public MemeDto uploadMeme(@RequestBody MultipartFile file) {
+        return fileService.uploadMeme(file, file.getOriginalFilename());
+    }
 }

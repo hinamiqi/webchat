@@ -1,4 +1,4 @@
-package dm.webchat.models;
+package dm.webchat.models.request;
 
 import java.util.List;
 import java.util.UUID;
