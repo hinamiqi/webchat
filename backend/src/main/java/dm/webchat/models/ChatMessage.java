@@ -12,6 +12,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.SequenceGenerator;
 import javax.persistence.Table;
 
@@ -53,4 +54,10 @@ public class ChatMessage {
                joinColumns = @JoinColumn(name = "message_id"),
                inverseJoinColumns = @JoinColumn(name = "reply_message_id"))
     private List<ChatMessage> repliedMessages;
+
+    @OneToOne
+    @JoinTable(name = "message_meme_link",
+               joinColumns = @JoinColumn(name = "message_id"),
+               inverseJoinColumns = @JoinColumn(name = "meme_uuid"))
+    private Meme meme;
 }

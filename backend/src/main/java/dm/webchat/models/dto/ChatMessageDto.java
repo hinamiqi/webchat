@@ -25,6 +25,7 @@ public class ChatMessageDto implements Serializable {
     private String oldText;
     private Long id;
     private List<RepliedMessageDto> repliedMessages;
+    private String memeName;
 
     public ChatMessageDto(ChatMessage chatMessage) {
         this.author = new UserDto(chatMessage.getAuthor());
@@ -36,6 +37,9 @@ public class ChatMessageDto implements Serializable {
             this.repliedMessages = chatMessage.getRepliedMessages().stream()
                 .map(RepliedMessageDto::new)
                 .collect(Collectors.toList());
+        }
+        if (chatMessage.getMeme() != null) {
+            this.memeName = chatMessage.getMeme().getName();
         }
     }
 }

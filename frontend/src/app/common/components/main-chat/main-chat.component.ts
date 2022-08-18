@@ -14,7 +14,7 @@ import { UserStatusService } from 'src/app/shared/services/user-status.service';
 
 import { ChatApiService } from '../../services/chat-api.service';
 import { MessageService } from '../../services/message.service';
-import { ImageService } from '../../services/images.service';
+import { ImageApiService } from '../../services/image-api.service';
 import { ChatMessageComponent } from '../chat-message/chat-message.component';
 import { IMeme } from 'src/app/models/file/meme.interface';
 
@@ -91,7 +91,7 @@ export class MainChatComponent implements OnInit, OnDestroy {
     private readonly authService: AuthService,
     private readonly userStatusService: UserStatusService,
     private readonly commonService: MessageService,
-    private readonly imageService: ImageService,
+    private readonly imageService: ImageApiService,
   ) { }
 
   getSrcFromImage = (image: IImage) => {
@@ -150,15 +150,13 @@ export class MainChatComponent implements OnInit, OnDestroy {
     this.commonService.clearMessageToReply();
   }
 
-  submit(text: string): void {
-    if (!text) return;
-
+  submit(text: string, meme?: IMeme): void {
     this.lastMessage = text;
 
     const newDate =  new Date();
     const newMessage = new ChatMessage(
       this.authService.getCurrentUser(),
-      text, newDate, this.messageToReply
+      text, newDate, this.messageToReply, meme?.name || null
     );
 
     this.chatApiService.addMessage(newMessage)
@@ -171,6 +169,12 @@ export class MainChatComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         this.lastMessage = null;
       });
+  }
+
+  submitMeme(meme: IMeme): void {
+    console.log(`Submit meme ${meme.name} containing image ${meme.image.name}`);
+    this.submit(null, meme);
+    this.addImageDialog.close();
   }
 
   removeMessage(message: IMessage): void {
@@ -266,11 +270,6 @@ export class MainChatComponent implements OnInit, OnDestroy {
         this.memeList = response;
       });
     this.addImageDialog.open();
-  }
-
-  submitMeme(meme: IMeme): void {
-    console.log(`Submit meme ${meme.name} containing image ${meme.image.name}`);
-    this.addImageDialog.close();
   }
 
   private getLastMessages(size = 0): void {

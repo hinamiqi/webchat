@@ -7,6 +7,6 @@ export class ChatMessage implements IMessage {
     public text: string,
     public date: Date,
     public repliedMessages: IRepliedMessage[],
-    public id?: number
+    public memeName?: string
   ) { }
 }

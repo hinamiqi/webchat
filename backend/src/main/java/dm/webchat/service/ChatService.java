@@ -17,10 +17,12 @@ import dm.webchat.controller.exception.BadRequestHttpException;
 import dm.webchat.controller.exception.NotFoundException;
 import dm.webchat.helper.SecurityUtils;
 import dm.webchat.models.ChatMessage;
+import dm.webchat.models.Meme;
 import dm.webchat.models.User;
 import dm.webchat.models.dto.ChatMessageDto;
 import dm.webchat.models.dto.RepliedMessageDto;
 import dm.webchat.repositories.ChatMessageRepository;
+import dm.webchat.repositories.MemeRepository;
 import dm.webchat.repositories.UserRepository;
 
 import static dm.webchat.helper.EmptinessHelper.*;
@@ -35,6 +37,8 @@ public class ChatService {
     private final UserRepository userRepository;
 
     private final WebSocketService webSocketService;
+
+    private final MemeRepository memeRepository;
 
     @Value("${app.messageAlterTimeMinutes:1}")
     private int messageAlterTimeMinutes;
@@ -128,11 +132,14 @@ public class ChatService {
               .collect(Collectors.toList())
         );
 
+        Meme memeEntity = memeRepository.findByName(msgDto.getMemeName()).orElse(null);
+
         return chatMessageRepository.save(ChatMessage.builder()
             .author(author)
             .date(msgDto.getDate())
             .text(msgDto.getText())
             .repliedMessages(repliedMessages)
+            .meme(memeEntity)
             .build()
         );
     }
@@ -163,8 +170,8 @@ public class ChatService {
     }
 
     private void validateMessageText(ChatMessageDto msgDto) {
-        if (isEmpty(msgDto.getText())) {
-            throw new BadRequestHttpException("Message text can't be empty");
+        if (isEmpty(msgDto.getText()) && isEmpty(msgDto.getMemeName())) {
+            throw new BadRequestHttpException("Either message text or meme name should be present");
         }
     }
 }

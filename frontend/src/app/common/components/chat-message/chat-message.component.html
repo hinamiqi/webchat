@@ -1,6 +1,6 @@
 <div *ngIf="!message.isSeparator" class="message-container" [ngClass]="{ 'author-is-current-user': isCurrentUserAuthor }">
   <img *ngIf="!isCurrentUserAuthor"
-       [src]="imageSource"
+       [src]="avatarImageSource"
        class="avatar">
   <div class="message" *ngIf="!editMode" (mouseover)="showDiff()" (mouseout)="hideDiff()">
     <span class="action-icons" *ngIf="config.editable">
@@ -12,8 +12,14 @@
       <p class="replied-messages__item cursor-pointer" *ngFor="let m of message.repliedMessages"
          (click)="scrollToMessage(m)">> {{ m.preview }}</p>
     </div>
-    <div *ngIf="!isDiffShow" [innerHTML]="safeText"></div>
-    <div *ngIf="isDiffShow && isMessageEdited" [innerHTML]="messageDiff"></div>
+    <ng-container *ngIf="!isMeme">
+      <div *ngIf="!isDiffShow" [innerHTML]="safeText"></div>
+      <div *ngIf="isDiffShow && isMessageEdited" [innerHTML]="messageDiff"></div>
+    </ng-container>
+    <ng-container *ngIf="isMeme">
+      <img [src]="memeImageSource" class="meme">
+      <div>{{ message.memeName }}</div>
+    </ng-container>
     <p class="sign">
       <span class="user-status" [ngClass]="{ 'user-online': isOnline }"></span>
       <span *ngIf="config.canSendPrivate" class="user-name" (click)="openPopup()">{{ message.author.username }}</span>

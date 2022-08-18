@@ -36,6 +36,13 @@
   margin-right: 5px;
 }
 
+.meme {
+  flex: 0 1;
+  width: 200px;
+  height: 200px;
+  padding: 8px;
+}
+
 .author-is-current-user {
   justify-content: flex-end;
   .message {

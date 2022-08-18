@@ -7,7 +7,7 @@ import { UserRoles } from 'src/app/auth/constants/user-roles.const';
 import { AuthApiService } from 'src/app/auth/services/auth-api.service';
 
 import { AuthService } from 'src/app/auth/services/auth.service';
-import { ImageService } from '../../common/services/images.service';
+import { ImageApiService } from '../../common/services/image-api.service';
 
 const DEFAULT_CHANGE_PASSWORD_ERROR = `Can't change password for unknown reason`;
 @Component({
@@ -41,7 +41,7 @@ export class UserProfileComponent implements OnInit {
     private readonly authService: AuthService,
     private readonly fb: UntypedFormBuilder,
     private readonly authApiService: AuthApiService,
-    private readonly imageService: ImageService
+    private readonly imageService: ImageApiService
   ) { }
 
   ngOnInit() {

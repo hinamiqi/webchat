@@ -45,4 +45,10 @@ public class FileController {
     public List<MemeDto> getAllMemes() {
         return fileService.getAllMemes();
     }
+
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('USER')")
+    @GetMapping("/meme")
+    public MemeDto getMeme(@RequestParam String name) {
+        return fileService.getMeme(name);
+    }
 }

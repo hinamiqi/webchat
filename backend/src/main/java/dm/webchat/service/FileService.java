@@ -57,4 +57,9 @@ public class FileService {
         List<Meme> memes = memeRepository.findAll();
         return memes.stream().map(MemeDto::new).collect(Collectors.toList());
     }
+
+    public MemeDto getMeme(String name) {
+        Meme meme = memeRepository.findByName(name).orElseThrow(() -> new NotFoundException("No meme with name = " + name));
+        return new MemeDto(meme);
+    }
 }

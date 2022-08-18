@@ -17,6 +17,7 @@ import { ChatApiService } from '../../services/chat-api.service';
 import { MessageService } from '../../services/message.service';
 
 import { ChatMessageConfig, IChatMessageConfig } from './chat-message-config.model';
+import { ImageService } from '../../services/image.service';
 
 @Component({
   selector: 'app-chat-message',
@@ -30,9 +31,9 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
   @Input() config: IChatMessageConfig = new ChatMessageConfig();
 
   @Input() set message(val: IMessage) {
-    val.text = val.text.replace(/\n/, `<br>`);
+    val.text = val.text?.replace(/\n/, `<br>`);
     if (val.oldText) {
-      val.oldText = val.text.replace(/\n/, `<br>`);
+      val.oldText = val.text?.replace(/\n/, `<br>`);
     }
     this._message = val
   }
@@ -44,7 +45,9 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
 
   editMode = false;
 
-  imageSource: SafeResourceUrl;
+  avatarImageSource: SafeResourceUrl;
+
+  memeImageSource: SafeResourceUrl;
 
   isCurrentUserAuthor = false;
 
@@ -85,6 +88,10 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
     return this.message?.text && this.sanitizer.sanitize(SecurityContext.HTML, this.message.text);
   }
 
+  get isMeme(): boolean {
+    return !!this.message.memeName;
+  }
+
   constructor(
     public elementRef: ElementRef,
     private readonly sanitizer: DomSanitizer,
@@ -92,12 +99,20 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
     private readonly authService: AuthService,
     private readonly userStatusService: UserStatusService,
     private readonly chatApiService: ChatApiService,
-    private readonly commonService: MessageService
+    private readonly commonService: MessageService,
+    private readonly imageService: ImageService
   ) {}
 
   ngOnInit(): void {
-      this.imageSource = this.sanitizer
-        .bypassSecurityTrustUrl(`data:image/png;base64,${this.avatarService.getUserAvatar(this.message.author)}`);
+    this.avatarImageSource = this.sanitizer
+      .bypassSecurityTrustUrl(`data:image/png;base64,${this.avatarService.getUserAvatar(this.message.author)}`);
+    if (this.isMeme) {
+      this.imageService.getMeme(this.message.memeName)
+        .subscribe((response) => {
+          this.memeImageSource = this.sanitizer
+            .bypassSecurityTrustUrl(`data:image/png;base64,${response.image.picByte}`);
+        });
+    }
   }
 
   ngOnChanges({ message }: SimpleChanges): void {

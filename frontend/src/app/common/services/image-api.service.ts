@@ -7,7 +7,7 @@ import { IMeme } from 'src/app/models/file/meme.interface';
 import { environment } from 'src/environments/environment';
 
 @Injectable({providedIn: 'root'})
-export class ImageService {
+export class ImageApiService {
   private readonly backendApi = environment.backendUrl;
 
   constructor(
@@ -32,5 +32,11 @@ export class ImageService {
 
   getAllMemes(): Observable<IMeme[]> {
     return this.http.get<IMeme[]>(`${this.backendApi}/file/meme/get-all`);
+  }
+
+  getMeme(name: string): Observable<IMeme> {
+    let params = new HttpParams();
+    params = params.append('name', name);
+    return this.http.get<IMeme>(`${this.backendApi}/file/meme`, { params });
   }
 }
