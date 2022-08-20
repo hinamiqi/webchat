@@ -47,6 +47,12 @@ public class FileController {
     }
 
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('USER')")
+    @GetMapping("/meme/get-all-names")
+    public List<String> getAllMemeNames() {
+        return fileService.getAllMemeNames();
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('USER')")
     @GetMapping("/meme")
     public MemeDto getMeme(@RequestParam String name) {
         return fileService.getMeme(name);

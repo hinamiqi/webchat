@@ -40,6 +40,10 @@ export class ImageApiService {
     return this.http.get<IMeme[]>(`${this.backendApi}/file/meme/get-all`);
   }
 
+  getAllMemeNames(): Observable<string[]> {
+    return this.http.get<string[]>(`${this.backendApi}/file/meme/get-all-names`);
+  }
+
   getMeme(name: string): Observable<IMeme> {
     let params = new HttpParams();
     params = params.append('name', name);

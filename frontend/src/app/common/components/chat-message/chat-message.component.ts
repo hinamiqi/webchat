@@ -2,7 +2,7 @@ import { Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnIni
 
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { filter, takeUntil } from 'rxjs/operators';
 
 import { AuthService } from 'src/app/auth/services/auth.service';
 import { IMessage, IRepliedMessage } from 'src/app/models/message/message.interface';
@@ -107,11 +107,7 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
     this.avatarImageSource = this.sanitizer
       .bypassSecurityTrustUrl(`data:image/png;base64,${this.avatarService.getUserAvatar(this.message.author)}`);
     if (this.isMeme) {
-      this.imageService.getMeme(this.message.memeName)
-        .subscribe((response) => {
-          this.memeImageSource = this.sanitizer
-            .bypassSecurityTrustUrl(`data:image/png;base64,${response.image.picByte}`);
-        });
+      this.loadMeme();
     }
   }
 
@@ -219,5 +215,17 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
   }
 
     this.messageDiff = htmlText;
+  }
+
+  private loadMeme(): void {
+    this.imageService.loadMeme(this.message.memeName);
+    this.imageService.cachedMemes$
+      .pipe(
+        filter((cache) => !!cache && cache.has(this.message.memeName) && !!cache.get(this.message.memeName)),
+        takeUntil(this.destroy$)
+        )
+      .subscribe((cache) => {
+        this.memeImageSource = this.sanitizer.bypassSecurityTrustUrl(`data:image/png;base64,${cache.get(this.message.memeName).image.picByte}`);
+      });
   }
 }

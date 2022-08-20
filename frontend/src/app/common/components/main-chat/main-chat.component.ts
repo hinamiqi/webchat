@@ -17,6 +17,7 @@ import { MessageService } from '../../services/message.service';
 import { ImageApiService } from '../../services/image-api.service';
 import { ChatMessageComponent } from '../chat-message/chat-message.component';
 import { IMeme } from 'src/app/models/file/meme.interface';
+import { ImageService } from '../../services/image.service';
 
 @Component({
   selector: 'app-chat',
@@ -91,7 +92,8 @@ export class MainChatComponent implements OnInit, OnDestroy {
     private readonly authService: AuthService,
     private readonly userStatusService: UserStatusService,
     private readonly commonService: MessageService,
-    private readonly imageService: ImageApiService,
+    private readonly imageApiService: ImageApiService,
+    private readonly imageService: ImageService,
   ) { }
 
   getSrcFromImage = (image: IImage) => {
@@ -263,11 +265,17 @@ export class MainChatComponent implements OnInit, OnDestroy {
   }
 
   addImage(): void {
-    this.imageService.getAllMemes()
-      .pipe(takeUntil(this.destroy$))
+    this.imageApiService.getAllMemeNames()
+      .pipe(
+        switchMap((names) => {
+          this.imageService.loadAllMemes(names);
+          return this.imageService.cachedMemes$;
+        }),
+        takeUntil(this.destroy$)
+      )
       .subscribe((response) => {
-        console.log(response);
-        this.memeList = response;
+        console.log(Array.from(response.values()));
+        this.memeList = Array.from(response.values()).filter((obj) => !!obj);
       });
     this.addImageDialog.open();
   }
