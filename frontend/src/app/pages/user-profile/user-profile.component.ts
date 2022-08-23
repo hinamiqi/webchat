@@ -1,4 +1,4 @@
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpErrorResponse, HttpResponseBase } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
@@ -8,8 +8,12 @@ import { AuthApiService } from 'src/app/auth/services/auth-api.service';
 
 import { AuthService } from 'src/app/auth/services/auth.service';
 import { ImageApiService } from '../../common/services/image-api.service';
+import { UserProfileService } from '../services/user-profile.service';
 
 const DEFAULT_CHANGE_PASSWORD_ERROR = `Can't change password for unknown reason`;
+
+type SetFileCallback = (image: string | ArrayBuffer, file: File) => void;
+
 @Component({
   selector: 'app-user-profile',
   templateUrl: 'user-profile.component.html',
@@ -23,15 +27,13 @@ export class UserProfileComponent implements OnInit {
 
   showChangeUserPasswordForm = false;
 
-  changePasswordForm: UntypedFormGroup;
-
   changePasswordErrorMsg: string;
 
-  selectedFile: File;
+  changePasswordForm: UntypedFormGroup;
 
-  selectedImage: any;
+  userAvatarForm: UntypedFormGroup;
 
-  imageName: string;
+  uploadImageForm: UntypedFormGroup;
 
   canUploadImage: boolean;
 
@@ -41,7 +43,8 @@ export class UserProfileComponent implements OnInit {
     private readonly authService: AuthService,
     private readonly fb: UntypedFormBuilder,
     private readonly authApiService: AuthApiService,
-    private readonly imageApiService: ImageApiService
+    private readonly imageApiService: ImageApiService,
+    private readonly userProfileService: UserProfileService
   ) { }
 
   ngOnInit() {
@@ -53,10 +56,7 @@ export class UserProfileComponent implements OnInit {
 
     this.showChangeUserPasswordForm = this.authService.checkRole(UserRoles.USER);
 
-    this.changePasswordForm = this.fb.group({
-      oldPassword: ['', Validators.required],
-      newPassword: ['', Validators.required]
-    });
+    this.buildForms();
 
     this.loadPrivileges();
   }
@@ -83,30 +83,71 @@ export class UserProfileComponent implements OnInit {
       });
   }
 
-  onFileChanged(event): void {
-    console.log(event);
-    console.log(typeof event);
-    this.selectedFile = event.target.files[0];
-    const reader = new FileReader();
-    reader.onload = e => this.selectedImage = reader.result;
-    reader.readAsDataURL(this.selectedFile);
+  changeFile(event: Event, callback: SetFileCallback): void {
+    const element = event.currentTarget as HTMLInputElement;
+    const fileList: FileList | null = element.files;
+    this.onFileChanged(fileList[0], callback);
   }
 
-  onUpload(): void {
-    if (!this.selectedFile) {
-      alert("No file chosen!");
+  private onFileChanged(file: File, callback: SetFileCallback): void {
+    const reader = new FileReader();
+    reader.onload = _ => callback.apply(this, [reader.result, file]);
+    reader.readAsDataURL(file);
+  }
+
+  setSelectedImage: SetFileCallback = (image: string | ArrayBuffer, file: File): void => {
+    this.uploadImageForm.patchValue({ image, file })
+  }
+
+  setUserAvatar: SetFileCallback = (image: string | ArrayBuffer, file: File): void => {
+    this.userAvatarForm.patchValue({ image, file });
+  }
+
+  submitImage(): void {
+    if (this.uploadImageForm.invalid) {
       return;
     }
 
-    if (!this.imageName) {
-      alert("No meme name chosen!");
-      return;
-    }
+    const { file, name } = this.uploadImageForm.value;
 
-    this.imageApiService.uploadMeme(this.selectedFile, this.imageName)
+    this.imageApiService.uploadMeme(file, name)
       .pipe(takeUntil(this.destroy$))
       .subscribe((response) => {
         console.log(response);
       });
+  }
+
+
+  submitAvatar(): void {
+    if (this.userAvatarForm.invalid) {
+      return;
+    }
+
+    const { file } = this.userAvatarForm.value;
+
+    this.userProfileService.setUserAvatar(file)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((response) => {
+        console.log(response);
+        this.onFileChanged(response, this.setUserAvatar);
+      });
+  }
+
+  private buildForms(): void {
+    this.changePasswordForm = this.fb.group({
+      oldPassword: ['', Validators.required],
+      newPassword: ['', Validators.required]
+    });
+
+    this.userAvatarForm = this.fb.group({
+      file: [null, Validators.required],
+      image: [null]
+    });
+
+    this.uploadImageForm = this.fb.group({
+      file: [null, Validators.required],
+      name: [null, Validators.required],
+      image: [null]
+    });
   }
 }

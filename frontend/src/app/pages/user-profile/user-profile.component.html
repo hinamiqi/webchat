@@ -12,6 +12,21 @@
   </div>
 </div>
 
+<form class="item row g-3" [formGroup]="userAvatarForm" (ngSubmit)="submitAvatar()">
+  <h4>User avatar</h4>
+  <div class="col-6">
+    <img class="image-preview" [src]="userAvatarForm.get('image').value">
+  </div>
+
+  <div class="col-6">
+    <input type="file" accept="image/*" (change)="changeFile($event, setUserAvatar)">
+  </div>
+
+  <div class="col-12">
+    <button class="btn btn-primary" type="submit">Change</button>
+  </div>
+</form>
+
 <form *ngIf="showChangeUserPasswordForm" class="item row g-3" [formGroup]="changePasswordForm" (ngSubmit)="changePassword()">
   <h4>Change password</h4>
   <div class="col-12 has-validation">
@@ -30,23 +45,20 @@
 
 <div class="item" *ngIf="canUploadImage">
   <h4>Add meme</h4>
-  <div class="row">
+  <form class="row" [formGroup]="uploadImageForm" (ngSubmit)="submitImage()">
     <div class="col">
-      <input type="file" (change)="onFileChanged($event)">
-    </div>
-    <div class="col">
-      <input type="text" class="form-control-file" id="name" placeholder="image name" [(ngModel)]="imageName" name="name"/>
+      <input type="file" accept="image/*" (change)="changeFile($event, setSelectedImage)" required="true">
     </div>
     <div class="col">
-      <button class="btn btn-primary" (click)="onUpload()">Upload meme</button>
+      <input type="text" class="form-control-file" placeholder="image name" formControlName="name" required="true"/>
     </div>
-  </div>
-
-  <div class="container row">
-    <div class="col-md-12">
-        <div *ngIf=selectedImage>
-            <img class="image-preview" [src]="selectedImage">
-        </div>
+    <div class="col">
+      <button class="btn btn-primary" type="submit">Upload meme</button>
     </div>
-  </div>
+    <div class="container row">
+      <div class="col-md-12">
+        <img class="image-preview" [src]="uploadImageForm.get('image').value">
+      </div>
+    </div>
+  </form>
 </div>
