@@ -11,3 +11,5 @@ ALTER TABLE IF EXISTS memes owner TO postgres;
 
 ALTER TABLE memes ADD CONSTRAINT image_fk FOREIGN KEY (image_id) REFERENCES images(id);
 
+ALTER TABLE memes ADD CONSTRAINT name_unique_constraint UNIQUE (name);
+

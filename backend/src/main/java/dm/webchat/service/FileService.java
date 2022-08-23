@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import dm.webchat.controller.exception.BadRequestHttpException;
 import dm.webchat.controller.exception.InternalException;
 import dm.webchat.controller.exception.NotFoundException;
 import dm.webchat.models.ImageModel;
@@ -30,7 +31,7 @@ public class FileService {
     private final MemeRepository memeRepository;
 
     public ImageDto getImage(String name) {
-        ImageModel image = imageRepository.findByName(name).orElseThrow(() -> new NotFoundException("No image with name = " + name));
+        ImageModel image = imageRepository.findByName(name).stream().findFirst().orElseThrow(() -> new NotFoundException("No image with name = " + name));
         return new ImageDto(image, FileHelper.decompressBytes(image.getPicByte()));
     }
 
@@ -64,6 +65,8 @@ public class FileService {
         } catch (IOException e) {
             throw new InternalException("Something wrong with this file");
         }
+
+        memeRepository.findByName(name).stream().findFirst().ifPresent(i -> {  throw new BadRequestHttpException("Meme with name " + name + " alredy present"); });
 
         ImageModel newImage = imageRepository.save(ImageModel.builder()
             .name(file.getOriginalFilename())
