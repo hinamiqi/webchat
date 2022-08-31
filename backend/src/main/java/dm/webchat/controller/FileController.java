@@ -22,21 +22,17 @@ import lombok.RequiredArgsConstructor;
 public class FileController {
     private final FileService fileService;
 
+    // Not used
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('USER')")
     @GetMapping("/image")
-    public ImageDto getImage(@RequestParam String name) {
-        return fileService.getImage(name);
+    public ImageDto getImage(@RequestParam Long id) {
+        return fileService.getImage(id);
     }
 
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('USER')")
-    @GetMapping("/image/get-all")
-    public List<ImageDto> getAllImages() {
-        return fileService.getAllImages();
-    }
-
+    // Not used
     @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping("/image")
-    public ImageDto uploadImages(@RequestBody MultipartFile file) {
+    public ImageDto uploadImage(@RequestBody MultipartFile file) {
         return fileService.uploadImage(file);
     }
 

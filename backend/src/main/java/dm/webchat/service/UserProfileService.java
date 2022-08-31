@@ -20,7 +20,7 @@ public class UserProfileService {
         if (user.getAvatar() == null) {
             return new ImageDto();
         }
-        ImageDto imageDto = fileService.getImage(user.getAvatar().getName());
+        ImageDto imageDto = fileService.getImage(user.getAvatar().getId());
 
         return imageDto;
     }

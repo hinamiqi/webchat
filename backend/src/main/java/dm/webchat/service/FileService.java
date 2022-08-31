@@ -30,14 +30,11 @@ public class FileService {
 
     private final MemeRepository memeRepository;
 
-    public ImageDto getImage(String name) {
-        ImageModel image = imageRepository.findByName(name).stream().findFirst().orElseThrow(() -> new NotFoundException("No image with name = " + name));
+    public ImageDto getImage(Long id) {
+        ImageModel image = imageRepository.findById(id).orElseThrow(() ->
+            new NotFoundException(String.format("No image with id %s found", id))
+        );
         return new ImageDto(image, FileHelper.decompressBytes(image.getPicByte()));
-    }
-
-    public List<ImageDto> getAllImages() {
-        List<ImageModel> images = imageRepository.findAll();
-        return images.stream().map(image -> new ImageDto(image, FileHelper.decompressBytes(image.getPicByte()))).collect(Collectors.toList());
     }
 
     @Transactional
@@ -55,6 +52,21 @@ public class FileService {
             .picByte(FileHelper.compressBytes(bytes))
             .build());
         return new ImageDto(newImage);
+    }
+
+    public MemeDto getMeme(String name) {
+        Meme meme = memeRepository.findByName(name).orElseThrow(() -> new NotFoundException("No meme with name = " + name));
+        return new MemeDto(meme);
+    }
+
+    public List<MemeDto> getAllMemes() {
+        List<Meme> memes = memeRepository.findAll();
+        return memes.stream().map(MemeDto::new).collect(Collectors.toList());
+    }
+
+    public List<String> getAllMemeNames() {
+        List<Meme> memes = memeRepository.findAll();
+        return memes.stream().map(Meme::getName).collect(Collectors.toList());
     }
 
     @Transactional
@@ -76,21 +88,6 @@ public class FileService {
 
         Meme meme = memeRepository.save(Meme.builder().uuid(UUID.randomUUID()).image(newImage).name(name).build());
 
-        return new MemeDto(meme);
-    }
-
-    public List<MemeDto> getAllMemes() {
-        List<Meme> memes = memeRepository.findAll();
-        return memes.stream().map(MemeDto::new).collect(Collectors.toList());
-    }
-
-    public List<String> getAllMemeNames() {
-        List<Meme> memes = memeRepository.findAll();
-        return memes.stream().map(Meme::getName).collect(Collectors.toList());
-    }
-
-    public MemeDto getMeme(String name) {
-        Meme meme = memeRepository.findByName(name).orElseThrow(() -> new NotFoundException("No meme with name = " + name));
         return new MemeDto(meme);
     }
 }
