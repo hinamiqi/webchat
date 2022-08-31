@@ -36,4 +36,10 @@ public class User {
               joinColumns = @JoinColumn(name = "user_id"),
               inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
+
+    @OneToOne
+    @JoinTable(name = "user_avatar_link",
+               joinColumns = @JoinColumn(name = "user_id"),
+               inverseJoinColumns = @JoinColumn(name = "image_id"))
+    private ImageModel avatar;
 }

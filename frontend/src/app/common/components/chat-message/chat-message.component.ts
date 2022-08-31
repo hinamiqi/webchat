@@ -6,7 +6,6 @@ import { filter, takeUntil } from 'rxjs/operators';
 
 import { AuthService } from 'src/app/auth/services/auth.service';
 import { IMessage, IRepliedMessage } from 'src/app/models/message/message.interface';
-import { AvatarService } from 'src/app/shared/services/avatar.service';
 import { DateHelperService } from 'src/app/utils/services/date-helper.service';
 import { DEFAULT_MSG_ALTER_TIME_MINUTES } from 'src/app/app.config';
 import { UserStatusService } from 'src/app/shared/services/user-status.service';
@@ -18,6 +17,7 @@ import { MessageService } from '../../services/message.service';
 
 import { ChatMessageConfig, IChatMessageConfig } from './chat-message-config.model';
 import { ImageService } from '../../services/image.service';
+import { AvatarService } from '../../services/avatar.service';
 
 @Component({
   selector: 'app-chat-message',
@@ -104,8 +104,18 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
   ) {}
 
   ngOnInit(): void {
-    this.avatarImageSource = this.sanitizer
-      .bypassSecurityTrustUrl(`data:image/png;base64,${this.avatarService.getUserAvatar(this.message.author)}`);
+    this.avatarService.loadAvatar(this.message.author.uuid);
+    this.avatarService.cachedAvatars$
+      .pipe(
+        filter((response) => !!response),
+        filter((response) => response.has(this.message.author.uuid) && !!response.get(this.message.author.uuid)),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((cache) => {
+        const bytes = cache.get(this.message.author.uuid).picByte;
+        this.avatarImageSource = this.sanitizer
+          .bypassSecurityTrustUrl(`data:image/png;base64,${bytes}`);
+      });
     if (this.isMeme) {
       this.loadMeme();
     }
@@ -225,7 +235,8 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
         takeUntil(this.destroy$)
         )
       .subscribe((cache) => {
-        this.memeImageSource = this.sanitizer.bypassSecurityTrustUrl(`data:image/png;base64,${cache.get(this.message.memeName).image.picByte}`);
+        const bytes = cache.get(this.message.memeName).image.picByte;
+        this.memeImageSource = this.sanitizer.bypassSecurityTrustUrl(`data:image/png;base64,${bytes}`);
       });
   }
 }

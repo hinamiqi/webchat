@@ -1,14 +1,16 @@
-import { HttpErrorResponse, HttpResponseBase } from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
+
 import { UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+
 import { UserRoles } from 'src/app/auth/constants/user-roles.const';
 import { AuthApiService } from 'src/app/auth/services/auth-api.service';
-
 import { AuthService } from 'src/app/auth/services/auth.service';
+
 import { ImageApiService } from '../../common/services/image-api.service';
-import { UserProfileService } from '../services/user-profile.service';
+import { UserApiService } from '../../shared/services/user-api.service';
 
 const DEFAULT_CHANGE_PASSWORD_ERROR = `Can't change password for unknown reason`;
 
@@ -44,7 +46,7 @@ export class UserProfileComponent implements OnInit {
     private readonly fb: UntypedFormBuilder,
     private readonly authApiService: AuthApiService,
     private readonly imageApiService: ImageApiService,
-    private readonly userProfileService: UserProfileService
+    private readonly userApiService: UserApiService
   ) { }
 
   ngOnInit() {
@@ -125,7 +127,7 @@ export class UserProfileComponent implements OnInit {
 
     const { file } = this.userAvatarForm.value;
 
-    this.userProfileService.setUserAvatar(file)
+    this.userApiService.setUserAvatar(file)
       .pipe(takeUntil(this.destroy$))
       .subscribe((response) => {
         console.log(response);

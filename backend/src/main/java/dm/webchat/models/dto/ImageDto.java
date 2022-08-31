@@ -11,6 +11,8 @@ public class ImageDto {
 
     private byte[] picByte;
 
+    public ImageDto() {}
+
     public ImageDto(ImageModel image) {
         this.name = image.getName();
         this.type = image.getType();

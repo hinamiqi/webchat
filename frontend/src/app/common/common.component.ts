@@ -52,7 +52,8 @@ export class CommonComponent implements OnInit, OnDestroy {
         console.info("Navigation ended on common.component:", event);
       });
 
-    this.currentUserName = this.authService.getCurrentUserLogin();
+    const user = this.authService.getCurrentUser();
+    this.currentUserName = user.username;
 
     this.websocketService.connect();
 

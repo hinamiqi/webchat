@@ -1,7 +1,5 @@
 <div *ngIf="!message.isSeparator" class="message-container" [ngClass]="{ 'author-is-current-user': isCurrentUserAuthor }">
-  <img *ngIf="!isCurrentUserAuthor"
-       [src]="avatarImageSource"
-       class="avatar">
+  <img [src]="avatarImageSource" class="avatar">
   <div class="message" *ngIf="!editMode" (mouseover)="showDiff()" (mouseout)="hideDiff()">
     <span class="action-icons" *ngIf="config.editable">
       <span class="action-icons__item" *ngIf="canAlterMessage"><i class="icon bi bi-pencil-fill" (click)="toggleEdit()"></i></span>

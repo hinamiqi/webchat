@@ -1,5 +1,7 @@
 package dm.webchat.service;
 
+import java.util.UUID;
+
 import javax.transaction.Transactional;
 
 import org.springframework.http.HttpStatus;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import dm.webchat.constants.HttpExceptionCodes;
 import dm.webchat.controller.exception.CustomHttpException;
+import dm.webchat.controller.exception.NotFoundException;
 import dm.webchat.models.User;
 import dm.webchat.repositories.UserRepository;
 
@@ -29,5 +32,11 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         );
 
         return UserDetailsImpl.build(user);
+    }
+
+    public User loadUserByUuid(UUID uuid) {
+        return userRepository.findByUuid(uuid).orElseThrow(() -> 
+           new NotFoundException("No user with uuid " + uuid + " found!")
+        );
     }
 }
