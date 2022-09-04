@@ -40,7 +40,16 @@ export class AvatarService {
     this.userApiService.getUserAvatar(uuid)
       .pipe(takeUntil(this.destroy$))
       .subscribe((response) => {
-        this.cachedAvatars.set(uuid, response);
+        if (response.id) {
+          this.cachedAvatars.set(uuid, response);
+        } else {
+          const newAvatar = {
+            picByte: this.generate(uuid),
+            id: null,
+            name: `generated_avatar_${uuid}`
+          };
+          this.cachedAvatars.set(uuid, newAvatar);
+        }
         this._cachedAvatars$.next(this.cachedAvatars);
       });
   }

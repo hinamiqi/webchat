@@ -65,7 +65,7 @@ export class MainChatComponent implements OnInit, OnDestroy {
 
   showScrollDown = false;
 
-  memeList: IMeme[];
+  memeList$: Observable<IMeme[]>;
 
   readonly defaultPageSize = DEFAULT_CHAT_PAGE_SIZE;
 
@@ -92,12 +92,12 @@ export class MainChatComponent implements OnInit, OnDestroy {
     private readonly authService: AuthService,
     private readonly userStatusService: UserStatusService,
     private readonly commonService: MessageService,
-    private readonly imageApiService: ImageApiService,
     private readonly imageService: ImageService,
   ) { }
 
   getSrcFromImage = (image: IImage) => {
-      return `data:image/jpeg;base64,${image.picByte}`;
+    if (!image?.picByte) return null;
+    return `data:image/jpeg;base64,${image.picByte}`;
   };
 
   ngOnInit(): void {
@@ -265,18 +265,8 @@ export class MainChatComponent implements OnInit, OnDestroy {
   }
 
   addImage(): void {
-    this.imageApiService.getAllMemeNames()
-      .pipe(
-        switchMap((names) => {
-          this.imageService.loadAllMemes(names);
-          return this.imageService.cachedMemes$;
-        }),
-        takeUntil(this.destroy$)
-      )
-      .subscribe((response) => {
-        console.log(Array.from(response.values()));
-        this.memeList = Array.from(response.values()).filter((obj) => !!obj);
-      });
+    this.imageService.loadAllMemes();
+    this.memeList$ = this.imageService.getMemeList();
     this.addImageDialog.open();
   }
 

@@ -24,13 +24,19 @@ export class ImageApiService {
     return this.http.get<IMeme[]>(`${this.backendApi}/file/meme/get-all`);
   }
 
-  getAllMemeNames(): Observable<string[]> {
-    return this.http.get<string[]>(`${this.backendApi}/file/meme/get-all-names`);
+  getAllMemeNames(): Observable<Map<string,number>> {
+    return this.http.get<Map<string,number>>(`${this.backendApi}/file/meme/get-all-names`);
   }
 
   getMeme(name: string): Observable<IMeme> {
     let params = new HttpParams();
     params = params.append('name', name);
     return this.http.get<IMeme>(`${this.backendApi}/file/meme`, { params });
+  }
+
+  getImage(id: number): Observable<IImage> {
+    let params = new HttpParams();
+    params = params.append('id', id);
+    return this.http.get<IImage>(`${this.backendApi}/file/image`, { params });
   }
 }

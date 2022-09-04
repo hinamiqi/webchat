@@ -116,8 +116,9 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
         this.avatarImageSource = this.sanitizer
           .bypassSecurityTrustUrl(`data:image/png;base64,${bytes}`);
       });
+
     if (this.isMeme) {
-      this.loadMeme();
+      this.loadImage();
     }
   }
 
@@ -227,16 +228,15 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
     this.messageDiff = htmlText;
   }
 
-  private loadMeme(): void {
-    this.imageService.loadMeme(this.message.memeName);
-    this.imageService.cachedMemes$
+  private loadImage(): void {
+    const id = this.imageService.getMemeImageId(this.message.memeName);
+    this.imageService.loadImage(id)
+    this.imageService.getImage(id)
       .pipe(
-        filter((cache) => !!cache && cache.has(this.message.memeName) && !!cache.get(this.message.memeName)),
         takeUntil(this.destroy$)
-        )
-      .subscribe((cache) => {
-        const bytes = cache.get(this.message.memeName).image.picByte;
-        this.memeImageSource = this.sanitizer.bypassSecurityTrustUrl(`data:image/png;base64,${bytes}`);
+      )
+      .subscribe((image) => {
+        this.memeImageSource = this.sanitizer.bypassSecurityTrustUrl(`data:image/png;base64,${image.picByte}`);
       });
   }
 }

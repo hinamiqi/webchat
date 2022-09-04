@@ -5,6 +5,7 @@ import { takeUntil, filter } from 'rxjs/operators'
 
 import { AuthService } from '../auth/services/auth.service';
 import { WebSocketService } from '../shared/services/web-socket.service';
+import { ImageService } from './services/image.service';
 import { MessageService } from './services/message.service';
 
 @Component({
@@ -39,10 +40,12 @@ export class CommonComponent implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly authService: AuthService,
     private readonly websocketService: WebSocketService,
-    private readonly commonService: MessageService
+    private readonly commonService: MessageService,
+    private readonly imageService: ImageService
     ) { }
 
   ngOnInit(): void {
+    this.imageService.loadMemeMap();
     this.router.events
       .pipe(
         filter((event) => event instanceof NavigationEnd),

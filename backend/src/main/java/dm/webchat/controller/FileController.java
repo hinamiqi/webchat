@@ -1,6 +1,7 @@
 package dm.webchat.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,7 +45,7 @@ public class FileController {
 
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('USER')")
     @GetMapping("/meme/get-all-names")
-    public List<String> getAllMemeNames() {
+    public Map<String, Long> getAllMemeNames() {
         return fileService.getAllMemeNames();
     }
 

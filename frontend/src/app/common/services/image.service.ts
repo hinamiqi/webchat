@@ -1,7 +1,8 @@
 import { Injectable, OnDestroy } from '@angular/core';
 
 import { BehaviorSubject, Observable, of, Subject } from 'rxjs';
-import { switchMap, takeUntil, tap } from 'rxjs/operators';
+import { filter, map, switchMap, takeUntil, tap } from 'rxjs/operators';
+import { IImage } from 'src/app/models/file/image.interface';
 
 import { IMeme } from 'src/app/models/file/meme.interface';
 import { DbService } from 'src/app/shared/services/db.service';
@@ -10,20 +11,23 @@ import { ImageApiService } from './image-api.service';
 
 @Injectable({providedIn: 'root'})
 export class ImageService implements OnDestroy{
-  cachedMemes$: Observable<Map<string, IMeme>>;
+  cached$: Observable<Map<number, IImage>>;
 
-  private cachedMemes: Map<string, IMeme>;
+  private cached: Map<number, IImage>;
 
-  private _cachedMemes$ = new BehaviorSubject<Map<string, IMeme>>(null);
+  private _cached$ = new BehaviorSubject<Map<number, IImage>>(null);
 
   private destroy$ = new Subject<void>();
+
+  private memeMap: Map<string, number>;
 
   constructor(
     private readonly imageApiService: ImageApiService,
     private readonly dbService: DbService
   ) {
-    this.cachedMemes = new Map();
-    this.cachedMemes$ = this._cachedMemes$.asObservable();
+    this.cached = new Map();
+    this.cached$ = this._cached$.asObservable();
+    this.memeMap = new Map();
   }
 
   ngOnDestroy(): void {
@@ -31,41 +35,87 @@ export class ImageService implements OnDestroy{
     this.destroy$.complete();
   }
 
-  loadMeme(name: string): void {
-    if (this.cachedMemes.has(name)) return;
-    this.cachedMemes.set(name, null);
+  getMemeImageId(memeName: string): number {
+    return this.memeMap.get(memeName);
+  }
 
-    this.dbService.get(name)
+  loadImage(id: number): void {
+    if (this.cached.has(id)) return;
+    /*
+      This line is needed when we are loading chat messages. In that case we
+      call this method for each message with embedded image inside view init
+      hook. Therefore several duplicate image requests can be performed. We do
+      not need several API requests, so we use that hack for now.
+    */
+    this.cached.set(id, null);
+
+    this.dbService.get(id)
       .pipe(
         switchMap((response) => {
           if (!!response) {
-            console.log(`Got image ${name} from Indexed DB`);
-            return of(response)
+            console.log(`Got image ${response.image.name} from Indexed DB`);
+            return of(response.image)
           };
-          return this.imageApiService.getMeme(name).pipe(tap((response) => {
-            console.log(`Got image ${name} from API and saving it to Indexed DB`);
-            this.saveInDb(response, name);
+          return this.imageApiService.getImage(id).pipe(tap((response) => {
+            console.log(`Got image ${response.name} from API and saving it to Indexed DB`);
+            this.saveInDb(response);
           }));
         })
       )
       .subscribe((response) => {
-        console.log(`Set image ${name} to cache...`);
-        this.cachedMemes.set(response.name, response);
-        this._cachedMemes$.next(this.cachedMemes);
+        console.log(`Set image ${response.name} to cache...`);
+        this.cached.set(response.id, response);
+        this._cached$.next(this.cached);
       });
   }
 
-  loadAllMemes(names: string[]): void {
-    names.forEach((name) => {
-      this.loadMeme(name);
-    });
+  loadImages(ids: number[]): void {
+    ids.forEach((id => {
+      this.loadImage(id);
+    }))
   }
 
-  private saveInDb(meme: IMeme, name: string): void {
-    this.dbService.add(name, meme.image)
+  loadMemeMap(): void {
+    this.imageApiService.getAllMemeNames()
       .pipe(takeUntil(this.destroy$))
       .subscribe((response) => {
-        console.log(`Meme ${name} saved to IndexedDB.`);
+        Object.keys(response).forEach((key) => {
+          this.memeMap.set(key, response[key]);;
+        });
+      });
+  }
+
+  loadAllMemes(): void {
+    const ids = Array.from(this.memeMap.values());
+    this.loadImages(ids);
+  }
+
+  getImage(id: number): Observable<IImage> {
+    return this.cached$.pipe(
+      filter((cache) => !!cache && cache.has(id) && !!cache.get(id)),
+      map((cache) => cache.get(id)),
+      takeUntil(this.destroy$)
+    );
+  }
+
+  getMemeList(): Observable<IMeme[]> {
+    const memeImageIds = Array.from(this.memeMap.values());
+    return this.cached$.pipe(
+      filter((cache) => memeImageIds.every((id) => cache.has(id))),
+      switchMap((cache) => of(
+          Array.from(this.memeMap.keys())
+            .map((name) => ({ name, image: cache.get(this.memeMap.get(name)) }))
+        )
+      ),
+      takeUntil(this.destroy$)
+    );
+  }
+
+  private saveInDb(image: IImage): void {
+    this.dbService.add(image.id, image)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((response) => {
+        console.log(`Meme ${response.image.name} saved to IndexedDB.`);
       }, (err) => { console.log(err) });
   }
 }

@@ -36,7 +36,7 @@
   <span class="scroll-down cursor-pointer" *ngIf="showScrollDown" (click)="scrollDown()"><i class="icon bi bi-chevron-down"></i></span>
 </div>
 <app-simple-dialog #addImageDialog [dialogTitle]="'Chose image'">
-  <div class="image-select" *ngIf="memeList?.length">
-    <img class="image-select__preview" *ngFor="let meme of memeList" [src]="getSrcFromImage(meme.image)" (click)="submitMeme(meme)">
+  <div class="image-select">
+    <img class="image-select__preview" *ngFor="let meme of memeList$ | async" [src]="getSrcFromImage(meme.image)" (click)="submitMeme(meme)">
   </div>
 </app-simple-dialog>

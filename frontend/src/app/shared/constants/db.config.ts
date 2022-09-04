@@ -7,7 +7,7 @@ export const imageDbConfig: DBConfig = {
     store: 'images',
     storeConfig: { keyPath: 'id', autoIncrement: true },
     storeSchema: [
-      { name: 'name', keypath: 'name', options: { unique: true } },
+      { name: 'id', keypath: 'id', options: { unique: true } },
       { name: 'image', keypath: 'image', options: { unique: false } },
     ]
   }]

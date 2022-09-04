@@ -3,7 +3,6 @@ import { Injectable } from '@angular/core';
 import { NgxIndexedDBService } from 'ngx-indexed-db';
 import { Observable } from 'rxjs';
 import { IImage } from 'src/app/models/file/image.interface';
-import { IMeme } from 'src/app/models/file/meme.interface';
 
 @Injectable({providedIn: 'root'})
 export class DbService {
@@ -11,15 +10,15 @@ export class DbService {
     private readonly dbService: NgxIndexedDBService
   ) { }
 
-  add(name: string, image: IImage): Observable<IMeme> {
-    return this.dbService.add('images', { name, image });
+  add(id: number, image: IImage): Observable<{ id: number, image: IImage }> {
+    return this.dbService.add('images', { id, image });
   }
 
-  get(name: string): Observable<IMeme> {
-    return this.dbService.getByIndex('images', 'name', name);
+  get(id: number): Observable<{id: number, image: IImage}> {
+    return this.dbService.getByIndex('images', 'id', id);
   }
 
-  count(name: string): Observable<number> {
-    return this.dbService.countByIndex('images', 'name', name);
+  count(id: number): Observable<number> {
+    return this.dbService.countByIndex('images', 'id', id);
   }
 }

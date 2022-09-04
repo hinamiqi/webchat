@@ -2,7 +2,9 @@
 package dm.webchat.service;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -64,9 +66,13 @@ public class FileService {
         return memes.stream().map(MemeDto::new).collect(Collectors.toList());
     }
 
-    public List<String> getAllMemeNames() {
+    public Map<String, Long> getAllMemeNames() {
+        Map<String, Long> memeMap = new HashMap<String, Long>();
         List<Meme> memes = memeRepository.findAll();
-        return memes.stream().map(Meme::getName).collect(Collectors.toList());
+        memes.stream().forEach((meme) -> {
+            memeMap.put(meme.getName(), meme.getImage().getId());
+        });
+        return memeMap;
     }
 
     @Transactional
