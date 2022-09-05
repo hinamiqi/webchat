@@ -1,9 +1,13 @@
 package dm.webchat.models.dto;
 
 import dm.webchat.models.ImageModel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 
 @Data
+@Builder
+@AllArgsConstructor
 public class ImageDto {
     private Long id;
 

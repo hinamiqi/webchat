@@ -54,19 +54,6 @@ export class AvatarService {
       });
   }
 
-  // getUserAvatar(user: User): SafeResourceUrl {
-  //   const avatar = this.avatars.get(user.uuid);
-
-  //   if (!avatar) {
-  //     const newAvatar = this.generate(user.uuid);
-  //     this.avatars.set(user.uuid, newAvatar);
-  //     this.localStorageService.setMap(StorageTypes.AVATARS, this.avatars);
-  //     return newAvatar;
-  //   }
-
-  //   return avatar;
-  // }
-
   private generate(hash: string): string {
     console.log('Generate new avatar from hash ', hash);
     let identicon = new Identicon(hash, DEFAULT_AVATAR_SIZE);

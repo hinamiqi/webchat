@@ -2,7 +2,7 @@ import { Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnIni
 
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Subject } from 'rxjs';
-import { filter, takeUntil } from 'rxjs/operators';
+import { filter, first, takeUntil } from 'rxjs/operators';
 
 import { AuthService } from 'src/app/auth/services/auth.service';
 import { IMessage, IRepliedMessage } from 'src/app/models/message/message.interface';
@@ -112,9 +112,15 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
         takeUntil(this.destroy$)
       )
       .subscribe((cache) => {
-        const bytes = cache.get(this.message.author.uuid).picByte;
-        this.avatarImageSource = this.sanitizer
-          .bypassSecurityTrustUrl(`data:image/png;base64,${bytes}`);
+        const avatar = cache.get(this.message.author.uuid);
+        if (avatar.picByte == null) {
+          this.loadAvatarFromImg(avatar.id)
+            .then(() => console.log(`Load user avavar from image`))
+            .catch((err) => console.log(`Error during user avatar loading: ${err}`));
+        } else {
+          this.avatarImageSource = this.sanitizer
+            .bypassSecurityTrustUrl(`data:image/png;base64,${avatar.picByte}`);
+        }
       });
 
     if (this.isMeme) {
@@ -238,5 +244,12 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
       .subscribe((image) => {
         this.memeImageSource = this.sanitizer.bypassSecurityTrustUrl(`data:image/png;base64,${image.picByte}`);
       });
+  }
+
+  private async loadAvatarFromImg(imageId: number): Promise<void> {
+    this.imageService.loadImage(imageId);
+    const image = await this.imageService.getImage(imageId).pipe(first()).toPromise();
+    this.avatarImageSource = this.sanitizer
+            .bypassSecurityTrustUrl(`data:image/png;base64,${image.picByte}`);
   }
 }

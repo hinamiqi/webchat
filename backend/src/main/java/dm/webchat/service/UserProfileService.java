@@ -31,9 +31,8 @@ public class UserProfileService {
         if (user.getAvatar() == null) {
             return new ImageDto();
         }
-        ImageDto imageDto = fileService.getImage(user.getAvatar().getId());
 
-        return imageDto;
+        return ImageDto.builder().id(user.getAvatar().getId()).build();
     }
 
     @Transactional
