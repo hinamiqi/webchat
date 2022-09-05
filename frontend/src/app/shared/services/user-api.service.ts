@@ -14,10 +14,10 @@ export class UserApiService {
         private readonly http: HttpClient
     ) {}
 
-    setUserAvatar(file: File): Observable<File> {
+    setUserAvatar(file: File): Observable<IImage> {
         const form = new FormData();
         form.append('file', file, file.name);
-        return this.http.post<File>(`${this.backendApi}/user-profile/set-avatar`, form);
+        return this.http.post<IImage>(`${this.backendApi}/user-profile/avatar`, form);
     }
 
     getUserAvatar(uuid: string): Observable<IImage> {

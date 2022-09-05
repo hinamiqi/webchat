@@ -130,8 +130,7 @@ export class UserProfileComponent implements OnInit {
     this.userApiService.setUserAvatar(file)
       .pipe(takeUntil(this.destroy$))
       .subscribe((response) => {
-        console.log(response);
-        this.onFileChanged(response, this.setUserAvatar);
+        alert('Avatar succesfully changed!');
       });
   }
 
