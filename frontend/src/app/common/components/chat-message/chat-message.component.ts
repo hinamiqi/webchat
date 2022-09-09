@@ -31,9 +31,9 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
   @Input() config: IChatMessageConfig = new ChatMessageConfig();
 
   @Input() set message(val: IMessage) {
-    val.text = val.text?.replace(/\n/, `<br>`);
+    val.text = this.transformMessageText(val.text);
     if (val.oldText) {
-      val.oldText = val.text?.replace(/\n/, `<br>`);
+      val.oldText = this.transformMessageText(val.oldText);
     }
     this._message = val
   }
@@ -251,5 +251,13 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
     const image = await this.imageService.getImage(imageId).pipe(first()).toPromise();
     this.avatarImageSource = this.sanitizer
             .bypassSecurityTrustUrl(`data:image/png;base64,${image.picByte}`);
+  }
+
+  private transformMessageText(messageText: string): string {
+    if (!messageText) return "";
+    let transformedText = messageText.replace(/\n/, `<br>`);
+    transformedText = this.sanitizer.sanitize(SecurityContext.HTML, transformedText);
+    transformedText = transformedText.replace(/(https:\/[^\s]+)/, `<a href="$1" target="_blank">$1</a>`);
+    return transformedText;
   }
 }
