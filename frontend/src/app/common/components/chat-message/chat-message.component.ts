@@ -119,7 +119,7 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
             .catch((err) => console.log(`Error during user avatar loading: ${err}`));
         } else {
           this.avatarImageSource = this.sanitizer
-            .bypassSecurityTrustUrl(`data:image/png;base64,${avatar.picByte}`);
+            .bypassSecurityTrustUrl(`data:image/svg+xml;base64,${avatar.picByte}`);
         }
       });
 

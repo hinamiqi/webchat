@@ -1,18 +1,11 @@
 import { Injectable } from '@angular/core';
-import { SafeResourceUrl } from '@angular/platform-browser';
 
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
-
-import Identicon from 'identicon.js';
-
-import { User } from 'src/app/models/auth/user.model';
-import { LocalStorageService } from 'src/app/utils/services/local-storage.service';
-import { StorageTypes } from 'src/app/auth/constants/storage-types.constant';
-import { IImage } from 'src/app/models/file/image.interface';
-import { UserApiService } from '../../shared/services/user-api.service';
 import { takeUntil } from 'rxjs/operators';
 
-const DEFAULT_AVATAR_SIZE = 50;
+import { IImage } from 'src/app/models/file/image.interface';
+import { MyIdenticon } from 'src/app/utils/services/identicon.generator';
+import { UserApiService } from '../../shared/services/user-api.service';
 
 @Injectable({providedIn: 'root'})
 export class AvatarService {
@@ -25,10 +18,8 @@ export class AvatarService {
   private destroy$ = new Subject<void>();
 
   constructor(
-    private readonly localStorageService: LocalStorageService,
     private readonly userApiService: UserApiService
   ) {
-    // this.avatars = this.localStorageService.getMap(StorageTypes.AVATARS) as Map<string, string> || new Map<string, string>();
     this.cachedAvatars$ = this._cachedAvatars$.asObservable();
     this.cachedAvatars = new Map();
   }
@@ -56,7 +47,7 @@ export class AvatarService {
 
   private generate(hash: string): string {
     console.log('Generate new avatar from hash ', hash);
-    let identicon = new Identicon(hash, DEFAULT_AVATAR_SIZE);
+    const identicon = new MyIdenticon(hash);
     return identicon.toString();
   }
 }
