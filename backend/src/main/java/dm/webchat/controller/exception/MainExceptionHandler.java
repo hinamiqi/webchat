@@ -6,13 +6,14 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @RestControllerAdvice
 public class MainExceptionHandler {
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<Object> handleCustomHttpException(CustomHttpException ex) {
-        return new ResponseEntity<>(
-            SimpleError.builder()
+    @ExceptionHandler(CustomHttpException.class)
+    public ResponseEntity<SimpleError> handleCustomHttpException(CustomHttpException ex) {
+        SimpleError error = SimpleError.builder()
             .errorCode(ex.getCode().name())
             .errorMessage(ex.getMessage())
-            .build(),
+            .build();
+        return new ResponseEntity<>(
+            error,
             ex.getStatus()
         );
     }
