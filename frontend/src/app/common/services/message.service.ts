@@ -79,7 +79,7 @@ export class MessageService {
   handleGlobalEvent(event: IGlobalEvent): void {
     switch (event.type) {
       case GlobalEventWebSocketType.MESSAGE_DELETED:
-        this.removeMainMessage(<IMessage>event.data);
+        this.removeMainMessage(<number>event.data);
         break;
       case GlobalEventWebSocketType.USER_ACTIVITY:
         if (!!(<User>event.data).uuid) {
@@ -141,10 +141,10 @@ export class MessageService {
     this._newMessages$.next(counts);
   }
 
-  private removeMainMessage(message: IMessage): void {
+  private removeMainMessage(messageId: number): void {
     const map = this._messages$.value;
     const currentMessages = map.get(null);
-    const newMessages = currentMessages.filter((m) => m.id === message.id);
+    const newMessages = currentMessages.filter((m) => m.id !== messageId);
     map.set(null, newMessages);
     this._messages$.next(map);
   }

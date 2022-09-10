@@ -22,8 +22,8 @@ export class ChatApiService {
     return this.http.post<IMessage>(`${this.backendApi}/chat/private/${userId}`, message);
   }
 
-  removeMessage(id: number): Observable<IMessage> {
-    return this.http.delete<IMessage>(`${this.backendApi}/chat/${id}`);
+  removeMessage(id: number): Observable<boolean> {
+    return this.http.delete<boolean>(`${this.backendApi}/chat/${id}`);
   }
 
   editMessage(message: IMessage): Observable<IMessage> {

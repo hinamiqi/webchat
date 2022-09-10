@@ -72,9 +72,9 @@ public class ChatController {
 
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('USER')")
     @DeleteMapping("/{id}")
-    public ChatMessageDto deleteChatMessage(@PathVariable Long id) {
-        ChatMessage message = chatService.deleteMessage(id);
-        return new ChatMessageDto(message);
+    public Boolean deleteChatMessage(@PathVariable Long id) {
+        chatService.deleteMessage(id);
+        return true;
     }
 
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('USER')")

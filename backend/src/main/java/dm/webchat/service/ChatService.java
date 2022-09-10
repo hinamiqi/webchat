@@ -99,7 +99,7 @@ public class ChatService {
         return chatMessageRepository.findByDateIsGreaterThanEqualOrderByDateDesc(message.getDate());
     }
 
-    public ChatMessage deleteMessage(Long id) {
+    public void deleteMessage(Long id) {
         String currentUserLogin = SecurityUtils
             .getCurrentUserLogin()
             .orElseThrow(() -> new NotFoundException("No current user authorization"));
@@ -117,8 +117,7 @@ public class ChatService {
 
         chatMessageRepository.delete(message);
 
-        webSocketService.sendRemoveMessageEvent(message);
-        return message;
+        webSocketService.sendRemoveMessageEvent(id);
     }
 
     @Transactional

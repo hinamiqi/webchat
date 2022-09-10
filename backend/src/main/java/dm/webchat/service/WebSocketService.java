@@ -30,10 +30,10 @@ public class WebSocketService {
         messageSender.convertAndSendToUser(targetUser.getUsername(), "/queue/new-private-message", WebSocketMessage.builder().data(messageDto).build());
     }
 
-    public void sendRemoveMessageEvent(ChatMessage message) {
+    public void sendRemoveMessageEvent(Long id) {
         WebSocketGlobalEvent event = WebSocketGlobalEvent.builder()
             .type(WebSocketGlobalEventTypeEnum.MESSAGE_DELETED)
-            .data(new ChatMessageDto(message))
+            .data(id)
             .build();
 
         messageSender.convertAndSend("/chat/new-event", event);
