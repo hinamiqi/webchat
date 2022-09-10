@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChange, SimpleChanges } from '@angular/core';
 import { AbstractControl, ControlValueAccessor, NG_VALUE_ACCESSOR, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 
 @Component({
@@ -13,7 +13,7 @@ import { AbstractControl, ControlValueAccessor, NG_VALUE_ACCESSOR, UntypedFormBu
     }]
 })
 
-export class MessageInputComponent implements OnInit, ControlValueAccessor {
+export class MessageInputComponent implements OnInit, OnChanges, ControlValueAccessor {
   @Input() initialText: string;
 
   @Input() canAddImage: boolean;
@@ -67,8 +67,14 @@ export class MessageInputComponent implements OnInit, ControlValueAccessor {
 
   ngOnInit(): void {
     this.form = this.fb.group({
-      message: [null, Validators.required]
+      message: [this.initialText, Validators.required]
     });
+  }
+
+  ngOnChanges({ initialText }: SimpleChanges): void {
+    if (initialText && this.form) {
+      this.form.get('message').setValue(initialText.currentValue, { emitEvent: false });
+    }
   }
 
   submitIfNeeded(event: KeyboardEvent): void {
