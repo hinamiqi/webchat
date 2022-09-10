@@ -85,7 +85,7 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   get safeText(): string {
-    return this.message?.text && this.sanitizer.sanitize(SecurityContext.HTML, this.message.text);
+    return this.message?.text;
   }
 
   get isMeme(): boolean {
@@ -257,7 +257,19 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
     if (!messageText) return "";
     let transformedText = messageText.replace(/\n/, `<br>`);
     transformedText = this.sanitizer.sanitize(SecurityContext.HTML, transformedText);
-    transformedText = transformedText.replace(/(https:\/[^\s]+)/, `<a href="$1" target="_blank">$1</a>`);
+    transformedText = this.transformHttpsUrlsToATags(transformedText);
+    transformedText = this.transformYoutubeShortsUrlsToNormalVideoUrls(transformedText);
     return transformedText;
+  }
+
+  private transformHttpsUrlsToATags(text: string): string {
+    return text.replace(/(https:\/[^\s]+)/g, `<a href="$1" target="_blank">$1</a>`);
+  }
+
+  private transformYoutubeShortsUrlsToNormalVideoUrls(text: string): string {
+    return text.replace(
+      /<a href="https:\/\/www\.youtube\.com\/shorts\/([0-9A-z]+)" target="_blank">[^<]+<\/a>/g,
+      `<a href="https://www.youtube.com/watch?v=$1" target="_blank">~_~ no youtube shorts here! (https://www.youtube.com/watch?v=$1) </a>`
+    );
   }
 }
