@@ -15,9 +15,9 @@
     </div>
   </div>
   <app-chat-message
-    *ngFor="let message of (messages$ | async)"
+    *ngFor="let message of (messages$ | async); trackBy: messageTrackByFn"
     [message]="message"
-    [ngClass]="{ highlighted: highlightMessageId === message.id}"
+    [ngClass]="{ highlighted: highlightMessageId === message.id }"
     (removed)="removeMessage($event)"
   ></app-chat-message>
 </div>

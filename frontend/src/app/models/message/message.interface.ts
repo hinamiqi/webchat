@@ -14,4 +14,5 @@ export interface IMessage {
   isSeparator?: boolean;
   repliedMessages?: IRepliedMessage[];
   memeName?: string;
+  messageHash?: string;
 }

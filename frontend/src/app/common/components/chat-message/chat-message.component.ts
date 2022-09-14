@@ -25,16 +25,20 @@ import { AvatarService } from '../../services/avatar.service';
   styleUrls: ['./chat-message.component.scss']
 })
 
-export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
+export class ChatMessageComponent implements OnInit, OnDestroy {
   @ViewChild(SimpleDialogComponent) dialog: SimpleDialogComponent;
 
   @Input() config: IChatMessageConfig = new ChatMessageConfig();
 
   @Input() set message(val: IMessage) {
+    console.log(`Set of message:`, val);
     val.text = this.transformMessageText(val.text);
     if (val.oldText) {
       val.oldText = this.transformMessageText(val.oldText);
+      this.setMessageDiff(val);
     }
+    this.isCurrentUserAuthor = this.authService.isCurrentUser(val.author);
+    this.date = new Date(val.date);
     this._message = val
   }
   get message(): IMessage {
@@ -126,17 +130,6 @@ export class ChatMessageComponent implements OnInit, OnDestroy, OnChanges {
     if (this.isMeme) {
       this.loadImage();
     }
-  }
-
-  ngOnChanges({ message }: SimpleChanges): void {
-      if (message) {
-        this.isCurrentUserAuthor = this.authService.isCurrentUser((<IMessage>message.currentValue).author);
-        this.date = new Date(this.message.date);
-      }
-
-      if (message && !!(<IMessage>message.currentValue).oldText) {
-        this.setMessageDiff(<IMessage>message.currentValue);
-      }
   }
 
   ngOnDestroy(): void {

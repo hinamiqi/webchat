@@ -12,7 +12,10 @@
     </div>
     <ng-container *ngIf="!isMeme">
       <div *ngIf="!isDiffShow" [innerHTML]="safeText"></div>
-      <div *ngIf="isDiffShow && isMessageEdited" [innerHTML]="messageDiff"></div>
+      <div *ngIf="isDiffShow && isMessageEdited">
+        <div class="old-text" [innerHTML]="message.oldText"></div>
+        <div class="new-text" [innerHTML]="message.text"></div>
+      </div>
     </ng-container>
     <ng-container *ngIf="isMeme">
       <img [src]="memeImageSource" class="meme">

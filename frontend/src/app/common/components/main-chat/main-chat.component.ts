@@ -11,10 +11,10 @@ import { ChatMessage } from 'src/app/models/message/message.model';
 import { SimpleDialogComponent } from 'src/app/shared/components/simple-dialog/simple-dialog.component';
 import { DEFAULT_CHAT_PAGE_SIZE } from 'src/app/shared/constants/settings.const';
 import { UserStatusService } from 'src/app/shared/services/user-status.service';
+import { HashService } from 'src/app/utils/services/hash.service';
 
 import { ChatApiService } from '../../services/chat-api.service';
 import { MessageService } from '../../services/message.service';
-import { ImageApiService } from '../../services/image-api.service';
 import { ChatMessageComponent } from '../chat-message/chat-message.component';
 import { IMeme } from 'src/app/models/file/meme.interface';
 import { ImageService } from '../../services/image.service';
@@ -45,6 +45,8 @@ export class MainChatComponent implements OnInit, OnDestroy {
 
   messages$: Observable<IMessage[]> = of([]);
 
+  messages: IMessage[] = [];
+
   lastMessage: string;
 
   mainChatTitle = 'Great patriots';
@@ -66,6 +68,8 @@ export class MainChatComponent implements OnInit, OnDestroy {
   showScrollDown = false;
 
   memeList$: Observable<IMeme[]>;
+
+  messageTrackByFn = (_: number, item: IMessage): string => item.messageHash;
 
   readonly defaultPageSize = DEFAULT_CHAT_PAGE_SIZE;
 
@@ -92,7 +96,7 @@ export class MainChatComponent implements OnInit, OnDestroy {
     private readonly authService: AuthService,
     private readonly userStatusService: UserStatusService,
     private readonly commonService: MessageService,
-    private readonly imageService: ImageService,
+    private readonly imageService: ImageService
   ) { }
 
   getSrcFromImage = (image: IImage) => {
@@ -115,7 +119,7 @@ export class MainChatComponent implements OnInit, OnDestroy {
         })
       );
 
-    this.messages$ = this.commonService.getMainMessages();
+    this.setMainChatMessages();
 
     this.commonService.newMessages$
       .pipe(
@@ -199,7 +203,7 @@ export class MainChatComponent implements OnInit, OnDestroy {
     this.currentTab = chatName;
 
     if (chatName === this.mainChatTitle) {
-      this.messages$ = this.commonService.getMainMessages();
+      this.setMainChatMessages();
       this.getLastMessages();
       this.newMessagesCount.set(null, 0);
     } else {
@@ -307,5 +311,18 @@ export class MainChatComponent implements OnInit, OnDestroy {
   private isScrolledToBot(): boolean {
     if (!this.messageContainer) return true;
     return this.messageContainer.nativeElement.scrollHeight - this.messageContainer.nativeElement.clientHeight === this.messageContainer.nativeElement.scrollTop;
+  }
+
+  private setMainChatMessages(): void {
+    this.messages$ = this.commonService.getMainMessages()
+      .pipe(
+        map((messages) => {
+          return messages?.map((m) => {
+            console.log(`Generate new message hash...`);
+            m.messageHash = HashService.cyrb53(m.text + m.oldText);
+            return m
+          })
+        })
+      );
   }
 }

@@ -87,9 +87,7 @@ export class MessageService {
         }
         break;
       case GlobalEventWebSocketType.MESSAGE_EDITED:
-        if (!this.authService.isCurrentUser((<IMessage>event.data).author)) {
-          this.editMainMessage(<IMessage>event.data);
-        }
+        this.editMainMessage(<IMessage>event.data);
         break;
       default:
         break;

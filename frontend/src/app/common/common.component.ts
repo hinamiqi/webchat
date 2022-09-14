@@ -40,7 +40,7 @@ export class CommonComponent implements OnInit, OnDestroy {
     private readonly router: Router,
     private readonly authService: AuthService,
     private readonly websocketService: WebSocketService,
-    private readonly commonService: MessageService,
+    private readonly messageService: MessageService,
     private readonly imageService: ImageService
     ) { }
 
@@ -87,13 +87,13 @@ export class CommonComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$)
       )
       .subscribe((message) => {
-        this.commonService.pushMainMessage(message.data);
+        this.messageService.pushMainMessage(message.data);
       });
 
     this.websocketService.watchOnPrivateUserMessages()
       .pipe(takeUntil(this.destroy$))
       .subscribe((message) => {
-        this.commonService.pushPrivateMessage(message.data);
+        this.messageService.pushPrivateMessage(message.data);
       });
 
     this.websocketService.watchOnUserErrors()
@@ -106,7 +106,7 @@ export class CommonComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe((event) => {
         console.log(`Recieved GLOBAL_EVENT of type ${event.type}: `, event.data);
-        this.commonService.handleGlobalEvent(event);
+        this.messageService.handleGlobalEvent(event);
       });
   }
 }
