@@ -86,7 +86,7 @@ export class MainChatComponent implements OnInit, OnDestroy {
   }
 
   get messageToReply(): IRepliedMessage[] {
-    return this.commonService.messageToReply;
+    return this.messageService.messageToReply;
   }
 
   constructor(
@@ -95,7 +95,7 @@ export class MainChatComponent implements OnInit, OnDestroy {
     private readonly chatApiService: ChatApiService,
     private readonly authService: AuthService,
     private readonly userStatusService: UserStatusService,
-    private readonly commonService: MessageService,
+    private readonly messageService: MessageService,
     private readonly imageService: ImageService
   ) { }
 
@@ -111,7 +111,7 @@ export class MainChatComponent implements OnInit, OnDestroy {
 
     this.userStatusService.setUserStatusesExpireScheduler();
 
-    this.chatList$ = this.commonService.messages$
+    this.chatList$ = this.messageService.messages$
       .pipe(
         map((list) => {
           if (!list) return null;
@@ -121,7 +121,7 @@ export class MainChatComponent implements OnInit, OnDestroy {
 
     this.setMainChatMessages();
 
-    this.commonService.newMessages$
+    this.messageService.newMessages$
       .pipe(
         takeUntil(this.destroy$)
       )
@@ -131,7 +131,7 @@ export class MainChatComponent implements OnInit, OnDestroy {
         this.newMessagesCount = counts;
       });
 
-    this.commonService.scrollQueue$
+    this.messageService.scrollQueue$
     .pipe(
       filter((queue) => !!queue),
       takeUntil(this.destroy$)
@@ -153,7 +153,7 @@ export class MainChatComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-    this.commonService.clearMessageToReply();
+    this.messageService.clearMessageToReply();
   }
 
   submit(text: string, meme?: IMeme): void {
@@ -168,7 +168,7 @@ export class MainChatComponent implements OnInit, OnDestroy {
     this.chatApiService.addMessage(newMessage)
       .pipe(
         finalize(() => {
-          this.commonService.clearMessageToReply();
+          this.messageService.clearMessageToReply();
         }),
         takeUntil(this.destroy$)
       )
@@ -194,7 +194,7 @@ export class MainChatComponent implements OnInit, OnDestroy {
   }
 
   removeReply(message: IRepliedMessage): void {
-    this.commonService.removeMessageFromReply(message);
+    this.messageService.removeMessageFromReply(message);
   }
 
   changeChat(chatName: string): void {
@@ -207,7 +207,7 @@ export class MainChatComponent implements OnInit, OnDestroy {
       this.getLastMessages();
       this.newMessagesCount.set(null, 0);
     } else {
-      this.messages$ = this.commonService.getPrivateMessagesOfUser(chatName);
+      this.messages$ = this.messageService.getPrivateMessagesOfUser(chatName);
       this.newMessagesCount.set(chatName, 0);
     }
   }
@@ -232,7 +232,7 @@ export class MainChatComponent implements OnInit, OnDestroy {
         switchMap((response) => of(response.reverse())),
         takeUntil(this.destroy$)
       ).subscribe((messages) => {
-        this.commonService.pushLastMessages(messages);
+        this.messageService.pushLastMessages(messages);
         this._currentPageSize = messages.length;
       });
   }
@@ -253,7 +253,7 @@ export class MainChatComponent implements OnInit, OnDestroy {
           switchMap((response) => of(response.reverse())),
           takeUntil(this.destroy$)
         ).subscribe((messages) => {
-          this.commonService.pushLastMessages(messages);
+          this.messageService.pushLastMessages(messages);
           this._currentPageSize = messages.length;
         });
     }
@@ -262,7 +262,7 @@ export class MainChatComponent implements OnInit, OnDestroy {
   scrollDown(): void {
     this.highlightMessageId = undefined;
     if (this.prevScrollMessageId) {
-      this.commonService.goToPrevMessage();
+      this.messageService.goToPrevMessage();
     } else {
       this.scrollToBot();
     }
@@ -283,7 +283,7 @@ export class MainChatComponent implements OnInit, OnDestroy {
         switchMap((response) => of(response.reverse())),
         takeUntil(this.destroy$)
       ).subscribe((messages) => {
-        this.commonService.pushLastMessages(messages);
+        this.messageService.pushLastMessages(messages);
         this._currentPageSize = messages.length;
       });
   }
@@ -314,7 +314,7 @@ export class MainChatComponent implements OnInit, OnDestroy {
   }
 
   private setMainChatMessages(): void {
-    this.messages$ = this.commonService.getMainMessages()
+    this.messages$ = this.messageService.getMainMessages()
       .pipe(
         map((messages) => {
           return messages?.map((m) => {
