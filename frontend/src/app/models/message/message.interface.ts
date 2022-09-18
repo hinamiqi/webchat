@@ -7,6 +7,7 @@ export interface IRepliedMessage {
 
 export interface IMessage {
   author: User;
+  receiver: User;
   text: string;
   date: Date;
   id?: number;

@@ -163,11 +163,12 @@ export class ChatMessageComponent implements OnInit, OnDestroy {
     const newDate =  new Date();
     const newMessage = new ChatMessage(
       this.authService.getCurrentUser(),
+      this.message.author,
       text, newDate, null
     );
 
     this.chatApiService
-      .addMessageToUser(newMessage, this.message.author.uuid)
+      .addMessage(newMessage)
       .pipe(takeUntil(this.destroy$))
       .subscribe(() => {
         this.dialog.close();

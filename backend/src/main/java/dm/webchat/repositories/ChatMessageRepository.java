@@ -10,10 +10,13 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import dm.webchat.models.ChatMessage;
+import dm.webchat.models.User;
 
 @Repository
 public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> {
     Page<ChatMessage> findAll(Pageable pageable);
+
+    Page<ChatMessage> findAllByReceiver(Pageable pageable, User receiver);
 
     Page<ChatMessage> findByDateIsGreaterThan(Pageable pageable, ZonedDateTime date);
 

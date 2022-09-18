@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import dm.webchat.models.ChatMessage;
@@ -21,6 +22,8 @@ import dm.webchat.models.dto.ChatMessageDto;
 import dm.webchat.service.ChatService;
 import dm.webchat.service.PrivateMessageService;
 import lombok.RequiredArgsConstructor;
+
+import static dm.webchat.helper.EmptinessHelper.isNotEmpty;
 
 @RestController
 @RequestMapping(path = "/api/chat")
@@ -39,8 +42,12 @@ public class ChatController {
 
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('USER')")
     @GetMapping("")
-    public List<ChatMessageDto> getLastChatMessages(Pageable pageable) {
-        Page<ChatMessage> messages = chatService.getChatMessages(pageable);
+    public List<ChatMessageDto> getLastChatMessages(Pageable pageable, @RequestParam(required = false) String receiverUuid) {
+        UUID uuid = null;
+        if (isNotEmpty(receiverUuid)) {
+            uuid = UUID.fromString(receiverUuid);
+        }
+        Page<ChatMessage> messages = chatService.getChatMessages(pageable, uuid);
         return messages.stream()
             .map(ChatMessageDto::new)
             .collect(Collectors.toList());

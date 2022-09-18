@@ -4,6 +4,7 @@ import java.security.Principal;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
@@ -86,8 +87,13 @@ public class ChatService {
         return savedMessage;
     }
 
-    public Page<ChatMessage> getChatMessages(Pageable page) {
-        return chatMessageRepository.findAll(page);
+    public Page<ChatMessage> getChatMessages(Pageable page, UUID receiverUuid) {
+        User receiver = receiverUuid == null ? null : userRepository.findByUuid(receiverUuid)
+            .orElseThrow(() ->
+                new NotFoundException(
+                    String.format("No user with uuid (%s) found", receiverUuid))
+            );
+        return chatMessageRepository.findAllByReceiver(page, receiver);
     }
 
     public Page<ChatMessage> getChatMessagesToDate(Pageable page, ZonedDateTime date) {
@@ -122,19 +128,32 @@ public class ChatService {
 
     @Transactional
     private ChatMessage addMessageToDb(User author, ChatMessageDto msgDto) {
+        User receiver = null;
+        if (isNotEmpty(msgDto.getReceiver())) {
+            receiver = userRepository.findByUuid(msgDto.getReceiver().getUuid())
+                .orElseThrow(() ->
+                    new NotFoundException(
+                        String.format("No receiver user with uuid (%s) found", msgDto.getReceiver().getUuid()))
+                );
+        } 
+
         validateMessageText(msgDto);
 
-        List<ChatMessage> repliedMessages = this.chatMessageRepository.findAllById(
-            msgDto.getRepliedMessages()
-              .stream()
-              .map(RepliedMessageDto::getId)
-              .collect(Collectors.toList())
-        );
+        List<ChatMessage> repliedMessages = null;
+        if (isNotEmpty(msgDto.getRepliedMessages())) {
+            repliedMessages = this.chatMessageRepository.findAllById(
+                msgDto.getRepliedMessages()
+                .stream()
+                .map(RepliedMessageDto::getId)
+                .collect(Collectors.toList())
+            );
+        }
 
         Meme memeEntity = memeRepository.findByName(msgDto.getMemeName()).orElse(null);
 
         return chatMessageRepository.save(ChatMessage.builder()
             .author(author)
+            .receiver(receiver)
             .date(msgDto.getDate())
             .text(msgDto.getText())
             .repliedMessages(repliedMessages)

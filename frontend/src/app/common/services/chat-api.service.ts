@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { IMessage } from 'src/app/models/message/message.interface';
@@ -30,8 +30,10 @@ export class ChatApiService {
     return this.http.post<IMessage>(`${this.backendApi}/chat/${message.id}`, message);
   }
 
-  getLastMessages(size = DEFAULT_CHAT_PAGE_SIZE): Observable<IMessage[]> {
-    return this.http.get<IMessage[]>(`${this.backendApi}/chat?page=0&size=${size}&sort=date,desc`);
+  getLastMessages(size = DEFAULT_CHAT_PAGE_SIZE, receiverUuid: string): Observable<IMessage[]> {
+    let params = new HttpParams();
+    params = params.append('receiverUuid', receiverUuid);
+    return this.http.get<IMessage[]>(`${this.backendApi}/chat?page=0&size=${size}&sort=date,desc`, { params });
   }
 
   getMessageToDate(date: Date, size = DEFAULT_CHAT_PAGE_SIZE): Observable<IMessage[]> {

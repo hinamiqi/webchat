@@ -162,6 +162,7 @@ export class MainChatComponent implements OnInit, OnDestroy {
     const newDate =  new Date();
     const newMessage = new ChatMessage(
       this.authService.getCurrentUser(),
+      null,
       text, newDate, this.messageToReply, meme?.name || null
     );
 
@@ -275,7 +276,7 @@ export class MainChatComponent implements OnInit, OnDestroy {
   }
 
   private getLastMessages(size = 0): void {
-    this.chatApiService.getLastMessages(this._currentPageSize + size)
+    this.chatApiService.getLastMessages(this._currentPageSize + size, null)
       .pipe(
         finalize(() => {
           if (!size) this.scrollToBot();
