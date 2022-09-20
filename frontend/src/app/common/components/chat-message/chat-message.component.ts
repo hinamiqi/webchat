@@ -9,8 +9,7 @@ import { IMessage, IRepliedMessage } from 'src/app/models/message/message.interf
 import { DateHelperService } from 'src/app/utils/services/date-helper.service';
 import { DEFAULT_MSG_ALTER_TIME_MINUTES } from 'src/app/app.config';
 import { UserStatusService } from 'src/app/shared/services/user-status.service';
-import { SimpleDialogComponent } from 'src/app/shared/components/simple-dialog/simple-dialog.component';
-import { ChatMessage } from 'src/app/models/message/message.model';
+import { User } from 'src/app/models/auth/user.model';
 
 import { ChatApiService } from '../../services/chat-api.service';
 import { MessageService } from '../../services/message.service';
@@ -26,12 +25,9 @@ import { AvatarService } from '../../services/avatar.service';
 })
 
 export class ChatMessageComponent implements OnInit, OnDestroy {
-  @ViewChild(SimpleDialogComponent) dialog: SimpleDialogComponent;
-
   @Input() config: IChatMessageConfig = new ChatMessageConfig();
 
   @Input() set message(val: IMessage) {
-    console.log(`Set of message:`, val);
     val.text = this.transformMessageText(val.text);
     if (val.oldText) {
       val.oldText = this.transformMessageText(val.oldText);
@@ -46,6 +42,8 @@ export class ChatMessageComponent implements OnInit, OnDestroy {
   }
 
   @Output() removed = new EventEmitter<IMessage>();
+
+  @Output() openPrivateChat = new EventEmitter<User>();
 
   editMode = false;
 
@@ -159,22 +157,6 @@ export class ChatMessageComponent implements OnInit, OnDestroy {
       });
   }
 
-  submitToUser(text: string): void {
-    const newDate =  new Date();
-    const newMessage = new ChatMessage(
-      this.authService.getCurrentUser(),
-      this.message.author,
-      text, newDate, null
-    );
-
-    this.chatApiService
-      .addMessage(newMessage)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        this.dialog.close();
-      });
-  }
-
   showDiff(): void {
     if (!this.isMessageEdited) return;
 
@@ -185,9 +167,9 @@ export class ChatMessageComponent implements OnInit, OnDestroy {
     this.isDiffShow = false;
   }
 
-  openPopup(): void {
+  emitOpenPrivateChat(): void {
     if (!this.config.canSendPrivate) return;
-    this.dialog.open();
+    this.openPrivateChat.emit(this._message.author);
   }
 
   scrollToMessage(toMessage: IRepliedMessage): void {

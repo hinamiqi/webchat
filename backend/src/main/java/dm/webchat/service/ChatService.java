@@ -87,13 +87,23 @@ public class ChatService {
         return savedMessage;
     }
 
-    public Page<ChatMessage> getChatMessages(Pageable page, UUID receiverUuid) {
+    public Page<ChatMessage> getChatMessages(Pageable page, UUID receiverUuid, UUID authorUuid) {
         User receiver = receiverUuid == null ? null : userRepository.findByUuid(receiverUuid)
             .orElseThrow(() ->
                 new NotFoundException(
                     String.format("No user with uuid (%s) found", receiverUuid))
             );
-        return chatMessageRepository.findAllByReceiver(page, receiver);
+        User author = authorUuid == null ? null : userRepository.findByUuid(authorUuid)
+        .orElseThrow(() ->
+            new NotFoundException(
+                String.format("No user with uuid (%s) found", authorUuid))
+        );
+
+        if (isNotEmpty(author) && isNotEmpty(receiver)) {
+            return chatMessageRepository.findAllPrivatePage(page, receiver, author);
+        }
+
+        return chatMessageRepository.findAllByReceiver(page, null);
     }
 
     public Page<ChatMessage> getChatMessagesToDate(Pageable page, ZonedDateTime date) {

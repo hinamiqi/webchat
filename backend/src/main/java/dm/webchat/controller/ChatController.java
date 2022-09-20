@@ -42,12 +42,17 @@ public class ChatController {
 
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('USER')")
     @GetMapping("")
-    public List<ChatMessageDto> getLastChatMessages(Pageable pageable, @RequestParam(required = false) String receiverUuid) {
-        UUID uuid = null;
+    public List<ChatMessageDto> getLastChatMessages(Pageable pageable, @RequestParam(required = false) String receiverUuid, @RequestParam(required = false) String authorUuid) {
+        UUID to = null;
         if (isNotEmpty(receiverUuid)) {
-            uuid = UUID.fromString(receiverUuid);
+            to = UUID.fromString(receiverUuid);
         }
-        Page<ChatMessage> messages = chatService.getChatMessages(pageable, uuid);
+        UUID from = null;
+        if (isNotEmpty(authorUuid)) {
+            from = UUID.fromString(authorUuid);
+        }
+
+        Page<ChatMessage> messages = chatService.getChatMessages(pageable, to, from);
         return messages.stream()
             .map(ChatMessageDto::new)
             .collect(Collectors.toList());

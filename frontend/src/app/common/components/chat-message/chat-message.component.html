@@ -1,6 +1,6 @@
 <div *ngIf="!message.isSeparator" class="message-container" [ngClass]="{ 'author-is-current-user': isCurrentUserAuthor }">
   <img [src]="avatarImageSource" class="avatar">
-  <div class="message" *ngIf="!editMode" (mouseover)="showDiff()" (mouseout)="hideDiff()">
+  <div class="message" *ngIf="!editMode">
     <span class="action-icons" *ngIf="config.editable">
       <span class="action-icons__item" *ngIf="canAlterMessage"><i class="icon bi bi-pencil-fill" (click)="toggleEdit()"></i></span>
       <span class="action-icons__item" *ngIf="canAlterMessage"><i class="icon bi bi-x-lg" (click)="remove()"></i></span>
@@ -10,20 +10,20 @@
       <p class="replied-messages__item cursor-pointer" *ngFor="let m of message.repliedMessages"
          (click)="scrollToMessage(m)">> {{ m.preview }}</p>
     </div>
-    <ng-container *ngIf="!isMeme">
+    <div *ngIf="!isMeme" (mouseover)="showDiff()" (mouseout)="hideDiff()">
       <div *ngIf="!isDiffShow" [innerHTML]="safeText"></div>
       <div *ngIf="isDiffShow && isMessageEdited">
         <div class="old-text" [innerHTML]="message.oldText"></div>
         <div class="new-text" [innerHTML]="message.text"></div>
       </div>
-    </ng-container>
+    </div>
     <ng-container *ngIf="isMeme">
       <img [src]="memeImageSource" class="meme">
       <div>{{ message.memeName }}</div>
     </ng-container>
     <p class="sign">
       <span class="user-status" [ngClass]="{ 'user-online': isOnline }"></span>
-      <span *ngIf="config.canSendPrivate" class="user-name" (click)="openPopup()">{{ message.author.username }}</span>
+      <span *ngIf="config.canSendPrivate" class="user-name" (click)="emitOpenPrivateChat()">{{ message.author.username }}</span>
       <span *ngIf="!config.canSendPrivate">{{ message.author.username }}</span>
       <span *ngIf="isMessageEdited">, edited</span>
       <span *ngIf="isToday">{{ message.date | date: 'HH:mm' }}</span>
@@ -40,9 +40,3 @@
   </div>
 </div>
 <div *ngIf="message.isSeparator" class="flex-container">{{ message.date | date: 'dd.MM.yy' }}</div>
-<app-simple-dialog *ngIf="config.canSendPrivate" [dialogTitle]="'Send to user ' + message.author.username">
-  <app-message-input
-      [initialText]="message.text"
-      (submitted)="submitToUser($event)"
-  ></app-message-input>
-</app-simple-dialog>

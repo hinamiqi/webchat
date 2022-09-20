@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
-import { BehaviorSubject, Observable, of } from 'rxjs';
-import { filter, switchMap } from 'rxjs/operators';
+import { BehaviorSubject, Observable, of, Subject } from 'rxjs';
+import { switchMap, takeUntil } from 'rxjs/operators';
 import { AuthService } from 'src/app/auth/services/auth.service';
 import { User } from 'src/app/models/auth/user.model';
 
@@ -12,6 +12,18 @@ import { MAX_REPLY_MESSAGES, MESSAGE_TO_REPLY_PREVIEW_LENGTH } from 'src/app/sha
 import { ELLIPSIS } from 'src/app/shared/constants/string.const';
 import { UserStatusService } from 'src/app/shared/services/user-status.service';
 import { DateHelperService } from 'src/app/utils/services/date-helper.service';
+import { ChatApiService } from './chat-api.service';
+
+export interface IChat {
+  chatName: string;
+  isPrivate: boolean;
+  userUuid?: string;
+}
+
+const DEAFAULT_MAIN_CHAT: IChat = {
+  chatName: 'Main',
+  isPrivate: false,
+};
 
 @Injectable({providedIn: 'root'})
 export class MessageService {
@@ -19,13 +31,23 @@ export class MessageService {
     return this._messageToReply;
   }
 
-  readonly messages$: Observable<MessageList>;
+  get chatList(): IChat[] {
+    return this._chatList;
+  }
+
+  get currentChat(): IChat {
+    return this._chatList[this.activeChat];
+  }
+
+  private activeChat: number;
+
+  readonly messages$: Observable<IMessage[]>;
 
   readonly newMessages$: Observable<Map<string, number>>;
 
   readonly scrollQueue$: Observable<number[]>;
 
-  private _messages$ = new BehaviorSubject<MessageList>(new Map());
+  private _messages$ = new BehaviorSubject<IMessage[]>([]);
 
   private _newMessages$ = new BehaviorSubject<Map<string, number>>(new Map());
 
@@ -33,8 +55,15 @@ export class MessageService {
 
   private _messageToReply: IRepliedMessage[] = [];
 
+  private destroy$ = new Subject<void>();
+
+  private _chatList: IChat[] = [
+    DEAFAULT_MAIN_CHAT,
+  ];
+
   constructor(
     private readonly userStatusService: UserStatusService,
+    private readonly chatApiService: ChatApiService,
     private readonly authService: AuthService
   ) {
     this.messages$ = this._messages$.asObservable();
@@ -42,38 +71,64 @@ export class MessageService {
     this.scrollQueue$ = this._scrollQueue$.asObservable();
   }
 
+  isActiveChat(index: number): boolean {
+    return this.activeChat === index;
+  }
+
+  changeChat(index: number): void {
+    this.activeChat = index;
+    const request$ = this.currentChat.isPrivate
+     ? this.chatApiService.getLastMessages(this.currentChat.userUuid, this.authService.getCurrentUser().uuid)
+     : this.chatApiService.getLastMessages(null, null)
+
+     request$
+      .pipe(
+        switchMap((response) => of(response.reverse())),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((response) => {
+        this.pushLastMessages(response);
+      });
+  }
+
+  activatePrivateChat(user: User): void {
+    const existingPrivateChatIndex = this._chatList.findIndex((c) => c.userUuid === user.uuid);
+    if (existingPrivateChatIndex !== -1) {
+      this.changeChat(existingPrivateChatIndex);
+      return;
+    }
+    this._chatList.push({
+      chatName: user.username,
+      isPrivate: true,
+      userUuid: user.uuid
+    });
+    this.changeChat(this._chatList.length - 1);
+  }
+
   pushPrivateMessage(msg: IMessage): void {
-    const map = this._messages$.value;
-    const author = msg.author.username;
-    const authorMessages = map.get(author) || [];
-    this.pushNewMessages(author, [...authorMessages, msg]);
+    if (this.currentChat.userUuid === msg.author.uuid && this.currentChat.isPrivate) {
+      const map = this._messages$.value;
+      // const author = msg.author.username;
+      // const authorMessages = map.get(author) || [];
+      this.pushNewMessages([...map, msg]);
+    }
   }
 
   pushMainMessage(msg: IMessage): void {
-    const map = this._messages$.value;
-    const mainMessages = map.get(null) || [];
-    this.pushNewMessages(null, [...mainMessages, msg]);
+    if (!this.currentChat.isPrivate && msg.receiver === null) {
+      const map = this._messages$.value;
+      // const mainMessages = map.get(null) || [];
+      this.pushNewMessages([...map, msg]);
+    }
   }
 
   pushLastMessages(messages: IMessage[]): void {
-    this.pushNewMessages(null, messages, null);
+    this.pushNewMessages(messages);
   }
 
-  getPrivateMessagesOfUser(username: string): Observable<IMessage[]> {
+  getMessages(): Observable<IMessage[]> {
     return this.messages$
-      .pipe(switchMap((map) => {
-        if (map.has(username)) return of(this.getMessagesView(map.get(username)));
-        return of([]);
-      }));
-  }
-
-  getMainMessages(): Observable<IMessage[]> {
-    return this.messages$
-      .pipe(switchMap((messageList) => of(this.getMessagesView(messageList.get(null)))))
-  }
-
-  getCurrentMessages(key: string = null): IMessage[] {
-    return this._messages$.value.get(key);
+      .pipe(switchMap((messageList) => of(this.getMessagesView(messageList))))
   }
 
   handleGlobalEvent(event: IGlobalEvent): void {
@@ -126,45 +181,44 @@ export class MessageService {
     queue.pop();
   }
 
-  private pushNewMessages(chatKey: string, messages: IMessage[], count = 1): void {
-    const map = this._messages$.value;
-    map.set(chatKey, messages);
-    this._messages$.next(map);
+  private pushNewMessages(messages: IMessage[]): void {
+    // const map = this._messages$.value;
+    // map.set(null, messages);
+    this._messages$.next(messages);
 
     const counts = this._newMessages$.value;
-    const newCount = count
-      ? ( counts.get(chatKey) || 0) + 1
-      : 0;
-    counts.set(chatKey, newCount);
-    this._newMessages$.next(counts);
+    // const newCount = count
+    //   ? ( counts.get(chatKey) || 0) + 1
+    //   : 0;
+    // counts.set(chatKey, newCount);
+    // messages.forEach((message) => {
+    //   const prevCount = counts.get(message.author.uuid) || 0;
+    //   counts.set(message.author.uuid, prevCount + 1);
+    // });
+    // this._newMessages$.next(counts);
   }
 
   private removeMainMessage(messageId: number): void {
-    const map = this._messages$.value;
-    const currentMessages = map.get(null);
+    const currentMessages = this._messages$.value;
     const newMessages = currentMessages.filter((m) => m.id !== messageId);
-    map.set(null, newMessages);
-    this._messages$.next(map);
+    this._messages$.next(newMessages);
   }
 
   private editMainMessage(message: IMessage) {
-    const map = this._messages$.value;
-    const currentMessages = map.get(null);
+    const currentMessages = this._messages$.value;
     const oldMessage = currentMessages.find((m) => m.id === message.id);
 
     if (!oldMessage) return;
 
     oldMessage.text = message.text;
     oldMessage.oldText = message.oldText;
-    map.set(null, currentMessages);
-    this._messages$.next(map);
+    this._messages$.next(currentMessages);
   }
 
   private getMessagesView(messages: IMessage[]): IMessage[] {
     if (!messages || !messages.length) return messages;
 
     const view: IMessage[] = [];
-    const today = new Date();
 
     let prevDate = new Date(messages[0].date);
     for (let msg of messages) {

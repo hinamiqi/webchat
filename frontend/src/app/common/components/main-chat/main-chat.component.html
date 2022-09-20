@@ -1,8 +1,8 @@
-<ul class="nav nav-tabs" *ngIf="chatList$ | async; let list">
-  <li class="nav-item" *ngFor="let chatName of list">
-    <a class="nav-link" (click)="changeChat(chatName)" [ngClass]="{ active: currentTab === chatName }">
-      {{ chatName }}
-      <span *ngIf="getNewMessageCount(chatName)" class="my-own-badge">{{ getNewMessageCount(chatName) }}</span>
+<ul class="nav nav-tabs" *ngIf="chatList">
+  <li class="nav-item" *ngFor="let chat of chatList; index as i">
+    <a class="nav-link" (click)="changeChat(i)" [ngClass]="{ active: getIsActiveTab(i) }">
+      {{ chat.chatName }}
+      <!-- <span *ngIf="(newMessagesCount$ | async).has(chat.userUuid)" class="my-own-badge">{{ (newMessagesCount$ | async).get(chat.userUuid) }}</span> -->
     </a>
   </li>
 </ul>
@@ -19,6 +19,7 @@
     [message]="message"
     [ngClass]="{ highlighted: highlightMessageId === message.id }"
     (removed)="removeMessage($event)"
+    (openPrivateChat)="openPrivateChat($event)"
   ></app-chat-message>
 </div>
 <div class="message-to-reply" *ngIf="messageToReply.length">

@@ -30,9 +30,10 @@ export class ChatApiService {
     return this.http.post<IMessage>(`${this.backendApi}/chat/${message.id}`, message);
   }
 
-  getLastMessages(size = DEFAULT_CHAT_PAGE_SIZE, receiverUuid: string): Observable<IMessage[]> {
+  getLastMessages(receiverUuid: string, authorUuid: string, size = DEFAULT_CHAT_PAGE_SIZE): Observable<IMessage[]> {
     let params = new HttpParams();
     params = params.append('receiverUuid', receiverUuid);
+    params = params.append('authorUuid', authorUuid);
     return this.http.get<IMessage[]>(`${this.backendApi}/chat?page=0&size=${size}&sort=date,desc`, { params });
   }
 
