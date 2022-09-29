@@ -97,18 +97,21 @@ export class MessageService {
     this.clearNewMessageCounter(this.currentChat.chatName);
   }
 
-  activatePrivateChat(user: User): void {
+  activatePrivateChat(user: User, needChangeChat = true): IChat {
     const existingPrivateChatIndex = this._chatList.findIndex((c) => c.userUuid === user.uuid);
     if (existingPrivateChatIndex !== -1) {
       this.changeChat(existingPrivateChatIndex);
-      return;
+      return this._chatList[existingPrivateChatIndex];
     }
     this._chatList.push({
       chatName: user.username,
       isPrivate: true,
       userUuid: user.uuid
     });
-    this.changeChat(this._chatList.length - 1);
+    if (needChangeChat) {
+      this.changeChat(this._chatList.length - 1);
+    }
+    return this._chatList[this._chatList.length - 1];
   }
 
   pushPrivateMessage(msg: IMessage): void {
@@ -123,7 +126,10 @@ export class MessageService {
       this.updateNewMessageCounters(this.currentChat.chatName, 1);
       return;
     }
-    const inactiveChat = this._chatList.find((c) => c.userUuid === msg.author.uuid);
+    let inactiveChat = this._chatList.find((c) => c.userUuid === msg.author.uuid);
+    if (!inactiveChat) {
+      inactiveChat = this.activatePrivateChat(msg.author, false);
+    }
     if (!!inactiveChat) {
       this.updateNewMessageCounters(inactiveChat.chatName, 1);
     }
