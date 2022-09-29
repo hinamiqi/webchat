@@ -2,7 +2,7 @@
   <li class="nav-item" *ngFor="let chat of chatList; index as i">
     <a class="nav-link" (click)="changeChat(i)" [ngClass]="{ active: getIsActiveTab(i) }">
       {{ chat.chatName }}
-      <!-- <span *ngIf="(newMessagesCount$ | async).has(chat.userUuid)" class="my-own-badge">{{ (newMessagesCount$ | async).get(chat.userUuid) }}</span> -->
+      <span *ngIf="newMessagesCount?.has(chat.chatName) && !!newMessagesCount.get(chat.chatName)" class="my-own-badge">{{ newMessagesCount.get(chat.chatName) }}</span>
     </a>
   </li>
 </ul>

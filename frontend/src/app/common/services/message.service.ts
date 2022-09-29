@@ -36,10 +36,14 @@ export class MessageService {
   }
 
   get currentChat(): IChat {
-    return this._chatList[this.activeChat];
+    return this._chatList[this._activeChat];
   }
 
-  private activeChat: number;
+  get activeChatIndex(): number {
+    return this._activeChat;
+  }
+
+  private _activeChat: number;
 
   readonly messages$: Observable<IMessage[]>;
 
@@ -72,16 +76,16 @@ export class MessageService {
   }
 
   isActiveChat(index: number): boolean {
-    return this.activeChat === index;
+    return this._activeChat === index;
   }
 
   changeChat(index: number): void {
-    this.activeChat = index;
+    this._activeChat = index;
     const request$ = this.currentChat.isPrivate
      ? this.chatApiService.getLastMessages(this.currentChat.userUuid, this.authService.getCurrentUser().uuid)
      : this.chatApiService.getLastMessages(null, null)
 
-     request$
+    request$
       .pipe(
         switchMap((response) => of(response.reverse())),
         takeUntil(this.destroy$)
@@ -89,6 +93,8 @@ export class MessageService {
       .subscribe((response) => {
         this.pushLastMessages(response);
       });
+
+    this.clearNewMessageCounter(this.currentChat.chatName);
   }
 
   activatePrivateChat(user: User): void {
@@ -115,6 +121,11 @@ export class MessageService {
       const map = this._messages$.value;
       this.pushNewMessages([...map, msg]);
       this.updateNewMessageCounters(this.currentChat.chatName, 1);
+      return;
+    }
+    const inactiveChat = this._chatList.find((c) => c.userUuid === msg.author.uuid);
+    if (!!inactiveChat) {
+      this.updateNewMessageCounters(inactiveChat.chatName, 1);
     }
   }
 
@@ -123,7 +134,10 @@ export class MessageService {
       const map = this._messages$.value;
       this.pushNewMessages([...map, msg]);
       this.updateNewMessageCounters(this.currentChat.chatName, 1);
+      return;
     }
+    const mainChat = this._chatList.find((c) => !c.userUuid && !c.isPrivate);
+    this.updateNewMessageCounters(mainChat.chatName, 1);
   }
 
   pushLastMessages(messages: IMessage[]): void {
@@ -185,16 +199,20 @@ export class MessageService {
     queue.pop();
   }
 
+  clearNewMessageCounter(chatName: string): void {
+    const counts = this._newMessages$.value;
+    counts.set(chatName, 0);
+    this._newMessages$.next(counts);
+  }
+
   private pushNewMessages(messages: IMessage[]): void {
     this._messages$.next(messages);
   }
 
   private updateNewMessageCounters(chatName: string, count: number): void {
     const counts = this._newMessages$.value;
-    const newCount = count
-      ? ( counts.get(chatName) || 0) + 1
-      : 0;
-    counts.set(chatName, newCount);
+    const currentCount = counts.get(chatName) || 0;
+    counts.set(chatName, currentCount + count);
     this._newMessages$.next(counts);
   }
 

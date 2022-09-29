@@ -54,7 +54,7 @@ export class MainChatComponent implements OnInit, OnDestroy {
 
   chatList: IChat[];
 
-  newMessagesCount$: Observable<Map<string,number>>;
+  newMessagesCount: Map<string,number>;
 
   scrollToDate: string;
 
@@ -104,6 +104,8 @@ export class MainChatComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.changeChat(0);
+
     this.form = this.fb.group({
       message: []
     });
@@ -136,13 +138,13 @@ export class MainChatComponent implements OnInit, OnDestroy {
           takeUntil(this.destroy$)
         )
         .subscribe((newMessages) => {
-          this.scrollDown();
+          const name = this.messageService.currentChat.chatName;
+          if (this.newMessagesCount?.get(name) !== newMessages.get(name) && newMessages.get(name) !== 0) {
+            this.scrollDown();
+            this.messageService.clearNewMessageCounter(name);
+          }
+          this.newMessagesCount = new Map(newMessages);
         });
-
-    this.changeChat(0);
-    this.newMessagesCount$ = this.messageService.newMessages$;
-
-    this.scrollDown();
   }
 
   ngOnDestroy(): void {
