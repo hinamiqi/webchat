@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 import dm.webchat.models.ChatMessage;
 import dm.webchat.models.dto.ChatMessageDto;
 import dm.webchat.service.ChatService;
-import dm.webchat.service.PrivateMessageService;
 import lombok.RequiredArgsConstructor;
 
 import static dm.webchat.helper.EmptinessHelper.isNotEmpty;
@@ -31,12 +30,17 @@ import static dm.webchat.helper.EmptinessHelper.isNotEmpty;
 public class ChatController {
     private final ChatService chatService;
 
-    private final PrivateMessageService privateMessageService;
-
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('USER')")
     @PostMapping("")
     public ChatMessageDto postChatMessage(@RequestBody ChatMessageDto messageDto) {
-        ChatMessage savedMessage = chatService.saveMessage(messageDto);
+        ChatMessage savedMessage = chatService.saveMessage(messageDto, false);
+        return new ChatMessageDto(savedMessage);
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('USER')")
+    @PostMapping("/private/{userId}")
+    public ChatMessageDto postPrivateMessageToUser(@RequestBody ChatMessageDto messageDto, @PathVariable UUID userId) {
+        ChatMessage savedMessage = chatService.saveMessage(messageDto, true);
         return new ChatMessageDto(savedMessage);
     }
 
@@ -74,12 +78,6 @@ public class ChatController {
         return messages.stream()
             .map(ChatMessageDto::new)
             .collect(Collectors.toList());
-    }
-
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('USER')")
-    @PostMapping("/private/{userId}")
-    public void postPrivateMessageToUser(@RequestBody ChatMessageDto messageDto, @PathVariable UUID userId) {
-        privateMessageService.sendPrivateMessage(messageDto, userId);
     }
 
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('USER')")

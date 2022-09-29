@@ -115,23 +115,34 @@ export class MainChatComponent implements OnInit, OnDestroy {
     this.chatList = this.messageService.chatList;
 
     this.messageService.scrollQueue$
-    .pipe(
-      filter((queue) => !!queue),
-      takeUntil(this.destroy$)
-    )
-    .subscribe((queue) => {
-      if (queue.length > 1) {
-        this.prevScrollMessageId = queue[queue.length - 2];
-        this.highlightMessageId = queue[queue.length - 1];
-      } else {
-        this.prevScrollMessageId = undefined;
-      }
+      .pipe(
+        filter((queue) => !!queue),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((queue) => {
+        if (queue.length > 1) {
+          this.prevScrollMessageId = queue[queue.length - 2];
+          this.highlightMessageId = queue[queue.length - 1];
+        } else {
+          this.prevScrollMessageId = undefined;
+        }
 
-      this.scrollToMessage(queue[queue.length - 1]);
-    });
+        this.scrollToMessage(queue[queue.length - 1]);
+      });
+    
+      this.messageService.newMessages$
+        .pipe(
+          filter((queue) => !!queue),
+          takeUntil(this.destroy$)
+        )
+        .subscribe((newMessages) => {
+          this.scrollDown();
+        });
 
     this.changeChat(0);
     this.newMessagesCount$ = this.messageService.newMessages$;
+
+    this.scrollDown();
   }
 
   ngOnDestroy(): void {
@@ -154,7 +165,11 @@ export class MainChatComponent implements OnInit, OnDestroy {
       text, newDate, this.messageToReply, meme?.name || null
     );
 
-    this.chatApiService.addMessage(newMessage)
+    const request$ = currentChat.isPrivate
+      ? this.chatApiService.addMessageToUser(newMessage, receiver.uuid)
+      : this.chatApiService.addMessage(newMessage)
+
+    request$
       .pipe(
         finalize(() => {
           this.messageService.clearMessageToReply();
@@ -289,7 +304,7 @@ export class MainChatComponent implements OnInit, OnDestroy {
           return messages?.map((m) => {
             console.log(`Generate new message hash...`);
             m.messageHash = HashService.cyrb53(m.text + m.oldText);
-            return m
+            return m;
           })
         })
       );

@@ -44,7 +44,7 @@ public class ChatService {
     @Value("${app.messageAlterTimeMinutes:1}")
     private int messageAlterTimeMinutes;
 
-    public ChatMessage saveMessage(ChatMessageDto msgDto) throws NotFoundException {
+    public ChatMessage saveMessage(ChatMessageDto msgDto, Boolean isPrivate) throws NotFoundException {
         String currentUserLogin = SecurityUtils
             .getCurrentUserLogin()
             .orElseThrow(() -> new NotFoundException("No current user authorization"));
@@ -58,8 +58,18 @@ public class ChatService {
             throw new BadRequestHttpException("Message author is not the user, who sent the message. Message rejected.");
         }
 
-        ChatMessage savedMessage = addMessageToDb(author, msgDto);
-        webSocketService.publishChatMessage(savedMessage, author);
+        User receiver = isPrivate
+          ? userRepository.findByUuid(msgDto.getReceiver().getUuid())
+              .orElseThrow(() -> new NotFoundException("No user with uuid " + msgDto.getReceiver().getUuid()))
+          : null;
+
+        ChatMessage savedMessage = addMessageToDb(author, receiver, msgDto);
+        if (isPrivate) {
+            webSocketService.sendPrivateMessage(msgDto, receiver);
+            webSocketService.sendPrivateMessage(msgDto, author);
+        } else {
+            webSocketService.publishChatMessage(savedMessage, author);
+        }
         return savedMessage;
     }
 
@@ -69,7 +79,7 @@ public class ChatService {
                 new NotFoundException(
                     String.format("No user with login (%s) found", msgDto.getAuthor().getUsername()))
             );
-        return addMessageToDb(author, msgDto);
+        return addMessageToDb(author, null, msgDto);
     }
 
     public ChatMessage editMessage(ChatMessageDto msgDto) throws NotFoundException {
@@ -137,8 +147,7 @@ public class ChatService {
     }
 
     @Transactional
-    private ChatMessage addMessageToDb(User author, ChatMessageDto msgDto) {
-        User receiver = null;
+    private ChatMessage addMessageToDb(User author, User receiver, ChatMessageDto msgDto) {
         if (isNotEmpty(msgDto.getReceiver())) {
             receiver = userRepository.findByUuid(msgDto.getReceiver().getUuid())
                 .orElseThrow(() ->

@@ -106,19 +106,23 @@ export class MessageService {
   }
 
   pushPrivateMessage(msg: IMessage): void {
-    if (this.currentChat.userUuid === msg.author.uuid && this.currentChat.isPrivate) {
+    if (this.currentChat.isPrivate &&
+        (
+          this.currentChat.userUuid === msg.author.uuid ||
+          this.currentChat.userUuid === msg.receiver.uuid
+        )
+    ) {
       const map = this._messages$.value;
-      // const author = msg.author.username;
-      // const authorMessages = map.get(author) || [];
       this.pushNewMessages([...map, msg]);
+      this.updateNewMessageCounters(this.currentChat.chatName, 1);
     }
   }
 
   pushMainMessage(msg: IMessage): void {
     if (!this.currentChat.isPrivate && msg.receiver === null) {
       const map = this._messages$.value;
-      // const mainMessages = map.get(null) || [];
       this.pushNewMessages([...map, msg]);
+      this.updateNewMessageCounters(this.currentChat.chatName, 1);
     }
   }
 
@@ -182,20 +186,16 @@ export class MessageService {
   }
 
   private pushNewMessages(messages: IMessage[]): void {
-    // const map = this._messages$.value;
-    // map.set(null, messages);
     this._messages$.next(messages);
+  }
 
+  private updateNewMessageCounters(chatName: string, count: number): void {
     const counts = this._newMessages$.value;
-    // const newCount = count
-    //   ? ( counts.get(chatKey) || 0) + 1
-    //   : 0;
-    // counts.set(chatKey, newCount);
-    // messages.forEach((message) => {
-    //   const prevCount = counts.get(message.author.uuid) || 0;
-    //   counts.set(message.author.uuid, prevCount + 1);
-    // });
-    // this._newMessages$.next(counts);
+    const newCount = count
+      ? ( counts.get(chatName) || 0) + 1
+      : 0;
+    counts.set(chatName, newCount);
+    this._newMessages$.next(counts);
   }
 
   private removeMainMessage(messageId: number): void {
