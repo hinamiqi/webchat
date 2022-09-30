@@ -64,8 +64,8 @@ public class ChatController {
 
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('USER')")
     @PostMapping("/to-date")
-    public List<ChatMessageDto> getMessagesToDate(Pageable pageable, @RequestBody ZonedDateTime date) {
-        Page<ChatMessage> messages = chatService.getChatMessagesToDate(pageable, date);
+    public List<ChatMessageDto> getMessagesToDate(@RequestBody ZonedDateTime date) {
+        List<ChatMessage> messages = chatService.getChatMessagesToDate(date);
         return messages.stream()
             .map(ChatMessageDto::new)
             .collect(Collectors.toList());

@@ -116,8 +116,8 @@ public class ChatService {
         return chatMessageRepository.findAllByReceiver(page, null);
     }
 
-    public Page<ChatMessage> getChatMessagesToDate(Pageable page, ZonedDateTime date) {
-        return chatMessageRepository.findByDateIsGreaterThan(page, date);
+    public List<ChatMessage> getChatMessagesToDate(ZonedDateTime date) {
+        return chatMessageRepository.findByDateIsGreaterThanEqualOrderByDateDesc(date);
     }
 
     public List<ChatMessage> getChatMessagesToMessage(Long messageId) {

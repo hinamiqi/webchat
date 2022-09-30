@@ -37,8 +37,8 @@ export class ChatApiService {
     return this.http.get<IMessage[]>(`${this.backendApi}/chat?page=0&size=${size}&sort=date,desc`, { params });
   }
 
-  getMessageToDate(date: Date, size = DEFAULT_CHAT_PAGE_SIZE): Observable<IMessage[]> {
-    return this.http.post<IMessage[]>(`${this.backendApi}/chat/to-date?page=0&size=${size}&sort=date,desc`, date);
+  getMessageToDate(date: Date): Observable<IMessage[]> {
+    return this.http.post<IMessage[]>(`${this.backendApi}/chat/to-date`, date);
   }
 
   getToMessage(messageId: number, size = DEFAULT_CHAT_PAGE_SIZE): Observable<IMessage[]> {

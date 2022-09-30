@@ -24,7 +24,5 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
 
     Page<ChatMessage> findAllByReceiver(Pageable pageable, User receiver);
 
-    Page<ChatMessage> findByDateIsGreaterThan(Pageable pageable, ZonedDateTime date);
-
     List<ChatMessage> findByDateIsGreaterThanEqualOrderByDateDesc(ZonedDateTime date);
 }
