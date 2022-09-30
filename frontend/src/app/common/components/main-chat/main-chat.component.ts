@@ -221,7 +221,8 @@ export class MainChatComponent implements OnInit, OnDestroy {
   }
 
   loadPrevious(): void {
-    // this.getLastMessages(this.defaultPageSize);
+    this._currentPageSize += this.defaultPageSize;
+    this.messageService.fetchMessagesFromServer(this._currentPageSize);
   }
 
   goToDate(): void {

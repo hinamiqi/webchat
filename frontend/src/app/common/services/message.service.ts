@@ -81,9 +81,14 @@ export class MessageService {
 
   changeChat(index: number): void {
     this._activeChatIndex = index;
+    this.fetchMessagesFromServer();
+    this.clearNewMessageCounter(this.currentChat.chatName);
+  }
+
+  fetchMessagesFromServer(size = undefined): void {
     const request$ = this.currentChat.isPrivate
-     ? this.chatApiService.getLastMessages(this.currentChat.userUuid, this.authService.getCurrentUser().uuid)
-     : this.chatApiService.getLastMessages(null, null)
+    ? this.chatApiService.getLastMessages(this.currentChat.userUuid, this.authService.getCurrentUser().uuid, size)
+    : this.chatApiService.getLastMessages(null, null, size)
 
     request$
       .pipe(
@@ -93,8 +98,6 @@ export class MessageService {
       .subscribe((response) => {
         this.pushLastMessages(response);
       });
-
-    this.clearNewMessageCounter(this.currentChat.chatName);
   }
 
   /**
