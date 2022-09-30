@@ -36,14 +36,14 @@ export class MessageService {
   }
 
   get currentChat(): IChat {
-    return this._chatList[this._activeChat];
+    return this._chatList[this._activeChatIndex];
   }
 
   get activeChatIndex(): number {
-    return this._activeChat;
+    return this._activeChatIndex;
   }
 
-  private _activeChat: number;
+  private _activeChatIndex: number;
 
   readonly messages$: Observable<IMessage[]>;
 
@@ -76,11 +76,11 @@ export class MessageService {
   }
 
   isActiveChat(index: number): boolean {
-    return this._activeChat === index;
+    return this._activeChatIndex === index;
   }
 
   changeChat(index: number): void {
-    this._activeChat = index;
+    this._activeChatIndex = index;
     const request$ = this.currentChat.isPrivate
      ? this.chatApiService.getLastMessages(this.currentChat.userUuid, this.authService.getCurrentUser().uuid)
      : this.chatApiService.getLastMessages(null, null)
@@ -95,6 +95,24 @@ export class MessageService {
       });
 
     this.clearNewMessageCounter(this.currentChat.chatName);
+  }
+
+  /**
+   * @param chatName -- name of chat to close
+   * @return flag, indicatiding that we previously active chat was closed (and,
+   *   therefore, new chat will be opened)
+  */
+  closeChat(chatName: string): boolean {
+    const prevChatName = this.currentChat.chatName;
+    this._chatList = this._chatList.filter((c) => c.chatName !== chatName);
+    const prevChatIndex = this._chatList.findIndex((c) => c.chatName === prevChatName);
+    if (prevChatIndex !== -1) {
+      this.changeChat(prevChatIndex);
+    } else {
+      this.changeChat(0);
+    }
+
+    return prevChatName !== this.currentChat.chatName;
   }
 
   activatePrivateChat(user: User, needChangeChat = true): IChat {

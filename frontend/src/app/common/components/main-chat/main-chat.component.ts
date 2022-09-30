@@ -132,19 +132,19 @@ export class MainChatComponent implements OnInit, OnDestroy {
         this.scrollToMessage(queue[queue.length - 1]);
       });
     
-      this.messageService.newMessages$
-        .pipe(
-          filter((queue) => !!queue),
-          takeUntil(this.destroy$)
-        )
-        .subscribe((newMessages) => {
-          const name = this.messageService.currentChat.chatName;
-          if (this.newMessagesCount?.get(name) !== newMessages.get(name) && newMessages.get(name) !== 0) {
-            this.scrollDown();
-            this.messageService.clearNewMessageCounter(name);
-          }
-          this.newMessagesCount = new Map(newMessages);
-        });
+    this.messageService.newMessages$
+      .pipe(
+        filter((queue) => !!queue),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((newMessages) => {
+        const name = this.messageService.currentChat.chatName;
+        if (this.newMessagesCount?.get(name) !== newMessages.get(name) && newMessages.get(name) !== 0) {
+          this.scrollDown();
+          this.messageService.clearNewMessageCounter(name);
+        }
+        this.newMessagesCount = new Map(newMessages);
+      });
   }
 
   ngOnDestroy(): void {
@@ -208,14 +208,17 @@ export class MainChatComponent implements OnInit, OnDestroy {
     this.scrollDown();
   }
 
+  closeChat(chatName: string): void {
+    const needToScrollDown = this.messageService.closeChat(chatName);
+    this.chatList = this.messageService.chatList;
+    if (needToScrollDown) {
+      this.scrollDown();
+    }
+  }
+
   openPrivateChat(user: User): void {
     this.messageService.activatePrivateChat(user);
   }
-
-  // getNewMessageCount(chat: IChat): number {
-  //   const key = chatName === this.mainChatTitle ? null : chatName;
-  //   return this.newMessagesCount.get(key);
-  // }
 
   loadPrevious(): void {
     // this.getLastMessages(this.defaultPageSize);

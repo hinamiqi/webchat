@@ -1,9 +1,10 @@
 <ul class="nav nav-tabs" *ngIf="chatList">
   <li class="nav-item" *ngFor="let chat of chatList; index as i">
-    <a class="nav-link" (click)="changeChat(i)" [ngClass]="{ active: getIsActiveTab(i) }">
-      {{ chat.chatName }}
-      <span *ngIf="newMessagesCount?.has(chat.chatName) && !!newMessagesCount.get(chat.chatName)" class="my-own-badge">{{ newMessagesCount.get(chat.chatName) }}</span>
-    </a>
+      <a class="nav-link" (click)="changeChat(i)" [ngClass]="{ active: getIsActiveTab(i) }">
+        {{ chat.chatName }}
+        <span *ngIf="newMessagesCount?.has(chat.chatName) && !!newMessagesCount.get(chat.chatName)" class="my-own-badge">{{ newMessagesCount.get(chat.chatName) }}</span>
+        <i class="cursor-pointer icon bi bi-x-lg" *ngIf="i > 0" (click)="closeChat(chat.chatName)"></i>
+      </a>
   </li>
 </ul>
 <div #chat class="messages-container" (scroll)="chatScrolled()">
