@@ -2,8 +2,8 @@
   <li class="nav-item" *ngFor="let chat of chatList; index as i">
       <a class="nav-link" (click)="changeChat(i)" [ngClass]="{ active: getIsActiveTab(i) }">
         {{ chat.chatName }}
-        <span *ngIf="newMessagesCount?.has(chat.chatName) && !!newMessagesCount.get(chat.chatName)" class="my-own-badge">{{ newMessagesCount.get(chat.chatName) }}</span>
-        <i class="cursor-pointer icon bi bi-x-lg" *ngIf="i > 0" (click)="closeChat(chat.chatName)"></i>
+        <span *ngIf="newMessagesCount?.has(chat.id) && !!newMessagesCount.get(chat.id)" class="my-own-badge">{{ newMessagesCount.get(chat.id) }}</span>
+        <i class="cursor-pointer icon bi bi-x-lg" *ngIf="i > 0" (click)="closeChat(chat.id)"></i>
       </a>
   </li>
 </ul>

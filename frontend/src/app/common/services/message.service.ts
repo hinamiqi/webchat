@@ -4,23 +4,24 @@ import { BehaviorSubject, Observable, of, Subject } from 'rxjs';
 import { switchMap, takeUntil } from 'rxjs/operators';
 import { AuthService } from 'src/app/auth/services/auth.service';
 import { User } from 'src/app/models/auth/user.model';
-
 import { IMessage, IRepliedMessage } from 'src/app/models/message/message.interface';
-import { MessageList } from 'src/app/models/message/private-message-list.interface';
 import { GlobalEventWebSocketType, IGlobalEvent } from 'src/app/models/websocket/global-event.interface';
 import { MAX_REPLY_MESSAGES, MESSAGE_TO_REPLY_PREVIEW_LENGTH } from 'src/app/shared/constants/settings.const';
 import { ELLIPSIS } from 'src/app/shared/constants/string.const';
 import { UserStatusService } from 'src/app/shared/services/user-status.service';
 import { DateHelperService } from 'src/app/utils/services/date-helper.service';
+
 import { ChatApiService } from './chat-api.service';
 
 export interface IChat {
+  id: string;
   chatName: string;
   isPrivate: boolean;
   userUuid?: string;
 }
 
 const DEAFAULT_MAIN_CHAT: IChat = {
+  id: 'main',
   chatName: 'Main',
   isPrivate: false,
 };
@@ -82,7 +83,7 @@ export class MessageService {
   changeChat(index: number): void {
     this._activeChatIndex = index;
     this.fetchMessagesFromServer();
-    this.clearNewMessageCounter(this.currentChat.chatName);
+    this.clearNewMessageCounter(this.currentChat.id);
   }
 
   fetchMessagesFromServer(size = undefined): void {
@@ -101,21 +102,21 @@ export class MessageService {
   }
 
   /**
-   * @param chatName -- name of chat to close
+   * @param chatId -- ID of chat to close
    * @return flag, indicatiding that we previously active chat was closed (and,
    *   therefore, new chat will be opened)
   */
-  closeChat(chatName: string): boolean {
-    const prevChatName = this.currentChat.chatName;
-    this._chatList = this._chatList.filter((c) => c.chatName !== chatName);
-    const prevChatIndex = this._chatList.findIndex((c) => c.chatName === prevChatName);
+  closeChat(chatId: string): boolean {
+    const prevChatId = this.currentChat.id;
+    this._chatList = this._chatList.filter((c) => c.id !== chatId);
+    const prevChatIndex = this._chatList.findIndex((c) => c.id === prevChatId);
     if (prevChatIndex !== -1) {
       this.changeChat(prevChatIndex);
     } else {
       this.changeChat(0);
     }
 
-    return prevChatName !== this.currentChat.chatName;
+    return prevChatId !== this.currentChat.id;
   }
 
   activatePrivateChat(user: User, needChangeChat = true): IChat {
@@ -125,6 +126,7 @@ export class MessageService {
       return this._chatList[existingPrivateChatIndex];
     }
     this._chatList.push({
+      id: user.uuid,
       chatName: user.username,
       isPrivate: true,
       userUuid: user.uuid
@@ -144,7 +146,7 @@ export class MessageService {
     ) {
       const map = this._messages$.value;
       this.pushNewMessages([...map, msg]);
-      this.updateNewMessageCounters(this.currentChat.chatName, 1);
+      this.updateNewMessageCounters(this.currentChat.id, 1);
       return;
     }
     let inactiveChat = this._chatList.find((c) => c.userUuid === msg.author.uuid);
@@ -152,7 +154,7 @@ export class MessageService {
       inactiveChat = this.activatePrivateChat(msg.author, false);
     }
     if (!!inactiveChat) {
-      this.updateNewMessageCounters(inactiveChat.chatName, 1);
+      this.updateNewMessageCounters(inactiveChat.id, 1);
     }
   }
 
@@ -160,11 +162,11 @@ export class MessageService {
     if (!this.currentChat.isPrivate && msg.receiver === null) {
       const map = this._messages$.value;
       this.pushNewMessages([...map, msg]);
-      this.updateNewMessageCounters(this.currentChat.chatName, 1);
+      this.updateNewMessageCounters(this.currentChat.id, 1);
       return;
     }
     const mainChat = this._chatList.find((c) => !c.userUuid && !c.isPrivate);
-    this.updateNewMessageCounters(mainChat.chatName, 1);
+    this.updateNewMessageCounters(mainChat.id, 1);
   }
 
   pushLastMessages(messages: IMessage[]): void {
@@ -226,9 +228,9 @@ export class MessageService {
     queue.pop();
   }
 
-  clearNewMessageCounter(chatName: string): void {
+  clearNewMessageCounter(chatId: string): void {
     const counts = this._newMessages$.value;
-    counts.set(chatName, 0);
+    counts.set(chatId, 0);
     this._newMessages$.next(counts);
   }
 
@@ -236,10 +238,10 @@ export class MessageService {
     this._messages$.next(messages);
   }
 
-  private updateNewMessageCounters(chatName: string, count: number): void {
+  private updateNewMessageCounters(chatId: string, count: number): void {
     const counts = this._newMessages$.value;
-    const currentCount = counts.get(chatName) || 0;
-    counts.set(chatName, currentCount + count);
+    const currentCount = counts.get(chatId) || 0;
+    counts.set(chatId, currentCount + count);
     this._newMessages$.next(counts);
   }
 

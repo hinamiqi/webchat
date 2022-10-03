@@ -138,10 +138,10 @@ export class MainChatComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$)
       )
       .subscribe((newMessages) => {
-        const name = this.messageService.currentChat.chatName;
-        if (this.newMessagesCount?.get(name) !== newMessages.get(name) && newMessages.get(name) !== 0) {
+        const id = this.messageService.currentChat.id;
+        if (this.newMessagesCount?.get(id) !== newMessages.get(id) && newMessages.get(id) !== 0) {
           this.scrollDown();
-          this.messageService.clearNewMessageCounter(name);
+          this.messageService.clearNewMessageCounter(id);
         }
         this.newMessagesCount = new Map(newMessages);
       });
@@ -208,8 +208,8 @@ export class MainChatComponent implements OnInit, OnDestroy {
     this.scrollDown();
   }
 
-  closeChat(chatName: string): void {
-    const needToScrollDown = this.messageService.closeChat(chatName);
+  closeChat(chatId: string): void {
+    const needToScrollDown = this.messageService.closeChat(chatId);
     this.chatList = this.messageService.chatList;
     if (needToScrollDown) {
       this.scrollDown();
