@@ -65,8 +65,7 @@ public class ChatService {
 
         ChatMessage savedMessage = addMessageToDb(author, receiver, msgDto);
         if (isPrivate) {
-            webSocketService.sendPrivateMessage(msgDto, receiver);
-            webSocketService.sendPrivateMessage(msgDto, author);
+            publishPrivateChatMessage(msgDto, author, receiver);
         } else {
             webSocketService.publishChatMessage(savedMessage, author);
         }
@@ -209,6 +208,21 @@ public class ChatService {
     private void validateMessageText(ChatMessageDto msgDto) {
         if (isEmpty(msgDto.getText()) && isEmpty(msgDto.getMemeName())) {
             throw new BadRequestHttpException("Either message text or meme name should be present");
+        }
+    }
+
+    private void publishPrivateChatMessage(ChatMessageDto msgDto, User author, User receiver) {
+        webSocketService.sendPrivateMessage(msgDto, receiver);
+        /*
+         * If there is a private chat with another user, then we have to send two
+         * websocket events: one for message author, and the second one for the receiver.
+         * But if this is the private chat of user with himself (which is allowed), then
+         * we should send only 1 websocket event -- for the user himself, simnce he is
+         * both the author and receiver.
+         */
+         
+        if (!receiver.getUuid().equals(author.getUuid())) {
+            webSocketService.sendPrivateMessage(msgDto, author);
         }
     }
 }
