@@ -14,9 +14,11 @@ import { UserStatusService } from 'src/app/shared/services/user-status.service';
 import { HashService } from 'src/app/utils/services/hash.service';
 import { User } from 'src/app/models/auth/user.model';
 import { IMeme } from 'src/app/models/file/meme.interface';
+import { LocalStorageService } from 'src/app/utils/services/local-storage.service';
+import { StorageTypes } from 'src/app/auth/constants/storage-types.constant';
 
 import { ChatApiService } from '../../services/chat-api.service';
-import { IChat, MessageService } from '../../services/message.service';
+import { IChat, MAIN_CHAT_ID, MessageService } from '../../services/message.service';
 import { ChatMessageComponent } from '../chat-message/chat-message.component';
 import { ImageService } from '../../services/image.service';
 
@@ -91,7 +93,8 @@ export class MainChatComponent implements OnInit, OnDestroy {
     private readonly authService: AuthService,
     private readonly userStatusService: UserStatusService,
     private readonly messageService: MessageService,
-    private readonly imageService: ImageService
+    private readonly imageService: ImageService,
+    private readonly localStorageService: LocalStorageService,
   ) { }
 
   getSrcFromImage = (image: IImage) => {
@@ -104,6 +107,7 @@ export class MainChatComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.loadChats();
     this.changeChat(0);
 
     this.form = this.fb.group({
@@ -211,6 +215,7 @@ export class MainChatComponent implements OnInit, OnDestroy {
   closeChat(chatId: string): void {
     const needToScrollDown = this.messageService.closeChat(chatId);
     this.chatList = this.messageService.chatList;
+    this.saveChats();
     if (needToScrollDown) {
       this.scrollDown();
     }
@@ -218,6 +223,8 @@ export class MainChatComponent implements OnInit, OnDestroy {
 
   openPrivateChat(user: User): void {
     this.messageService.activatePrivateChat(user);
+    this.chatList = this.messageService.chatList;
+    this.saveChats();
   }
 
   loadPrevious(): void {
@@ -314,5 +321,19 @@ export class MainChatComponent implements OnInit, OnDestroy {
           })
         })
       );
+  }
+
+  private loadChats(): void {
+    const openedChats = this.localStorageService.getItem(StorageTypes.OPENED_CHATS) as IChat[];
+    if (!!openedChats && openedChats.length) {
+      this.messageService.loadChatList(openedChats);
+    }
+  }
+
+  private saveChats(): void {
+    const chatsToSave = this.messageService.chatList.filter((c) => c.id !== MAIN_CHAT_ID);
+    if (chatsToSave.length) {
+      this.localStorageService.setItem(StorageTypes.OPENED_CHATS, chatsToSave);
+    }
   }
 }

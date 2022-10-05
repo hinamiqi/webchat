@@ -9,7 +9,7 @@ export class LocalStorageService {
 
   constructor() { }
 
-  getItem(key: StorageTypes) {
+  getItem(key: StorageTypes): any {
       const item = localStorage.getItem(key);
       return item ? JSON.parse(item) : null;
   }

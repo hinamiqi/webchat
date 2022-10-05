@@ -20,8 +20,10 @@ export interface IChat {
   userUuid?: string;
 }
 
+export const MAIN_CHAT_ID = 'main';
+
 const DEAFAULT_MAIN_CHAT: IChat = {
-  id: 'main',
+  id: MAIN_CHAT_ID,
   chatName: 'Main',
   isPrivate: false,
 };
@@ -78,6 +80,10 @@ export class MessageService {
 
   isActiveChat(index: number): boolean {
     return this._activeChatIndex === index;
+  }
+
+  loadChatList(chats: IChat[]): void {
+    this._chatList = this._chatList.concat(chats);
   }
 
   changeChat(index: number): void {
