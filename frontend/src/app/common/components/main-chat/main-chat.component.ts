@@ -12,11 +12,14 @@ import { SimpleDialogComponent } from 'src/app/shared/components/simple-dialog/s
 import { DEFAULT_CHAT_PAGE_SIZE } from 'src/app/shared/constants/settings.const';
 import { UserStatusService } from 'src/app/shared/services/user-status.service';
 import { HashService } from 'src/app/utils/services/hash.service';
+import { User } from 'src/app/models/auth/user.model';
+import { IMeme } from 'src/app/models/file/meme.interface';
+import { LocalStorageService } from 'src/app/utils/services/local-storage.service';
+import { StorageTypes } from 'src/app/auth/constants/storage-types.constant';
 
 import { ChatApiService } from '../../services/chat-api.service';
-import { MessageService } from '../../services/message.service';
+import { IChat, MAIN_CHAT_ID, MessageService } from '../../services/message.service';
 import { ChatMessageComponent } from '../chat-message/chat-message.component';
-import { IMeme } from 'src/app/models/file/meme.interface';
 import { ImageService } from '../../services/image.service';
 
 @Component({
@@ -51,11 +54,9 @@ export class MainChatComponent implements OnInit, OnDestroy {
 
   mainChatTitle = 'Great patriots';
 
-  chatList$: Observable<string[]>;
+  chatList: IChat[];
 
-  newMessagesCount: Map<string,number> = new Map();
-
-  currentTab: string;
+  newMessagesCount: Map<string,number>;
 
   scrollToDate: string;
 
@@ -81,10 +82,6 @@ export class MainChatComponent implements OnInit, OnDestroy {
     return this.form?.get('message');
   }
 
-  get isMainTab(): boolean {
-    return !this.currentTab;
-  }
-
   get messageToReply(): IRepliedMessage[] {
     return this.messageService.messageToReply;
   }
@@ -96,7 +93,8 @@ export class MainChatComponent implements OnInit, OnDestroy {
     private readonly authService: AuthService,
     private readonly userStatusService: UserStatusService,
     private readonly messageService: MessageService,
-    private readonly imageService: ImageService
+    private readonly imageService: ImageService,
+    private readonly localStorageService: LocalStorageService,
   ) { }
 
   getSrcFromImage = (image: IImage) => {
@@ -104,50 +102,53 @@ export class MainChatComponent implements OnInit, OnDestroy {
     return `data:image/jpeg;base64,${image.picByte}`;
   };
 
+  getIsActiveTab(index: number): boolean {
+    return this.messageService.isActiveChat(index);
+  }
+
   ngOnInit(): void {
+    this.loadChats();
+    this.changeChat(0);
+
     this.form = this.fb.group({
       message: []
     });
 
     this.userStatusService.setUserStatusesExpireScheduler();
 
-    this.chatList$ = this.messageService.messages$
-      .pipe(
-        map((list) => {
-          if (!list) return null;
-          return Array.from(list.keys()).map((key) => key || this.mainChatTitle)
-        })
-      );
+    this.setChatMessages();
 
-    this.setMainChatMessages();
-
-    this.messageService.newMessages$
-      .pipe(
-        takeUntil(this.destroy$)
-      )
-      .subscribe((counts) => {
-        const count = counts.get(this.isMainTab ? null : this.currentTab);
-        if (count > 0) this.scrollToBot();
-        this.newMessagesCount = counts;
-      });
+    this.chatList = this.messageService.chatList;
 
     this.messageService.scrollQueue$
-    .pipe(
-      filter((queue) => !!queue),
-      takeUntil(this.destroy$)
-    )
-    .subscribe((queue) => {
-      if (queue.length > 1) {
-        this.prevScrollMessageId = queue[queue.length - 2];
-        this.highlightMessageId = queue[queue.length - 1];
-      } else {
-        this.prevScrollMessageId = undefined;
-      }
+      .pipe(
+        filter((queue) => !!queue),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((queue) => {
+        if (queue.length > 1) {
+          this.prevScrollMessageId = queue[queue.length - 2];
+          this.highlightMessageId = queue[queue.length - 1];
+        } else {
+          this.prevScrollMessageId = undefined;
+        }
 
-      this.scrollToMessage(queue[queue.length - 1]);
-    });
-
-    this.getLastMessages();
+        this.scrollToMessage(queue[queue.length - 1]);
+      });
+    
+    this.messageService.newMessages$
+      .pipe(
+        filter((queue) => !!queue),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((newMessages) => {
+        const id = this.messageService.currentChat.id;
+        if (this.newMessagesCount?.get(id) !== newMessages.get(id) && newMessages.get(id) !== 0) {
+          this.scrollDown();
+          this.messageService.clearNewMessageCounter(id);
+        }
+        this.newMessagesCount = new Map(newMessages);
+      });
   }
 
   ngOnDestroy(): void {
@@ -158,14 +159,23 @@ export class MainChatComponent implements OnInit, OnDestroy {
 
   submit(text: string, meme?: IMeme): void {
     this.lastMessage = text;
+    const currentChat = this.messageService.currentChat;
+    const receiver = currentChat.isPrivate
+      ? { uuid: currentChat.userUuid }
+      : null;
 
     const newDate =  new Date();
     const newMessage = new ChatMessage(
       this.authService.getCurrentUser(),
+      receiver,
       text, newDate, this.messageToReply, meme?.name || null
     );
 
-    this.chatApiService.addMessage(newMessage)
+    const request$ = currentChat.isPrivate
+      ? this.chatApiService.addMessageToUser(newMessage, receiver.uuid)
+      : this.chatApiService.addMessage(newMessage)
+
+    request$
       .pipe(
         finalize(() => {
           this.messageService.clearMessageToReply();
@@ -197,28 +207,29 @@ export class MainChatComponent implements OnInit, OnDestroy {
     this.messageService.removeMessageFromReply(message);
   }
 
-  changeChat(chatName: string): void {
-    if (this.currentTab === chatName) return;
+  changeChat(index: number): void {
+    this.messageService.changeChat(index);
+    this.scrollDown();
+  }
 
-    this.currentTab = chatName;
-
-    if (chatName === this.mainChatTitle) {
-      this.setMainChatMessages();
-      this.getLastMessages();
-      this.newMessagesCount.set(null, 0);
-    } else {
-      this.messages$ = this.messageService.getPrivateMessagesOfUser(chatName);
-      this.newMessagesCount.set(chatName, 0);
+  closeChat(chatId: string): void {
+    const needToScrollDown = this.messageService.closeChat(chatId);
+    this.chatList = this.messageService.chatList;
+    this.saveChats();
+    if (needToScrollDown) {
+      this.scrollDown();
     }
   }
 
-  getNewMessageCount(chatName: string): number {
-    const key = chatName === this.mainChatTitle ? null : chatName;
-    return this.newMessagesCount.get(key);
+  openPrivateChat(user: User): void {
+    this.messageService.activatePrivateChat(user);
+    this.chatList = this.messageService.chatList;
+    this.saveChats();
   }
 
   loadPrevious(): void {
-    this.getLastMessages(this.defaultPageSize);
+    this._currentPageSize += this.defaultPageSize;
+    this.messageService.fetchMessagesFromServer(this._currentPageSize);
   }
 
   goToDate(): void {
@@ -274,20 +285,6 @@ export class MainChatComponent implements OnInit, OnDestroy {
     this.addImageDialog.open();
   }
 
-  private getLastMessages(size = 0): void {
-    this.chatApiService.getLastMessages(this._currentPageSize + size)
-      .pipe(
-        finalize(() => {
-          if (!size) this.scrollToBot();
-        }),
-        switchMap((response) => of(response.reverse())),
-        takeUntil(this.destroy$)
-      ).subscribe((messages) => {
-        this.messageService.pushLastMessages(messages);
-        this._currentPageSize = messages.length;
-      });
-  }
-
   private scrollToBot(): void {
     this.ngZone.runOutsideAngular(() => {
       setTimeout(() => {
@@ -313,16 +310,30 @@ export class MainChatComponent implements OnInit, OnDestroy {
     return this.messageContainer.nativeElement.scrollHeight - this.messageContainer.nativeElement.clientHeight === this.messageContainer.nativeElement.scrollTop;
   }
 
-  private setMainChatMessages(): void {
-    this.messages$ = this.messageService.getMainMessages()
+  private setChatMessages(): void {
+    this.messages$ = this.messageService.getMessages()
       .pipe(
         map((messages) => {
           return messages?.map((m) => {
             console.log(`Generate new message hash...`);
             m.messageHash = HashService.cyrb53(m.text + m.oldText);
-            return m
+            return m;
           })
         })
       );
+  }
+
+  private loadChats(): void {
+    const openedChats = this.localStorageService.getItem(StorageTypes.OPENED_CHATS) as IChat[];
+    if (!!openedChats && openedChats.length) {
+      this.messageService.loadChatList(openedChats);
+    }
+  }
+
+  private saveChats(): void {
+    const chatsToSave = this.messageService.chatList.filter((c) => c.id !== MAIN_CHAT_ID);
+    if (chatsToSave.length) {
+      this.localStorageService.setItem(StorageTypes.OPENED_CHATS, chatsToSave);
+    }
   }
 }

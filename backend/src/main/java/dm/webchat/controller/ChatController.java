@@ -14,13 +14,15 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import dm.webchat.models.ChatMessage;
 import dm.webchat.models.dto.ChatMessageDto;
 import dm.webchat.service.ChatService;
-import dm.webchat.service.PrivateMessageService;
 import lombok.RequiredArgsConstructor;
+
+import static dm.webchat.helper.EmptinessHelper.isNotEmpty;
 
 @RestController
 @RequestMapping(path = "/api/chat")
@@ -28,19 +30,33 @@ import lombok.RequiredArgsConstructor;
 public class ChatController {
     private final ChatService chatService;
 
-    private final PrivateMessageService privateMessageService;
-
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('USER')")
     @PostMapping("")
     public ChatMessageDto postChatMessage(@RequestBody ChatMessageDto messageDto) {
-        ChatMessage savedMessage = chatService.saveMessage(messageDto);
+        ChatMessage savedMessage = chatService.saveMessage(messageDto, false);
+        return new ChatMessageDto(savedMessage);
+    }
+
+    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('USER')")
+    @PostMapping("/private/{userId}")
+    public ChatMessageDto postPrivateMessageToUser(@RequestBody ChatMessageDto messageDto, @PathVariable UUID userId) {
+        ChatMessage savedMessage = chatService.saveMessage(messageDto, true);
         return new ChatMessageDto(savedMessage);
     }
 
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('USER')")
     @GetMapping("")
-    public List<ChatMessageDto> getLastChatMessages(Pageable pageable) {
-        Page<ChatMessage> messages = chatService.getChatMessages(pageable);
+    public List<ChatMessageDto> getLastChatMessages(Pageable pageable, @RequestParam(required = false) String receiverUuid, @RequestParam(required = false) String authorUuid) {
+        UUID to = null;
+        if (isNotEmpty(receiverUuid)) {
+            to = UUID.fromString(receiverUuid);
+        }
+        UUID from = null;
+        if (isNotEmpty(authorUuid)) {
+            from = UUID.fromString(authorUuid);
+        }
+
+        Page<ChatMessage> messages = chatService.getChatMessages(pageable, to, from);
         return messages.stream()
             .map(ChatMessageDto::new)
             .collect(Collectors.toList());
@@ -48,8 +64,8 @@ public class ChatController {
 
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('USER')")
     @PostMapping("/to-date")
-    public List<ChatMessageDto> getMessagesToDate(Pageable pageable, @RequestBody ZonedDateTime date) {
-        Page<ChatMessage> messages = chatService.getChatMessagesToDate(pageable, date);
+    public List<ChatMessageDto> getMessagesToDate(@RequestBody ZonedDateTime date) {
+        List<ChatMessage> messages = chatService.getChatMessagesToDate(date);
         return messages.stream()
             .map(ChatMessageDto::new)
             .collect(Collectors.toList());
@@ -62,12 +78,6 @@ public class ChatController {
         return messages.stream()
             .map(ChatMessageDto::new)
             .collect(Collectors.toList());
-    }
-
-    @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('USER')")
-    @PostMapping("/private/{userId}")
-    public void postPrivateMessageToUser(@RequestBody ChatMessageDto messageDto, @PathVariable UUID userId) {
-        privateMessageService.sendPrivateMessage(messageDto, userId);
     }
 
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('USER')")

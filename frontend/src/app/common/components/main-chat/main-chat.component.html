@@ -1,16 +1,17 @@
-<ul class="nav nav-tabs" *ngIf="chatList$ | async; let list">
-  <li class="nav-item" *ngFor="let chatName of list">
-    <a class="nav-link" (click)="changeChat(chatName)" [ngClass]="{ active: currentTab === chatName }">
-      {{ chatName }}
-      <span *ngIf="getNewMessageCount(chatName)" class="my-own-badge">{{ getNewMessageCount(chatName) }}</span>
-    </a>
+<ul class="nav nav-tabs" *ngIf="chatList">
+  <li class="nav-item" *ngFor="let chat of chatList; index as i">
+      <a class="nav-link" (click)="changeChat(i)" [ngClass]="{ active: getIsActiveTab(i) }">
+        {{ chat.chatName }}
+        <span *ngIf="newMessagesCount?.has(chat.id) && !!newMessagesCount.get(chat.id)" class="my-own-badge">{{ newMessagesCount.get(chat.id) }}</span>
+        <i class="cursor-pointer icon bi bi-x-lg" *ngIf="i > 0" (click)="closeChat(chat.id)"></i>
+      </a>
   </li>
 </ul>
 <div #chat class="messages-container" (scroll)="chatScrolled()">
   <div class="flex-container scroll-actions">
     <a class="nav-link scroll-btn" (click)="loadPrevious()">Previous {{ defaultPageSize }}...</a>
     <div class="input-group scroll-btn-container">
-      <a class="input-group-text nav-link scroll-btn" (click)="goToDate()">Scroll to...</a>
+      <a class="input-group-text nav-link scroll-btn" (click)="goToDate()">Go to...</a>
       <input type="date" class="form-control scroll-btn" [(ngModel)]="scrollToDate">
     </div>
   </div>
@@ -19,6 +20,7 @@
     [message]="message"
     [ngClass]="{ highlighted: highlightMessageId === message.id }"
     (removed)="removeMessage($event)"
+    (openPrivateChat)="openPrivateChat($event)"
   ></app-chat-message>
 </div>
 <div class="message-to-reply" *ngIf="messageToReply.length">

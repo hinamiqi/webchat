@@ -13,6 +13,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import static dm.webchat.helper.EmptinessHelper.*;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -20,6 +22,7 @@ import lombok.NoArgsConstructor;
 public class ChatMessageDto implements Serializable {
     @JsonProperty("author")
     private UserDto author;
+    private UserDto receiver;
     private ZonedDateTime date;
     private String text;
     private String oldText;
@@ -29,6 +32,9 @@ public class ChatMessageDto implements Serializable {
 
     public ChatMessageDto(ChatMessage chatMessage) {
         this.author = new UserDto(chatMessage.getAuthor());
+        this.receiver = isNotEmpty(chatMessage.getReceiver())
+            ? new UserDto(chatMessage.getReceiver())
+            : null;
         this.date = chatMessage.getDate();
         this.text = chatMessage.getText();
         this.oldText = chatMessage.getOldText();

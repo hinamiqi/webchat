@@ -4,6 +4,7 @@ import java.security.Principal;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.transaction.Transactional;
@@ -43,7 +44,7 @@ public class ChatService {
     @Value("${app.messageAlterTimeMinutes:1}")
     private int messageAlterTimeMinutes;
 
-    public ChatMessage saveMessage(ChatMessageDto msgDto) throws NotFoundException {
+    public ChatMessage saveMessage(ChatMessageDto msgDto, Boolean isPrivate) throws NotFoundException {
         String currentUserLogin = SecurityUtils
             .getCurrentUserLogin()
             .orElseThrow(() -> new NotFoundException("No current user authorization"));
@@ -57,8 +58,17 @@ public class ChatService {
             throw new BadRequestHttpException("Message author is not the user, who sent the message. Message rejected.");
         }
 
-        ChatMessage savedMessage = addMessageToDb(author, msgDto);
-        webSocketService.publishChatMessage(savedMessage, author);
+        User receiver = isPrivate
+          ? userRepository.findByUuid(msgDto.getReceiver().getUuid())
+              .orElseThrow(() -> new NotFoundException("No user with uuid " + msgDto.getReceiver().getUuid()))
+          : null;
+
+        ChatMessage savedMessage = addMessageToDb(author, receiver, msgDto);
+        if (isPrivate) {
+            publishPrivateChatMessage(msgDto, author, receiver);
+        } else {
+            webSocketService.publishChatMessage(savedMessage, author);
+        }
         return savedMessage;
     }
 
@@ -68,7 +78,7 @@ public class ChatService {
                 new NotFoundException(
                     String.format("No user with login (%s) found", msgDto.getAuthor().getUsername()))
             );
-        return addMessageToDb(author, msgDto);
+        return addMessageToDb(author, null, msgDto);
     }
 
     public ChatMessage editMessage(ChatMessageDto msgDto) throws NotFoundException {
@@ -86,12 +96,27 @@ public class ChatService {
         return savedMessage;
     }
 
-    public Page<ChatMessage> getChatMessages(Pageable page) {
-        return chatMessageRepository.findAll(page);
+    public Page<ChatMessage> getChatMessages(Pageable page, UUID receiverUuid, UUID authorUuid) {
+        User receiver = receiverUuid == null ? null : userRepository.findByUuid(receiverUuid)
+            .orElseThrow(() ->
+                new NotFoundException(
+                    String.format("No user with uuid (%s) found", receiverUuid))
+            );
+        User author = authorUuid == null ? null : userRepository.findByUuid(authorUuid)
+        .orElseThrow(() ->
+            new NotFoundException(
+                String.format("No user with uuid (%s) found", authorUuid))
+        );
+
+        if (isNotEmpty(author) && isNotEmpty(receiver)) {
+            return chatMessageRepository.findAllPrivatePage(page, receiver, author);
+        }
+
+        return chatMessageRepository.findAllByReceiver(page, null);
     }
 
-    public Page<ChatMessage> getChatMessagesToDate(Pageable page, ZonedDateTime date) {
-        return chatMessageRepository.findByDateIsGreaterThan(page, date);
+    public List<ChatMessage> getChatMessagesToDate(ZonedDateTime date) {
+        return chatMessageRepository.findByDateIsGreaterThanEqualOrderByDateDesc(date);
     }
 
     public List<ChatMessage> getChatMessagesToMessage(Long messageId) {
@@ -121,20 +146,32 @@ public class ChatService {
     }
 
     @Transactional
-    private ChatMessage addMessageToDb(User author, ChatMessageDto msgDto) {
+    private ChatMessage addMessageToDb(User author, User receiver, ChatMessageDto msgDto) {
+        if (isNotEmpty(msgDto.getReceiver())) {
+            receiver = userRepository.findByUuid(msgDto.getReceiver().getUuid())
+                .orElseThrow(() ->
+                    new NotFoundException(
+                        String.format("No receiver user with uuid (%s) found", msgDto.getReceiver().getUuid()))
+                );
+        } 
+
         validateMessageText(msgDto);
 
-        List<ChatMessage> repliedMessages = this.chatMessageRepository.findAllById(
-            msgDto.getRepliedMessages()
-              .stream()
-              .map(RepliedMessageDto::getId)
-              .collect(Collectors.toList())
-        );
+        List<ChatMessage> repliedMessages = null;
+        if (isNotEmpty(msgDto.getRepliedMessages())) {
+            repliedMessages = this.chatMessageRepository.findAllById(
+                msgDto.getRepliedMessages()
+                .stream()
+                .map(RepliedMessageDto::getId)
+                .collect(Collectors.toList())
+            );
+        }
 
         Meme memeEntity = memeRepository.findByName(msgDto.getMemeName()).orElse(null);
 
         return chatMessageRepository.save(ChatMessage.builder()
             .author(author)
+            .receiver(receiver)
             .date(msgDto.getDate())
             .text(msgDto.getText())
             .repliedMessages(repliedMessages)
@@ -171,6 +208,21 @@ public class ChatService {
     private void validateMessageText(ChatMessageDto msgDto) {
         if (isEmpty(msgDto.getText()) && isEmpty(msgDto.getMemeName())) {
             throw new BadRequestHttpException("Either message text or meme name should be present");
+        }
+    }
+
+    private void publishPrivateChatMessage(ChatMessageDto msgDto, User author, User receiver) {
+        webSocketService.sendPrivateMessage(msgDto, receiver);
+        /*
+         * If there is a private chat with another user, then we have to send two
+         * websocket events: one for message author, and the second one for the receiver.
+         * But if this is the private chat of user with himself (which is allowed), then
+         * we should send only 1 websocket event -- for the user himself, simnce he is
+         * both the author and receiver.
+         */
+         
+        if (!receiver.getUuid().equals(author.getUuid())) {
+            webSocketService.sendPrivateMessage(msgDto, author);
         }
     }
 }

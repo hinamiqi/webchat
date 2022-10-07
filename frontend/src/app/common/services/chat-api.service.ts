@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { IMessage } from 'src/app/models/message/message.interface';
@@ -30,12 +30,15 @@ export class ChatApiService {
     return this.http.post<IMessage>(`${this.backendApi}/chat/${message.id}`, message);
   }
 
-  getLastMessages(size = DEFAULT_CHAT_PAGE_SIZE): Observable<IMessage[]> {
-    return this.http.get<IMessage[]>(`${this.backendApi}/chat?page=0&size=${size}&sort=date,desc`);
+  getLastMessages(receiverUuid: string, authorUuid: string, size = DEFAULT_CHAT_PAGE_SIZE): Observable<IMessage[]> {
+    let params = new HttpParams();
+    params = params.append('receiverUuid', receiverUuid);
+    params = params.append('authorUuid', authorUuid);
+    return this.http.get<IMessage[]>(`${this.backendApi}/chat?page=0&size=${size}&sort=date,desc`, { params });
   }
 
-  getMessageToDate(date: Date, size = DEFAULT_CHAT_PAGE_SIZE): Observable<IMessage[]> {
-    return this.http.post<IMessage[]>(`${this.backendApi}/chat/to-date?page=0&size=${size}&sort=date,desc`, date);
+  getMessageToDate(date: Date): Observable<IMessage[]> {
+    return this.http.post<IMessage[]>(`${this.backendApi}/chat/to-date`, date);
   }
 
   getToMessage(messageId: number, size = DEFAULT_CHAT_PAGE_SIZE): Observable<IMessage[]> {
