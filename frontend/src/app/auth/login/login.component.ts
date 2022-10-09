@@ -7,7 +7,6 @@ import { ILoginRequest } from 'src/app/models/auth/login-request.interface';
 import { User } from 'src/app/models/auth/user.model';
 import { ErrorHandlingService } from 'src/app/shared/services/error-handling.service';
 
-import { LocalStorageService } from 'src/app/utils/services/local-storage.service';
 import { AuthApiService } from '../services/auth-api.service';
 import { AuthService } from '../services/auth.service';
 
@@ -21,10 +20,11 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   errorMessage: string = null;
 
+  isLogin = true;
+
   private destroy$ = new Subject<void>();
 
   constructor(
-    private readonly localStorageService: LocalStorageService,
     private readonly router: Router,
     private readonly authApiService: AuthApiService,
     private readonly fb: UntypedFormBuilder,
@@ -45,11 +45,18 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   login(): void {
-    if (this.form.invalid) return;
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
 
     this.errorMessage = null;
 
-    this.authApiService.login(this.form.value as ILoginRequest)
+    const request$ = this.isLogin
+      ? this.authApiService.login(this.form.value as ILoginRequest)
+      : this.authApiService.register(this.form.value as ILoginRequest);
+
+    request$
       .pipe(
         takeUntil(this.destroy$),
         catchError(this.errService.handleError)
@@ -63,4 +70,8 @@ export class LoginComponent implements OnInit, OnDestroy {
       });
   }
 
+  toggleMode(): void {
+    this.isLogin = !this.isLogin;
+    this.errorMessage = null;
+  }
 }

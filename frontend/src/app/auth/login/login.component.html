@@ -1,11 +1,12 @@
-<form class="row g-3" [formGroup]="form" (ngSubmit)="login()">
-  <div class="col-12 has-validation">
+<form class="row g-3 form-container" [formGroup]="form" (ngSubmit)="login()">
+  <div class="col-6 has-validation input-fields">
     <input type="text" class="form-control" placeholder="Username" formControlName="username" required="true">
     <input type="password" class="form-control" placeholder="Password" formControlName="password" required="true">
   </div>
 
-  <div class="col-12">
-    <button class="btn btn-primary" type="submit">Login</button>
+  <div class="col-12 flex-container">
+    <button class="btn btn-primary" type="submit">{{ isLogin ? 'Login' : 'Register' }}</button>
+    <a class="nav-link cursor-pointer" (click)="toggleMode()">{{ isLogin ? 'Register new user' : 'Back to login' }}</a>
   </div>
 
   <div class="col-md-4 alert alert-danger" role="alert" *ngIf="errorMessage">

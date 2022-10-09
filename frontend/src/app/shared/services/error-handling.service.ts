@@ -1,7 +1,9 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, throwError } from 'rxjs';
+
 import { ErrorCodes } from '../constants/error-codes.const';
+import { ErrorStatuses } from '../constants/error-statuses.const';
 
 @Injectable({providedIn: 'root'})
 export class ErrorHandlingService {
@@ -9,7 +11,7 @@ export class ErrorHandlingService {
 
   getErrorMessage(err: HttpErrorResponse): string {
     switch (err.status) {
-      case ErrorCodes.BAD_CREDITENTIALS:
+      case ErrorStatuses.BAD_CREDITENTIALS:
         return "Wrong logpass";
       default:
         return "Unknown error";
@@ -17,11 +19,18 @@ export class ErrorHandlingService {
   }
 
   handleError(err: HttpErrorResponse): Observable<never> {
-    switch (err.status) {
-      case ErrorCodes.BAD_CREDITENTIALS:
-        return throwError("Wrong logpass");
-      default:
-        return throwError("Unknown error");
+    if (err.status === ErrorStatuses.BAD_CREDITENTIALS) {
+      return throwError("Wrong logpass");
     }
+
+    if (err.error.errorCode === ErrorCodes.USERNAME_ALREADY_TAKEN) {
+      return throwError("Username already taken!");
+    }
+
+    if (!!err.error.errorMessage) {
+      return throwError(err.error.errorMessage);
+    }
+
+    return throwError("Unknown error");
   }
 }

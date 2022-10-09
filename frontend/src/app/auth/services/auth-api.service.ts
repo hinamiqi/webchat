@@ -19,6 +19,10 @@ export class AuthApiService {
     return this.http.post<ILoginResponse>(`${this.api}/auth/login`, params);
   }
 
+  register(params: ILoginRequest): Observable<ILoginResponse> {
+    return this.http.post<ILoginResponse>(`${this.api}/auth/register`, params);
+  }
+
   changePassword(params: IChangePasswordRequest): Observable<boolean> {
     return this.http.post<boolean>(`${this.api}/auth/change-password`, params);
   }
