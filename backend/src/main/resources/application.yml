@@ -17,7 +17,7 @@ spring:
                 ddl-auto: none
                 # format_sql: true
 logging:
-    file: /var/log/webchat/main.log
+    path: /var/log/webchat
     level:
         org.hibernate.SQL: error
         org.hibernate.type.descriptor.sql: error
