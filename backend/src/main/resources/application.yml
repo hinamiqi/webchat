@@ -16,8 +16,12 @@ spring:
                 dialect: org.hibernate.dialect.PostgreSQLDialect
                 ddl-auto: none
                 # format_sql: true
+    mvc:
+           log-request-details: true
+
 logging:
-    path: /var/log/webchat
+    file.path: /var/log/webchat
     level:
         org.hibernate.SQL: error
         org.hibernate.type.descriptor.sql: error
+        org.springframework.web: DEBUG
