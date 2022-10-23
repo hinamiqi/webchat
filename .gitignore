@@ -10,3 +10,5 @@
 .history/
 
 frontend/.angular/cache
+frontend/build/
+frontend/build/*.*
