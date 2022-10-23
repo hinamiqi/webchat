@@ -16,4 +16,5 @@ export interface IMessage {
   repliedMessages?: IRepliedMessage[];
   memeName?: string;
   messageHash?: string;
+  preview?: string;
 }

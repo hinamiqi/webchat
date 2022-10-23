@@ -46,14 +46,23 @@ textarea {
     align-items: center;
     flex-direction: row;
     gap: 8px;
-
-    i {
-      cursor: pointer;
-      font-size: smaller;
-      color: brown;
-    }
   }
 }
+
+.edited-message {
+  position: relative;
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+
+  padding: 0 8px;
+  margin: 8px;
+  font-size: smaller;
+  color: $base-grey;
+}
+
 
 .highlighted {
   background-color: $highlight;

@@ -78,6 +78,12 @@ export class MessageService {
     this.scrollQueue$ = this._scrollQueue$.asObservable();
   }
 
+  static getPreview(message: IMessage): string {
+    return message.text.length < MESSAGE_TO_REPLY_PREVIEW_LENGTH
+      ? message.text
+      : message.text.substring(0, MESSAGE_TO_REPLY_PREVIEW_LENGTH - 1) + ELLIPSIS;
+  }
+
   isActiveChat(index: number): boolean {
     return this._activeChatIndex === index;
   }
@@ -205,9 +211,7 @@ export class MessageService {
   addMessageToReply(message: IMessage): void {
     const isInReplyAlready = this._messageToReply.find((m) => m.id === message.id);
     if (isInReplyAlready || this._messageToReply.length >= MAX_REPLY_MESSAGES) return;
-    const preview = message.text.length < MESSAGE_TO_REPLY_PREVIEW_LENGTH
-      ? message.text
-      : message.text.substring(0, MESSAGE_TO_REPLY_PREVIEW_LENGTH - 1) + ELLIPSIS;
+    const preview = MessageService.getPreview(message);
     this._messageToReply.push({ id: message.id, preview });
   }
 

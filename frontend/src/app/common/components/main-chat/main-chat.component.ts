@@ -70,6 +70,8 @@ export class MainChatComponent implements OnInit, OnDestroy {
 
   memeList$: Observable<IMeme[]>;
 
+  editedMessage: IMessage;
+
   messageTrackByFn = (_: number, item: IMessage): string => item.messageHash;
 
   readonly defaultPageSize = DEFAULT_CHAT_PAGE_SIZE;
@@ -157,6 +159,14 @@ export class MainChatComponent implements OnInit, OnDestroy {
   }
 
   submit(text: string, meme?: IMeme): void {
+    if (!this.editedMessage) {
+      this.submitNewMessage(text, meme);
+    } else {
+      this.submitEditedMessage(text);
+    }
+  }
+
+  submitNewMessage(text: string, meme?: IMeme): void {
     this.lastMessage = text;
     const currentChat = this.messageService.currentChat;
     const receiver = currentChat.isPrivate
@@ -183,6 +193,16 @@ export class MainChatComponent implements OnInit, OnDestroy {
       )
       .subscribe(() => {
         this.lastMessage = null;
+        this.scrollDown();
+      });
+  }
+
+  submitEditedMessage(text: string): void {
+    this.chatApiService.editMessage({ ...this.editedMessage, text })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((response) => {
+        this.lastMessage = null;
+        this.editedMessage = null;
       });
   }
 
@@ -282,6 +302,16 @@ export class MainChatComponent implements OnInit, OnDestroy {
     this.imageService.loadAllMemes();
     this.memeList$ = this.imageService.getMemeList();
     this.addImageDialog.open();
+  }
+
+  editMessage(message: IMessage): void {
+    this.editedMessage = { ...message, preview: MessageService.getPreview(message) };
+    this.lastMessage = message.text;
+  }
+
+  cancelEdit(): void {
+    this.lastMessage = null;
+    this.editedMessage = null;
   }
 
   private scrollToBot(): void {

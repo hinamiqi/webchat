@@ -21,15 +21,21 @@
     [ngClass]="{ highlighted: highlightMessageId === message.id }"
     (removed)="removeMessage($event)"
     (openPrivateChat)="openPrivateChat($event)"
+    (editMessage)="editMessage($event)"
   ></app-chat-message>
 </div>
 <div class="message-to-reply" *ngIf="messageToReply.length">
   <span *ngFor="let m of messageToReply">
     <span class="cursor-pointer" (click)="scrollToMessage(m.id)">{{ m.preview }}</span>
-    <i class="icon bi bi-x-lg" (click)="removeReply(m)"></i>
+    <i class="remove-icon icon bi bi-x-lg" (click)="removeReply(m)"></i>
   </span>
 </div>
 <div class="bottom">
+  <div class="edited-message" *ngIf="editedMessage">
+    <i class="icon bi bi-pencil-fill"></i>
+    <span class="cursor-pointer" (click)="scrollToMessage(editedMessage.id)">{{ editedMessage.preview }}</span>
+    <i class="remove-icon icon bi bi-x-lg" (click)="cancelEdit()"></i>
+  </div>
   <app-message-input [(ngModel)]="lastMessage"
     [canAddImage]="true"
     (submitted)="submit($event)"
@@ -37,7 +43,7 @@
   </app-message-input>
   <span class="scroll-down cursor-pointer" *ngIf="showScrollDown" (click)="scrollDown()"><i class="icon bi bi-chevron-down"></i></span>
 </div>
-<app-simple-dialog #addImageDialog [dialogTitle]="'Chose image'">
+<app-simple-dialog #addImageDialog [dialogTitle]="'Choose image'">
   <div class="image-select">
     <img class="image-select__preview" *ngFor="let meme of memeList$ | async" [src]="getSrcFromImage(meme.image)" (click)="submitMeme(meme)">
   </div>

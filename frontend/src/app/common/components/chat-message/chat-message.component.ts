@@ -45,7 +45,7 @@ export class ChatMessageComponent implements OnInit, OnDestroy {
 
   @Output() openPrivateChat = new EventEmitter<User>();
 
-  editMode = false;
+  @Output() editMessage = new EventEmitter<IMessage>();
 
   avatarImageSource: SafeResourceUrl;
 
@@ -139,22 +139,13 @@ export class ChatMessageComponent implements OnInit, OnDestroy {
     this.removed.emit(this.message);
   }
 
-  toggleEdit(): void {
-    this.editMode = !this.editMode;
+
+  edit(): void {
+    this.editMessage.emit(this.message);
   }
 
   reply(): void {
     this.commonService.addMessageToReply(this._message);
-  }
-
-  submit(text: string): void {
-    this.editMode = false;
-
-    this.chatApiService.editMessage({ ...this.message, text })
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((response) => {
-        this.message.text = response.text;
-      });
   }
 
   showDiff(): void {
