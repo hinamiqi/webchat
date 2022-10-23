@@ -144,7 +144,6 @@ export class MainChatComponent implements OnInit, OnDestroy {
       .subscribe((newMessages) => {
         const id = this.messageService.currentChat.id;
         if (this.newMessagesCount?.get(id) !== newMessages.get(id) && newMessages.get(id) !== 0) {
-          this.scrollDown();
           this.messageService.clearNewMessageCounter(id);
         }
         this.newMessagesCount = new Map(newMessages);
